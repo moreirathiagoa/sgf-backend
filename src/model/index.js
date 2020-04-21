@@ -1,5 +1,11 @@
-const responseModel = require('./response')
+const transactionModel = require('./transaction')
+const categoryModel = require('./category')
+const faturesModel = require('./fatures')
+const bankModel = require('./bank')
 
 module.exports = {
-    responseModel
+    transactionModel,
+    categoryModel,
+    faturesModel,
+    bankModel
 }
