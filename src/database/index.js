@@ -49,8 +49,21 @@ function findOne(model, parameter) {
     }
 }
 
+async function remove(model) {
+    try {
+        return model.remove()
+    } catch (error) {
+        throw new Error({
+            message:
+                'Ocorreu um erro ao tentar remover o objeto no banco de dados',
+            data: error
+        })
+    }
+}
+
 module.exports = {
     mongoose,
     save,
-    findOne
+    findOne,
+    remove
 }
