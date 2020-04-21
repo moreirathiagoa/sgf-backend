@@ -10,12 +10,18 @@ function getDateInformed(informedData){
     return momentTz.tz(informedData, 'America/Sao_Paulo').format()
 }
 
-function prepareToCsv(texto){
-    return '"' + texto.toString().replace(/\"/g, '""') + '"'
+function validateRequiredsElements(object, requireds){
+    let emptyAtributes = []
+    requireds.forEach(element => {
+        if (!object.hasOwnProperty(element)) {
+            emptyAtributes.push(element) 
+        }
+    });
+    return emptyAtributes.join(', ')
 }
 
 module.exports = {
-    prepareToCsv,
     getMomentNow,
-    getDateInformed
+    getDateInformed,
+    validateRequiredsElements
 }
