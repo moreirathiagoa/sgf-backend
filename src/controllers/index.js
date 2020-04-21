@@ -1,5 +1,5 @@
-const nova = {}
+const categoryController = require('./categoryController')
 
 module.exports = {
-    nova
+    categoryController
 } 
