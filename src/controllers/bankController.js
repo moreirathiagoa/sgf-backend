@@ -3,6 +3,36 @@ const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
 
+async function getListBanks(){
+    try {
+        const bankFind = await db.find(model.bankModel)
+        if (_.isEmpty(bankFind))
+            throw 'Nenhum dado para exibir'
+
+        return bankFind
+    } catch (error) {
+        throw {
+            error: error
+        }
+    }
+}
+
+async function getBank(idBank){
+    try {
+
+        const params = { _id: idBank }
+        const bankFind = await db.findOne(model.bankModel, params)
+        if (_.isEmpty(bankFind))
+            throw 'Nenhum dado para exibir'
+
+        return bankFind
+    } catch (error) {
+        throw {
+            error: error
+        }
+    }
+}
+
 async function createBank(bankToCreate){
     try {
         await validateBank(bankToCreate)
@@ -95,6 +125,8 @@ function validateBank(bankToCreate){
 }
 
 module.exports = {
+    getListBanks,
+    getBank,
     createBank,
     updateBank,
     deleteBank

@@ -3,6 +3,34 @@ const express = require('express')
 const controller = require('../controllers')
 const router = express.Router()
 
+router.get('/list', async (req, res, next) => {
+    
+    try {
+        
+        const response = await controller.categoryController.getListCategory(req.body)
+        
+        res.status(200).send(response)
+    } catch (error) {
+        res.status(500).send(error)
+    }   
+
+})
+
+router.get('/:idCategory', async (req, res, next) => {
+    
+    const {idCategory} = req.params
+
+    try {
+        
+        const response = await controller.categoryController.getCategory(idCategory)
+    
+        res.status(200).send(response)
+    } catch (error) {
+        res.status(500).send(error)
+    }   
+
+})
+
 router.post('/create', async (req, res, next) => {
     
     try {
