@@ -10,11 +10,10 @@ const bank = new Schema({
     bankType: {
         type: String,
         enum : ['Conta Corrente', 'Conta Cartão', 'Cartão de Crédito', 'Poupança'],
-        default: 'Conta Corrente',
         required: true
     },
-    systemBalance: { type: Number, required: true },
-    manualBalance: { type: Number, required: true },
+    systemBalance: { type: Number, required: true, default: 0 },
+    manualBalance: { type: Number, required: true, default: 0 },
 })
 
 const bankModel = mongoose.model('bank', bank)
