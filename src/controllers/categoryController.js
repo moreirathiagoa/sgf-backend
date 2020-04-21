@@ -3,6 +3,36 @@ const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
 
+async function getListCategory(){
+    try {
+        const categoryFind = await db.find(model.categoryModel)
+        if (_.isEmpty(categoryFind))
+            throw 'Nenhum dado para exibir'
+
+        return categoryFind
+    } catch (error) {
+        throw {
+            error: error
+        }
+    }
+}
+
+async function getCategory(idBank){
+    try {
+
+        const params = { _id: idBank }
+        const categoryFind = await db.findOne(model.categoryModel, params)
+        if (_.isEmpty(categoryFind))
+            throw 'Nenhum dado para exibir'
+
+        return categoryFind
+    } catch (error) {
+        throw {
+            error: error
+        }
+    }
+}
+
 async function createCategory(categoryToCreate){
     try {
         await validadeCategory(categoryToCreate)
@@ -90,6 +120,8 @@ function validadeCategory(categoryToCreate){
 }
 
 module.exports = {
+    getListCategory,
+    getCategory,
     createCategory,
     updateCategory,
     deleteCategory
