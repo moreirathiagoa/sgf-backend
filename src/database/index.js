@@ -32,11 +32,18 @@ function save(model) {
     }
 }
 
-/**
- * Função que salva o modelo no banco de dados
- * @param {Model} model Modelo para ser persistido no Banco de dados
- * @author {Thiago Moreira}
- */
+function find(model, parameter) {
+    try {
+        return model.find(parameter)
+    } catch (error) {
+        throw new Error({
+            message:
+                'Ocorreu um erro ao tentar buscar o objeto no banco de dados',
+            data: error
+        })
+    }
+}
+
 function findOne(model, parameter) {
     try {
         return model.findOne(parameter)
@@ -64,6 +71,7 @@ async function remove(model) {
 module.exports = {
     mongoose,
     save,
+    find,
     findOne,
     remove
 }
