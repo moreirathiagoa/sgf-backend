@@ -20,9 +20,9 @@ mongoose
  * @param {Model} model Modelo para ser persistido no Banco de dados
  * @author {Thiago Moreira}
  */
-async function save(model) {
+function save(model) {
     try {
-        return model.save({ checkKeys: false })
+        return model.save()
     } catch (error) {
         throw new Error({
             message:
@@ -32,7 +32,25 @@ async function save(model) {
     }
 }
 
+/**
+ * Função que salva o modelo no banco de dados
+ * @param {Model} model Modelo para ser persistido no Banco de dados
+ * @author {Thiago Moreira}
+ */
+function findOne(model, parameter) {
+    try {
+        return model.findOne(parameter)
+    } catch (error) {
+        throw new Error({
+            message:
+                'Ocorreu um erro ao tentar buscar o objeto no banco de dados',
+            data: error
+        })
+    }
+}
+
 module.exports = {
     mongoose,
-    save
+    save,
+    findOne
 }
