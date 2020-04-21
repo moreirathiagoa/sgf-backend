@@ -10,6 +10,9 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use('/', routes.homeRouter)
+app.use('/category', routes.categoryRouter)
+app.use('/bank', routes.bankRouter)
+app.use('/transaction', routes.transactionRouter)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs))
 
 module.exports = app
