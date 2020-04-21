@@ -3,6 +3,34 @@ const express = require('express')
 const controller = require('../controllers')
 const router = express.Router()
 
+router.get('/list', async (req, res, next) => {
+    
+    try {
+        
+        const response = await controller.bankController.getListBanks(req.body)
+        
+        res.status(200).send(response)
+    } catch (error) {
+        res.status(500).send(error)
+    }   
+
+})
+
+router.get('/:idBank', async (req, res, next) => {
+    
+    const {idBank} = req.params
+
+    try {
+        
+        const response = await controller.bankController.getBank(idBank)
+    
+        res.status(200).send(response)
+    } catch (error) {
+        res.status(500).send(error)
+    }   
+
+})
+
 router.post('/create', async (req, res, next) => {
     
     try {
