@@ -7,11 +7,13 @@ const fature = new Schema({
     name: { type: String, required: true },
     createDate: { type: String, required: true, default: utils.getMomentNow() },
     dueDate: { type: String, required: true },
+    isPayed: { type: Boolean, required: true, default: false },
     bank_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'bank'
+        ref: 'bank',
+        required: true
     },
-    balance: { type: Number, required: true }
+    fatureBalance: { type: Number, required: true }
 })
 
 const fatureModel = mongoose.model('fature', fature)
