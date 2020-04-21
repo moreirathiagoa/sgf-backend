@@ -9,7 +9,7 @@ router.post('/create', async (req, res, next) => {
         if (_.isEmpty(req.body))
             throw "No informations on the body"
         
-        //const response = await controller.categoryController.createCategory(req.body)
+        const response = await controller.bankController.createBank(req.body)
         
         res.status(201).send({
             status: 'Sucesso',
@@ -29,7 +29,7 @@ router.put('/update/:idBank', async (req, res, next) => {
         if (_.isEmpty(req.body))
             throw "No informations on the body"
         
-        //const response = await controller.categoryController.updateCategory(idCategory, req.body)
+        const response = await controller.bankController.updateBank(idBank, req.body)
     
         res.status(200).send({
             status: 'Sucesso',
@@ -46,7 +46,7 @@ router.delete('/delete/:idBank', async (req, res, next) => {
     const {idBank} = req.params
 
     try {
-        //const response = await controller.categoryController.deleteCategory(idCategory)
+        const response = await controller.bankController.deleteBank(idBank)
     
         res.status(200).send({
             status: 'Sucesso',
