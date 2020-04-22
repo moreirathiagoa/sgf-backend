@@ -17,6 +17,22 @@ async function getListTransacation(){
     }
 }
 
+async function getFilterTransacation(filters){
+    try {
+
+        const params = filters
+        const transactionFind = await db.find(model.transactionModel, params)
+        if (_.isEmpty(transactionFind))
+            throw 'Nenhum dado para exibir'
+
+        return transactionFind
+    } catch (error) {
+        throw {
+            error: error
+        }
+    }
+}
+
 async function getTransaction(idTransaction){
     try {
 
@@ -51,15 +67,8 @@ async function updateTransaction(idTransaction, transacationToUpdate){
     try {
         await validadeTransaction(transacationToUpdate)
 
-        let param = { name: transacationToUpdate.name }
-        let transactionFind = await db.findOne(model.transactionModel, param)
-        if (!_.isEmpty(transactionFind)){
-            if(transactionFind._id != idTransaction)
-                throw 'Transacação já cadastrada'
-        }
-
-        params = { _id: idTransaction }
-        transactionFind = await db.findOne(model.transactionModel, params)
+        const params = { _id: idTransaction }
+        const transactionFind = await db.findOne(model.transactionModel, params)
 
         if (_.isEmpty(transactionFind)) {
             throw 'Transacação não encontrada'
@@ -139,6 +148,7 @@ async function existBank(idBank){
 
 module.exports = {
     getListTransacation,
+    getFilterTransacation,
     getTransaction,
     createTransaction,
     updateTransaction,
