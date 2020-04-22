@@ -37,7 +37,7 @@ router.post('/create', async (req, res, next) => {
         if (_.isEmpty(req.body))
             throw "No informations on the body"
         
-        //const response = await controller.categoryController.createCategory(req.body)
+        const response = await controller.transactionController.createTransaction(req.body)
         
         res.status(201).send({
             status: 'Sucesso',
