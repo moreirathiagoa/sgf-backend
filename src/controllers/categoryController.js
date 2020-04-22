@@ -17,10 +17,10 @@ async function getListCategory(){
     }
 }
 
-async function getCategory(idBank){
+async function getCategory(idCategory){
     try {
 
-        const params = { _id: idBank }
+        const params = { _id: idCategory }
         const categoryFind = await db.findOne(model.categoryModel, params)
         if (_.isEmpty(categoryFind))
             throw 'Nenhum dado para exibir'
