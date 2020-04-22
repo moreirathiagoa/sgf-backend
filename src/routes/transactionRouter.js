@@ -55,7 +55,7 @@ router.post('/create', async (req, res, next) => {
         
         const response = await controller.transactionController.createTransaction(req.body)
         
-        res.status(201).send({
+        res.status(200).send({
             status: 'Sucesso',
             data: response
         })
