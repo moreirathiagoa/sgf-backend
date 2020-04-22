@@ -20,8 +20,13 @@ function validateRequiredsElements(object, requireds){
     return emptyAtributes.join(', ')
 }
 
+function isNumeric(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
 module.exports = {
     getMomentNow,
     getDateInformed,
-    validateRequiredsElements
+    validateRequiredsElements,
+    isNumeric
 }
