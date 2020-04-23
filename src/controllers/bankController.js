@@ -115,7 +115,7 @@ function validateBank(bankToCreate){
     if(response)
         throw 'Os atributo(s) a seguir não foi(ram) informados: ' + response
     
-    if (bankToCreate.name.lenght < 3)
+    if (bankToCreate.name.length < 3)
         throw 'O nome não pode ter menos de 3 caracteres'
 
     let arr = ['Conta Corrente', 'Conta Cartão', 'Cartão de Crédito', 'Poupança']

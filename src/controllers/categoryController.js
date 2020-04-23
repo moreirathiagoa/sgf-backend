@@ -7,9 +7,9 @@ async function getListCategory(){
     try {
         const categoryFind = await db.find(model.categoryModel)
         if (_.isEmpty(categoryFind))
-            throw 'Nenhum dado para exibir'
-
-        return categoryFind
+            return utils.makeResponse(203, 'Categorias não encontradas',[])
+        
+        return utils.makeResponse(200, 'Categoria criada com sucesso', categoryFind)
     } catch (error) {
         throw {
             error: error
@@ -23,9 +23,9 @@ async function getCategory(idCategory){
         const params = { _id: idCategory }
         const categoryFind = await db.findOne(model.categoryModel, params)
         if (_.isEmpty(categoryFind))
-            throw 'Nenhum dado para exibir'
+            return utils.makeResponse(203, 'Categoria não encontrada')
 
-        return categoryFind
+        return utils.makeResponse(200, 'Categoria criada com sucesso', categoryFind)
     } catch (error) {
         throw {
             error: error
@@ -35,16 +35,18 @@ async function getCategory(idCategory){
 
 async function createCategory(categoryToCreate){
     try {
-        await validadeCategory(categoryToCreate)
+        const validation = await validadeCategory(categoryToCreate)
+        if (validation)
+            return utils.makeResponse(203, validation)
 
         const params = { name: categoryToCreate.name }
         const categoryFind = await db.findOne(model.categoryModel, params)
         if (!_.isEmpty(categoryFind))
-            throw 'Categoria já cadastrada'
+            return utils.makeResponse(203, 'Categoria já cadastrada')
 
         const categoryToSave = new model.categoryModel(categoryToCreate)
         const response = await db.save(categoryToSave)
-        return response
+        return utils.makeResponse(201, 'Categoria criada com sucesso', response)
     } catch (error) {
         throw {
             error: error
@@ -54,20 +56,22 @@ async function createCategory(categoryToCreate){
 
 async function updateCategory(idCategory, categoryToUpdate){
     try {
-        await validadeCategory(categoryToUpdate)
+        const validation = await validadeCategory(categoryToUpdate)
+        if (validation)
+            return utils.makeResponse(203, validation)
 
         let param = { name: categoryToUpdate.name }
         let categoryFind = await db.findOne(model.categoryModel, param)
         if (!_.isEmpty(categoryFind)){
             if(categoryFind._id != idCategory)
-                throw 'Categoria já cadastrada'
+                return utils.makeResponse(203, 'Categoria já cadastrada')
         }
 
         params = { _id: idCategory }
         categoryFind = await db.findOne(model.categoryModel, params)
 
         if (_.isEmpty(categoryFind)) {
-            throw 'Categoria não encontrada'
+            return utils.makeResponse(203, 'Categoria não encontrada')
         }
 
         await model.categoryModel.updateOne(
@@ -81,8 +85,7 @@ async function updateCategory(idCategory, categoryToUpdate){
         )
 
         const categoryReturn = await db.findOne(model.categoryModel, params)
-
-        return categoryReturn
+        return utils.makeResponse(202, 'Categoria atualizada com sucesso', categoryReturn)
     } catch (error) {
         throw {
             error: error
@@ -95,12 +98,12 @@ async function deleteCategory(idCategory){
         
         const params = { _id: idCategory }
         const categoryFind = await db.findOne(model.categoryModel, params)
-        if (_.isEmpty(categoryFind))
-            throw 'Categoria não encontrada'
+        if (_.isEmpty(categoryFind))            
+            return utils.makeResponse(203, 'Categoria não encontrada')
 
         const categoryToDelete = new model.categoryModel(categoryFind)
         const response = await db.remove(categoryToDelete)
-        return response
+        return utils.makeResponse(202, 'Categoria removida com sucesso', response)
     } catch (error) {
         throw {
             error: error
@@ -113,10 +116,10 @@ function validadeCategory(categoryToCreate){
     requireds = ['name']
     const response = utils.validateRequiredsElements(categoryToCreate, requireds)
     if(response)
-        throw 'Os atributo(s) a seguir não foi(ram) informados: ' + response
+        return 'Os atributo(s) a seguir não foi(ram) informados: ' + response
     
-    if (categoryToCreate.name.lenght < 3)
-        throw 'O nome não pode ter menos de 3 caracteres'
+    if (categoryToCreate.name.length < 3)
+        return 'O nome não pode ter menos de 3 caracteres'
 }
 
 module.exports = {
