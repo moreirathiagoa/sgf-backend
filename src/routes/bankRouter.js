@@ -4,7 +4,7 @@ const controller = require('../controllers')
 const router = express.Router()
 
 router.get('/list', async (req, res, next) => {
-    
+    res.header('Access-Control-Allow-Origin','*')
     try {
         
         const response = await controller.bankController.getListBanks(req.body)
@@ -17,7 +17,7 @@ router.get('/list', async (req, res, next) => {
 })
 
 router.get('/:idBank', async (req, res, next) => {
-    
+    res.header('Access-Control-Allow-Origin','*')
     const {idBank} = req.params
 
     try {
@@ -32,7 +32,7 @@ router.get('/:idBank', async (req, res, next) => {
 })
 
 router.post('/create', async (req, res, next) => {
-    
+    res.header('Access-Control-Allow-Origin','*')
     try {
         if (_.isEmpty(req.body))
             throw "No informations on the body"
@@ -50,7 +50,7 @@ router.post('/create', async (req, res, next) => {
 })
 
 router.put('/update/:idBank', async (req, res, next) => {
-    
+    res.header('Access-Control-Allow-Origin','*')
     const {idBank} = req.params
 
     try {
@@ -70,7 +70,7 @@ router.put('/update/:idBank', async (req, res, next) => {
 })
 
 router.delete('/delete/:idBank', async (req, res, next) => {
-    
+    res.header('Access-Control-Allow-Origin','*')
     const {idBank} = req.params
 
     try {
