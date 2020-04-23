@@ -4,7 +4,7 @@ const controller = require('../controllers')
 const router = express.Router()
 
 router.get('/list', async (req, res, next) => {
-    
+    res.header('Access-Control-Allow-Origin','*')
     try {
         
         const response = await controller.transactionController.getListTransacation()
@@ -17,7 +17,7 @@ router.get('/list', async (req, res, next) => {
 })
 
 router.post('/filter', async (req, res, next) => {
-    
+    res.header('Access-Control-Allow-Origin','*')
     try {
 
         if (_.isEmpty(req.body))
@@ -33,7 +33,7 @@ router.post('/filter', async (req, res, next) => {
 })
 
 router.get('/:idTransaction', async (req, res, next) => {
-    
+    res.header('Access-Control-Allow-Origin','*')
     const {idTransaction} = req.params
 
     try {
@@ -48,14 +48,14 @@ router.get('/:idTransaction', async (req, res, next) => {
 })
 
 router.post('/create', async (req, res, next) => {
-    
+    res.header('Access-Control-Allow-Origin','*')
     try {
         if (_.isEmpty(req.body))
             throw "No informations on the body"
         
         const response = await controller.transactionController.createTransaction(req.body)
         
-        res.status(201).send({
+        res.status(200).send({
             status: 'Sucesso',
             data: response
         })
@@ -66,7 +66,7 @@ router.post('/create', async (req, res, next) => {
 })
 
 router.put('/update/:idTransaction', async (req, res, next) => {
-    
+    res.header('Access-Control-Allow-Origin','*')
     const {idTransaction} = req.params
 
     try {
@@ -86,7 +86,7 @@ router.put('/update/:idTransaction', async (req, res, next) => {
 })
 
 router.delete('/delete/:idTransaction', async (req, res, next) => {
-    
+    res.header('Access-Control-Allow-Origin','*')
     const {idTransaction} = req.params
 
     try {
