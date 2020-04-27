@@ -9,7 +9,7 @@ async function getListCategory(){
         if (_.isEmpty(categoryFind))
             return utils.makeResponse(203, 'Categorias não encontradas',[])
         
-        return utils.makeResponse(200, 'Categoria criada com sucesso', categoryFind)
+        return utils.makeResponse(200, 'Lista de Categorias', categoryFind)
     } catch (error) {
         throw {
             error: error
@@ -25,7 +25,7 @@ async function getCategory(idCategory){
         if (_.isEmpty(categoryFind))
             return utils.makeResponse(203, 'Categoria não encontrada')
 
-        return utils.makeResponse(200, 'Categoria criada com sucesso', categoryFind)
+        return utils.makeResponse(200, 'Categoria encontrada', categoryFind)
     } catch (error) {
         throw {
             error: error

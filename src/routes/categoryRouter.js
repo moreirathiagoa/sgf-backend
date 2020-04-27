@@ -2,13 +2,13 @@ const _ = require('lodash')
 const express = require('express')
 const controller = require('../controllers')
 const router = express.Router()
+const auth = require('../middlewares/auth')
 
-router.get('/list', async (req, res, next) => {
-    res.header('Access-Control-Allow-Origin','*')
+router.get('/list', auth, async (req, res, next) => {
+    //console.log(res.locals.authData)
+    
     try {
-        
         const response = await controller.categoryController.getListCategory(req.body)
-        
         res.status(response.code).send(response)
     } catch (error) {
         res.status(500).send(error)
@@ -17,7 +17,7 @@ router.get('/list', async (req, res, next) => {
 })
 
 router.get('/:idCategory', async (req, res, next) => {
-    res.header('Access-Control-Allow-Origin','*')
+    
     const {idCategory} = req.params
     try {
 
@@ -31,7 +31,7 @@ router.get('/:idCategory', async (req, res, next) => {
 })
 
 router.post('/create',  async (req, res, next) => {
-    res.header('Access-Control-Allow-Origin','*')
+    
     try {
         
         let response
@@ -53,7 +53,7 @@ router.post('/create',  async (req, res, next) => {
 })
 
 router.put('/update/:idCategory', async (req, res, next) => {
-    res.header('Access-Control-Allow-Origin','*')
+    
     const {idCategory} = req.params
 
     try {
@@ -74,7 +74,7 @@ router.put('/update/:idCategory', async (req, res, next) => {
 })
 
 router.delete('/delete/:idCategory', async (req, res, next) => {
-    res.header('Access-Control-Allow-Origin','*')
+    
     const {idCategory} = req.params
 
     try {
