@@ -1,9 +1,9 @@
-const CONSTANT = require('../properties')
+const properties = require('../properties')
 const mongoose = require('mongoose')
 mongoose.Promise = global.Promise
 
 mongoose
-    .connect(CONSTANT.URI_DATABASE, {
+    .connect(properties.uriDataBase, {
         useUnifiedTopology: true,
         useNewUrlParser: true
     })
