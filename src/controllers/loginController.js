@@ -22,7 +22,7 @@ async function login(user){
             data_geracao: moment()
         }
         const keyToken= properties.keyToken    
-        const option = { expiresIn: '10s' }
+        const option = { expiresIn: '1h' }
         const token = jwt.sign(tokenContent, keyToken, option)
         
         const response = {
