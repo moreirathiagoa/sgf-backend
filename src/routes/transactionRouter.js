@@ -2,8 +2,9 @@ const _ = require('lodash')
 const express = require('express')
 const controller = require('../controllers')
 const router = express.Router()
+const auth = require('../middlewares/auth')
 
-router.get('/list', async (req, res, next) => {
+router.get('/list', auth, async (req, res, next) => {
     res.header('Access-Control-Allow-Origin','*')
     try {
         
@@ -16,7 +17,7 @@ router.get('/list', async (req, res, next) => {
 
 })
 
-router.post('/filter', async (req, res, next) => {
+router.post('/filter', auth, async (req, res, next) => {
     res.header('Access-Control-Allow-Origin','*')
     try {
 
@@ -32,7 +33,7 @@ router.post('/filter', async (req, res, next) => {
 
 })
 
-router.get('/:idTransaction', async (req, res, next) => {
+router.get('/:idTransaction', auth, async (req, res, next) => {
     res.header('Access-Control-Allow-Origin','*')
     const {idTransaction} = req.params
 
@@ -47,7 +48,7 @@ router.get('/:idTransaction', async (req, res, next) => {
 
 })
 
-router.post('/create', async (req, res, next) => {
+router.post('/create', auth, async (req, res, next) => {
     res.header('Access-Control-Allow-Origin','*')
     try {
         if (_.isEmpty(req.body))
@@ -65,7 +66,7 @@ router.post('/create', async (req, res, next) => {
 
 })
 
-router.put('/update/:idTransaction', async (req, res, next) => {
+router.put('/update/:idTransaction', auth, async (req, res, next) => {
     res.header('Access-Control-Allow-Origin','*')
     const {idTransaction} = req.params
 
@@ -85,7 +86,7 @@ router.put('/update/:idTransaction', async (req, res, next) => {
 
 })
 
-router.delete('/delete/:idTransaction', async (req, res, next) => {
+router.delete('/delete/:idTransaction', auth, async (req, res, next) => {
     res.header('Access-Control-Allow-Origin','*')
     const {idTransaction} = req.params
 
