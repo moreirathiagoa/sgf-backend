@@ -16,7 +16,7 @@ router.get('/list', auth, async (req, res, next) => {
 
 })
 
-router.get('/:idCategory', async (req, res, next) => {
+router.get('/:idCategory', auth, async (req, res, next) => {
     
     const {idCategory} = req.params
     try {
@@ -30,7 +30,7 @@ router.get('/:idCategory', async (req, res, next) => {
 
 })
 
-router.post('/create',  async (req, res, next) => {
+router.post('/create', auth, async (req, res, next) => {
     
     try {
         
@@ -52,7 +52,7 @@ router.post('/create',  async (req, res, next) => {
 
 })
 
-router.put('/update/:idCategory', async (req, res, next) => {
+router.put('/update/:idCategory', auth, async (req, res, next) => {
     
     const {idCategory} = req.params
 
@@ -73,7 +73,7 @@ router.put('/update/:idCategory', async (req, res, next) => {
 
 })
 
-router.delete('/delete/:idCategory', async (req, res, next) => {
+router.delete('/delete/:idCategory', auth, async (req, res, next) => {
     
     const {idCategory} = req.params
 

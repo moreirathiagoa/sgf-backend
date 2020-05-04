@@ -15,11 +15,8 @@ const auth = (req, res, next) => {
 
     jwt.verify(tokenHeader, keyToken, (err, decoded)=>{
         if (err) {
-            console.log('token inválido');
             res.status(401).send(utils.makeResponse(401, 'token inválido'))
         } else {
-            console.log('token valido');
-            console.log(decoded)
             res.locals.authData = decoded
         }
         return next()
