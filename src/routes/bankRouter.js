@@ -8,7 +8,7 @@ router.get('/list', auth, async (req, res, next) => {
     //console.log(res.locals.authData)
     
     try {
-        const response = await controller.bankController.getListBanks(req.body)    
+        const response = await controller.bankController.getListBanks()    
         res.status(response.code).send(response)
     } catch (error) {
         res.status(500).send(error)
