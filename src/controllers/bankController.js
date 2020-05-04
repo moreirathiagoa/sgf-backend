@@ -4,12 +4,13 @@ const db = require('../database')
 const model = require('../model')
 
 async function getListBanks(){
+    
     try {
         const bankFind = await db.find(model.bankModel)
         if (_.isEmpty(bankFind))
-            throw 'Nenhum dado para exibir'
+        return utils.makeResponse(203, 'Bancos não encontrados',[])
 
-        return bankFind
+        return utils.makeResponse(200, 'Lista de Bancos', bankFind)
     } catch (error) {
         throw {
             error: error
@@ -23,9 +24,9 @@ async function getBank(idBank){
         const params = { _id: idBank }
         const bankFind = await db.findOne(model.bankModel, params)
         if (_.isEmpty(bankFind))
-            throw 'Nenhum dado para exibir'
+            return utils.makeResponse(203, 'Banco não encontrado')
 
-        return bankFind
+        return utils.makeResponse(200, 'Banco encontrado', bankFind)
     } catch (error) {
         throw {
             error: error
@@ -35,16 +36,18 @@ async function getBank(idBank){
 
 async function createBank(bankToCreate){
     try {
-        await validateBank(bankToCreate)
+        const validation = await validateBank(bankToCreate)
+        if (validation)
+            return utils.makeResponse(203, validation)
 
         const params = { name: bankToCreate.name }
         const bankFind = await db.findOne(model.bankModel, params)
         if (!_.isEmpty(bankFind))
-            throw 'Banco já cadastrado'
+            return utils.makeResponse(203, 'Banco já cadastrado')
 
         const bankToSave = new model.bankModel(bankToCreate)
         const response = await db.save(bankToSave)
-        return response
+        return utils.makeResponse(201, 'Banco criado com sucesso', response)
     } catch (error) {
         throw {
             error: error
@@ -54,20 +57,22 @@ async function createBank(bankToCreate){
 
 async function updateBank(idBank, bankToUpdate){
     try {
-        await validateBank(bankToUpdate)
+        const validation = await validateBank(bankToUpdate)
+        if (validation)
+            return utils.makeResponse(203, validation)
 
         let param = { name: bankToUpdate.name }
         let bankFind = await db.findOne(model.bankModel, param)
         if (!_.isEmpty(bankFind)){
             if(bankFind._id != idBank)
-                throw 'Banco já cadastrado'
+                return utils.makeResponse(203, 'Banco já cadastrado')
         }
 
         params = { _id: idBank }
         bankFind = await db.findOne(model.bankModel, params)
 
         if (_.isEmpty(bankFind)) {
-            throw 'Banco não encontrado'
+            return utils.makeResponse(203, 'Banco não encontrado')
         }
 
         await model.bankModel.updateOne(
@@ -81,8 +86,7 @@ async function updateBank(idBank, bankToUpdate){
         )
 
         const categoryReturn = await db.findOne(model.bankModel, params)
-
-        return categoryReturn
+        return utils.makeResponse(202, 'Banco atualizado com sucesso', categoryReturn)
     } catch (error) {
         throw {
             error: error
@@ -96,11 +100,11 @@ async function deleteBank(idBank){
         const params = { _id: idBank }
         const bankFind = await db.findOne(model.bankModel, params)
         if (_.isEmpty(bankFind))
-            throw 'Banco não encontrada'
+            return utils.makeResponse(203, 'Banco não encontrado')
 
         const categoryToDelete = new model.bankModel(bankFind)
         const response = await db.remove(categoryToDelete)
-        return response
+        return utils.makeResponse(202, 'Banco removido com sucesso', response)
     } catch (error) {
         throw {
             error: error
@@ -113,15 +117,15 @@ function validateBank(bankToCreate){
     requireds = ['name', 'bankType']
     const response = utils.validateRequiredsElements(bankToCreate, requireds)
     if(response)
-        throw 'Os atributo(s) a seguir não foi(ram) informados: ' + response
+        return 'Os atributo(s) a seguir não foi(ram) informados: ' + response
     
     if (bankToCreate.name.length < 3)
-        throw 'O nome não pode ter menos de 3 caracteres'
+        return 'O nome não pode ter menos de 3 caracteres'
 
     let arr = ['Conta Corrente', 'Conta Cartão', 'Cartão de Crédito', 'Poupança']
 
     if (!arr.includes(bankToCreate.bankType))
-        throw 'O tipo de banco não foi informado corretamente'
+        return 'O tipo de banco não foi informado corretamente'
 }
 
 module.exports = {
