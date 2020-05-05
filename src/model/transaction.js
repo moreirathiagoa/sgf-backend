@@ -9,8 +9,8 @@ const transaction = new Schema({
     efectedDate: { type: String, required: true, default: utils.getMomentNow() },
     description: { type: String },
     value: { type: Number, required: true },
-    currentRecurrence: { type: Number, required: true, default: 1 },
-    finalRecurrence: { type: Number, required: true, default: 1 },
+    currentRecurrence: { type: Number },
+    finalRecurrence: { type: Number },
     bank_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'bank',
