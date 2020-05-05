@@ -7,9 +7,9 @@ async function getListTransacation(){
     try {
         const transactionFind = await db.find(model.transactionModel)
         if (_.isEmpty(transactionFind))
-            throw 'Nenhum dado para exibir'
+            return utils.makeResponse(203, 'Transação não encontradas',[])
 
-        return transactionFind
+        return utils.makeResponse(200, 'Lista de Transações', transactionFind)
     } catch (error) {
         throw {
             error: error
@@ -23,9 +23,9 @@ async function getFilterTransacation(filters){
         const params = filters
         const transactionFind = await db.find(model.transactionModel, params)
         if (_.isEmpty(transactionFind))
-            throw 'Nenhum dado para exibir'
+            return utils.makeResponse(203, 'Transação não encontradas',[])
 
-        return transactionFind
+        return utils.makeResponse(200, 'Lista de Transações', transactionFind)
     } catch (error) {
         throw {
             error: error
@@ -39,9 +39,9 @@ async function getTransaction(idTransaction){
         const params = { _id: idTransaction }
         const transactionFind = await db.findOne(model.transactionModel, params)
         if (_.isEmpty(transactionFind))
-            throw 'Nenhum dado para exibir'
+            return utils.makeResponse(203, 'Transação não encontradas',[])
 
-        return transactionFind
+        return utils.makeResponse(200, 'Transação encontrada', transactionFind)
     } catch (error) {
         throw {
             error: error
@@ -51,11 +51,13 @@ async function getTransaction(idTransaction){
 
 async function createTransaction(transactionToCreate){
     try {
-        await validadeTransaction(transactionToCreate)
+        const validation = await validadeTransaction(transactionToCreate)
+        if (validation)
+            return utils.makeResponse(203, validation)
 
         const transactionToSave = new model.transactionModel(transactionToCreate)
         const response = await db.save(transactionToSave)
-        return response
+        return utils.makeResponse(201, 'Transação criada com sucesso', response)
     } catch (error) {
         throw {
             error: error
@@ -65,13 +67,15 @@ async function createTransaction(transactionToCreate){
 
 async function updateTransaction(idTransaction, transacationToUpdate){
     try {
-        await validadeTransaction(transacationToUpdate)
+        const validation = await validadeTransaction(transacationToUpdate)
+        if (validation)
+            return utils.makeResponse(203, validation)
 
         const params = { _id: idTransaction }
         const transactionFind = await db.findOne(model.transactionModel, params)
 
         if (_.isEmpty(transactionFind)) {
-            throw 'Transacação não encontrada'
+            return utils.makeResponse(203, 'Transação não encontrada')
         }
 
         await model.transactionModel.updateOne(
@@ -85,8 +89,7 @@ async function updateTransaction(idTransaction, transacationToUpdate){
         )
 
         const transactionReturn = await db.findOne(model.transactionModel, params)
-
-        return transactionReturn
+        return utils.makeResponse(202, 'Categoria atualizada com sucesso', transactionReturn)
     } catch (error) {
         throw {
             error: error
@@ -100,11 +103,11 @@ async function deleteTransaction(idTransaction){
         const params = { _id: idTransaction }
         const transactionFind = await db.findOne(model.transactionModel, params)
         if (_.isEmpty(transactionFind))
-            throw 'Transacação não encontrada'
+            return utils.makeResponse(203, 'Transação não encontrada')
 
         const transactionToDelete = new model.transactionModel(transactionFind)
         const response = await db.remove(transactionToDelete)
-        return response
+        return utils.makeResponse(201, 'Transação removida com sucesso', response)
     } catch (error) {
         throw {
             error: error
@@ -117,16 +120,16 @@ async function validadeTransaction(transactionToCreate){
     requireds = ['category_id', 'bank_id', 'value']
     const response = utils.validateRequiredsElements(transactionToCreate, requireds)
     if(response)
-        throw 'Os atributo(s) a seguir não foi(ram) informados: ' + response
+        return 'Os atributo(s) a seguir não foi(ram) informados: ' + response
     
     if(!utils.isNumeric(transactionToCreate.value))
-        throw 'Valor informado não é válido'
+        return 'Valor informado não é válido'
     
     if(!await existCategory(transactionToCreate.category_id))
-        throw 'Categoria não encontrada'
+        return 'Categoria não encontrada'
 
     if(!await existBank(transactionToCreate.bank_id))
-        throw 'Banco não encontrado'
+        return 'Banco não encontrado'
         
 }
 
