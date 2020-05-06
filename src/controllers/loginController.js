@@ -12,17 +12,17 @@ const createToken = (user_id) =>{
 
 async function login(user){
     try {
-        
+        //remember
         //verificar se usuário existe no env
         if (user.userName != properties.defaultUserName || user.password != properties.defaultUserPassword)
             return utils.makeResponse(401, 'Usuário ou senha inválida')
         
         const tokenContent = {
             userName: user.userName,
-            data_geracao: moment()
+            trustComputer: user.remember
         }
         const keyToken= properties.keyToken    
-        const option = { expiresIn: '1h' }
+        const option = { expiresIn: '30m' }
         const token = jwt.sign(tokenContent, keyToken, option)
         
         const response = {
