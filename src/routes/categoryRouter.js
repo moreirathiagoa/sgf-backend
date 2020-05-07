@@ -5,8 +5,7 @@ const router = express.Router()
 const auth = require('../middlewares/auth')
 
 router.get('/list', auth, async (req, res, next) => {
-    //console.log(res.locals.authData)
-    
+    global.userId = res.locals.authData.userId
     try {
         const response = await controller.categoryController.getListCategory(req.body)
         res.status(response.code).send(response)
@@ -17,7 +16,7 @@ router.get('/list', auth, async (req, res, next) => {
 })
 
 router.get('/:idCategory', auth, async (req, res, next) => {
-    
+    global.userId = res.locals.authData.userId
     const {idCategory} = req.params
     try {
 
@@ -31,7 +30,7 @@ router.get('/:idCategory', auth, async (req, res, next) => {
 })
 
 router.post('/create', auth, async (req, res, next) => {
-    
+    global.userId = res.locals.authData.userId
     try {
         
         let response
@@ -50,7 +49,7 @@ router.post('/create', auth, async (req, res, next) => {
 })
 
 router.put('/update/:idCategory', auth, async (req, res, next) => {
-    
+    global.userId = res.locals.authData.userId
     const {idCategory} = req.params
 
     try {
@@ -71,7 +70,7 @@ router.put('/update/:idCategory', auth, async (req, res, next) => {
 })
 
 router.delete('/delete/:idCategory', auth, async (req, res, next) => {
-    
+    global.userId = res.locals.authData.userId
     const {idCategory} = req.params
 
     try {

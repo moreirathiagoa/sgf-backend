@@ -3,12 +3,12 @@ const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
 
-async function getListBanks(){
-    
+async function getListBanks() {
     try {
-        const bankFind = await db.find(model.bankModel)
+        const params = { userId: global.userId }
+        const bankFind = await db.find(model.bankModel, params)
         if (_.isEmpty(bankFind))
-        return utils.makeResponse(203, 'Bancos não encontrados',[])
+            return utils.makeResponse(203, 'Bancos não encontrados', [])
 
         return utils.makeResponse(200, 'Lista de Bancos', bankFind)
     } catch (error) {
@@ -18,10 +18,10 @@ async function getListBanks(){
     }
 }
 
-async function getBank(idBank){
+async function getBank(idBank) {
     try {
 
-        const params = { _id: idBank }
+        const params = { _id: idBank, userId: global.userId }
         const bankFind = await db.findOne(model.bankModel, params)
         if (_.isEmpty(bankFind))
             return utils.makeResponse(203, 'Banco não encontrado')
@@ -34,17 +34,18 @@ async function getBank(idBank){
     }
 }
 
-async function createBank(bankToCreate){
+async function createBank(bankToCreate) {
     try {
         const validation = await validateBank(bankToCreate)
         if (validation)
             return utils.makeResponse(203, validation)
 
-        const params = { name: bankToCreate.name }
+        const params = { name: bankToCreate.name, userId: global.userId }
         const bankFind = await db.findOne(model.bankModel, params)
         if (!_.isEmpty(bankFind))
             return utils.makeResponse(203, 'Banco já cadastrado')
 
+        bankToCreate.userId = global.userId
         const bankToSave = new model.bankModel(bankToCreate)
         const response = await db.save(bankToSave)
         return utils.makeResponse(201, 'Banco criado com sucesso', response)
@@ -55,20 +56,20 @@ async function createBank(bankToCreate){
     }
 }
 
-async function updateBank(idBank, bankToUpdate){
+async function updateBank(idBank, bankToUpdate) {
     try {
         const validation = await validateBank(bankToUpdate)
         if (validation)
             return utils.makeResponse(203, validation)
 
-        let param = { name: bankToUpdate.name }
+        let param = { name: bankToUpdate.name, userId: global.userId }
         let bankFind = await db.findOne(model.bankModel, param)
-        if (!_.isEmpty(bankFind)){
-            if(bankFind._id != idBank)
+        if (!_.isEmpty(bankFind)) {
+            if (bankFind._id != idBank)
                 return utils.makeResponse(203, 'Banco já cadastrado')
         }
 
-        params = { _id: idBank }
+        params = { _id: idBank, userId: global.userId }
         bankFind = await db.findOne(model.bankModel, params)
 
         if (_.isEmpty(bankFind)) {
@@ -94,10 +95,10 @@ async function updateBank(idBank, bankToUpdate){
     }
 }
 
-async function deleteBank(idBank){
+async function deleteBank(idBank) {
     try {
-        
-        const params = { _id: idBank }
+
+        const params = { _id: idBank, userId: global.userId }
         const bankFind = await db.findOne(model.bankModel, params)
         if (_.isEmpty(bankFind))
             return utils.makeResponse(203, 'Banco não encontrado')
@@ -112,13 +113,13 @@ async function deleteBank(idBank){
     }
 }
 
-function validateBank(bankToCreate){
-    
+function validateBank(bankToCreate) {
+
     requireds = ['name', 'bankType']
     const response = utils.validateRequiredsElements(bankToCreate, requireds)
-    if(response)
+    if (response)
         return 'Os atributo(s) a seguir não foi(ram) informados: ' + response
-    
+
     if (bankToCreate.name.length < 3)
         return 'O nome não pode ter menos de 3 caracteres'
 

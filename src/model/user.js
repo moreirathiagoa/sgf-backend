@@ -2,15 +2,16 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const utils = require('../utils')
 
-const category = new Schema({
+const user = new Schema({
 
-    userId: { type: String, required: true },
-    name: { type: String, required: true },
+    userName: { type: String, required: true },
+    userPassword: { type: String, required: true },
     createDate: { type: String, required: true, default: utils.getMomentNow() },
     isActive: { type: Boolean, required: true, default: true },
+    loginList: [{ type: String }]
 
 })
 
-const categoryModel = mongoose.model('category', category)
+const userModel = mongoose.model('User', user)
 
-module.exports = categoryModel
+module.exports = userModel

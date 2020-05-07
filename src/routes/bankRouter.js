@@ -5,10 +5,10 @@ const router = express.Router()
 const auth = require('../middlewares/auth')
 
 router.get('/list', auth, async (req, res, next) => {
-    //console.log(res.locals.authData)
+    global.userId = res.locals.authData.userId
     
     try {
-        const response = await controller.bankController.getListBanks()    
+        const response = await controller.bankController.getListBanks()
         res.status(response.code).send(response)
     } catch (error) {
         res.status(500).send(error)
@@ -17,7 +17,7 @@ router.get('/list', auth, async (req, res, next) => {
 })
 
 router.get('/:idBank', auth, async (req, res, next) => {
-    
+    global.userId = res.locals.authData.userId
     const {idBank} = req.params
     try {
         
@@ -31,7 +31,7 @@ router.get('/:idBank', auth, async (req, res, next) => {
 })
 
 router.post('/create', auth, async (req, res, next) => {
-    
+    global.userId = res.locals.authData.userId
     try {
 
         let response
@@ -50,7 +50,7 @@ router.post('/create', auth, async (req, res, next) => {
 })
 
 router.put('/update/:idBank', auth, async (req, res, next) => {
-    
+    global.userId = res.locals.authData.userId
     const {idBank} = req.params
 
     try {
@@ -71,7 +71,7 @@ router.put('/update/:idBank', auth, async (req, res, next) => {
 })
 
 router.delete('/delete/:idBank', auth, async (req, res, next) => {
-    
+    global.userId = res.locals.authData.userId
     const {idBank} = req.params
 
     try {

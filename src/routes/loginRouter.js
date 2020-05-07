@@ -4,7 +4,6 @@ const controller = require('../controllers')
 const router = express.Router()
 
 router.post('/', async (req, res, next) => {
-    res.header('Access-Control-Allow-Origin','*')
     try {
         let response
         if (_.isEmpty(req.body)){
@@ -15,7 +14,6 @@ router.post('/', async (req, res, next) => {
         }
         res.status(response.code).send(response)
     } catch (error) {
-        console.log(error);
         res.status(500).send(error)
     }   
 })
