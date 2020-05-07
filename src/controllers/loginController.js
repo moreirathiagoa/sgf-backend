@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt')
 async function login(user){
     try {
 
-        const params = { userName: user.userName }
+        const params = { userName: user.userName.toLowerCase() }
         let userFinded = await db.findOne(model.userModel, params)
 
         const accessGranted = await bcrypt.compareSync(user.userPassword, userFinded.userPassword)
