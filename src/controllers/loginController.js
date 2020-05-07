@@ -3,26 +3,45 @@ const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
 const jwt = require('jsonwebtoken')
-const moment = require('moment')
 const properties = require('../properties')
-
-const createToken = (user_id) =>{
-    return 
-}
+const bcrypt = require('bcrypt')
 
 async function login(user){
     try {
-        //remember
-        //verificar se usuário existe no env
-        if (user.userName != properties.defaultUserName || user.password != properties.defaultUserPassword)
+
+        const params = { userName: user.userName }
+        let userFinded = await db.findOne(model.userModel, params)
+
+        const accessGranted = await bcrypt.compareSync(user.userPassword, userFinded.userPassword)
+        
+        if (!accessGranted)
             return utils.makeResponse(401, 'Usuário ou senha inválida')
+
+        userFinded.toObject()
+        userFinded.loginList.push(utils.getMomentNow())
+        if (userFinded.loginList.length > 50){
+            userFinded.loginList.shift()
+        }
+
+        await model.userModel.updateOne(
+            params,
+            userFinded,
+            (err, res) => {
+                if (err) {
+                    throw new Error(err)
+                }
+            }
+        )
         
         const tokenContent = {
-            userName: user.userName,
-            trustComputer: user.remember
+            userId: userFinded._id,
+            userName: userFinded.userName
         }
+
+        const tokenExpiration = user.remember?'30d':'30m'
+
         const keyToken= properties.keyToken    
-        const option = { expiresIn: '30m' }
+        const option = { expiresIn: tokenExpiration }
         const token = jwt.sign(tokenContent, keyToken, option)
         
         const response = {

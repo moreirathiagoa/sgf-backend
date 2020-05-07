@@ -4,6 +4,7 @@ const utils = require('../utils')
 
 const fature = new Schema({
 
+    userId: { type: String, required: true },
     name: { type: String, required: true },
     createDate: { type: String, required: true, default: utils.getMomentNow() },
     dueDate: { type: String, required: true },

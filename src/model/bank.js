@@ -4,6 +4,7 @@ const utils = require('../utils')
 
 const bank = new Schema({
 
+    userId: { type: String, required: true },
     name: { type: String, required: true },
     isActive: { type: Boolean, required: true, default: true },
     createDate: { type: String, required: true, default: utils.getMomentNow() },

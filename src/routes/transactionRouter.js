@@ -5,8 +5,7 @@ const router = express.Router()
 const auth = require('../middlewares/auth')
 
 router.get('/list', auth, async (req, res, next) => {
-    //console.log(res.locals.authData)
-
+    global.userId = res.locals.authData.userId
     try {    
         const response = await controller.transactionController.getListTransacation()
         res.status(response.code).send(response)
@@ -17,7 +16,7 @@ router.get('/list', auth, async (req, res, next) => {
 })
 
 router.post('/filter', auth, async (req, res, next) => {
-    
+    global.userId = res.locals.authData.userId
     try {
 
         let response
@@ -35,7 +34,7 @@ router.post('/filter', auth, async (req, res, next) => {
 })
 
 router.get('/:idTransaction', auth, async (req, res, next) => {
-    
+    global.userId = res.locals.authData.userId
     const {idTransaction} = req.params
     try {
         const response = await controller.transactionController.getTransaction(idTransaction)
@@ -47,7 +46,7 @@ router.get('/:idTransaction', auth, async (req, res, next) => {
 })
 
 router.post('/create', auth, async (req, res, next) => {
-    
+    global.userId = res.locals.authData.userId
     try {
         let response
         if (_.isEmpty(req.body)){
@@ -64,7 +63,7 @@ router.post('/create', auth, async (req, res, next) => {
 })
 
 router.put('/update/:idTransaction', auth, async (req, res, next) => {
-    
+    global.userId = res.locals.authData.userId
     const {idTransaction} = req.params
 
     try {
@@ -84,7 +83,7 @@ router.put('/update/:idTransaction', auth, async (req, res, next) => {
 })
 
 router.delete('/delete/:idTransaction', auth, async (req, res, next) => {
-    
+    global.userId = res.locals.authData.userId
     const {idTransaction} = req.params
 
     try {
