@@ -14,9 +14,7 @@ const properties = () => {
             DATA_BASE = 'test'
             return {
                 uriDataBase: `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@sgfcluster-nrl0f.mongodb.net/${DATA_BASE}?retryWrites=true&w=majority`,
-                keyToken: KEY_TOKEN,
-                defaultUserName: DEFAULT_USER,
-                defaultUserPassword: DEFAULT_PASSWORD
+                keyToken: KEY_TOKEN
             }
         
         case 'prod':
@@ -26,9 +24,7 @@ const properties = () => {
             DATA_BASE = process.env.DATA_BASE
             return {
                 uriDataBase: `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@sgfcluster-nrl0f.mongodb.net/${DATA_BASE}?retryWrites=true&w=majority`,
-                keyToken: KEY_TOKEN,
-                defaultUserName: DEFAULT_USER,
-                defaultUserPassword: DEFAULT_PASSWORD
+                keyToken: KEY_TOKEN
             }
     }
 }
