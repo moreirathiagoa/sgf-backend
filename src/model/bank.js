@@ -17,6 +17,6 @@ const bank = new Schema({
     manualBalance: { type: Number, required: true, default: 0 },
 })
 
-const bankModel = mongoose.model('bank', bank)
+const bankModel = mongoose.model('Bank', bank)
 
 module.exports = bankModel

@@ -14,21 +14,21 @@ const transaction = new Schema({
     finalRecurrence: { type: Number },
     bank_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'bank',
+        ref: 'Bank',
         required: true
     },
     category_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'category',
+        ref: 'Category',
         required: true
     },
     fature_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'fature'
+        ref: 'Fature'
     },
 
 })
 
-const transactionModel = mongoose.model('transaction', transaction)
+const transactionModel = mongoose.model('Transaction', transaction)
 
 module.exports = transactionModel
