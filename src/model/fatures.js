@@ -9,14 +9,14 @@ const fature = new Schema({
     createDate: { type: String, required: true, default: utils.getMomentNow() },
     dueDate: { type: String, required: true },
     isPayed: { type: Boolean, required: true, default: false },
+    fatureBalance: { type: Number, required: true },
     bank_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'bank',
+        ref: 'Bank',
         required: true
-    },
-    fatureBalance: { type: Number, required: true }
+    }
 })
 
-const fatureModel = mongoose.model('fature', fature)
+const fatureModel = mongoose.model('Fature', fature)
 
 module.exports = fatureModel
