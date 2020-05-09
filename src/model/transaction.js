@@ -6,8 +6,8 @@ const transaction = new Schema({
 
     userId: { type: String, required: true },
     isCompesed: { type: Boolean, required: true, default: true },
-    createDate: { type: String, required: true, default: utils.getMomentNow() },
-    efectedDate: { type: String, required: true, default: utils.getMomentNow() },
+    createDate: { type: String, required: true },
+    efectedDate: { type: String, required: true },
     description: { type: String },
     value: { type: Number, required: true },
     currentRecurrence: { type: Number },

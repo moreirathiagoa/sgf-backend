@@ -5,9 +5,13 @@ const momentTz = require('moment-timezone')
 function getMomentNow(){
     return momentTz.tz(moment(), 'America/Sao_Paulo').format()
 }
-
+/* 
 function getDateInformed(informedData){
     return momentTz.tz(informedData, 'America/Sao_Paulo').format()
+} */
+
+function getDateInformed(informedData){
+    return momentTz.tz(informedData).format("YYYY-MM-DDT00:00:00-03:00")
 }
 
 function validateRequiredsElements(object, requireds){
