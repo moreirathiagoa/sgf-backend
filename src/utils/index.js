@@ -11,7 +11,7 @@ function getDateInformed(informedData){
 } */
 
 function getDateInformed(informedData){
-    return momentTz.tz(informedData).format("YYYY-MM-DDT00:00:00-03:00")
+    return moment.tz(informedData).format("YYYY-MM-DDT00:00:00-03:00")
 }
 
 function validateRequiredsElements(object, requireds){
