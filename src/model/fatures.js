@@ -6,10 +6,9 @@ const fature = new Schema({
 
     userId: { type: String, required: true },
     name: { type: String, required: true },
-    createDate: { type: String, required: true, default: utils.getMomentNow() },
-    dueDate: { type: String, required: true },
+    createDate: { type: String, required: true },
     isPayed: { type: Boolean, required: true, default: false },
-    fatureBalance: { type: Number, required: true },
+    fatureBalance: { type: Number, required: true, default: 0 },
     bank_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Bank',

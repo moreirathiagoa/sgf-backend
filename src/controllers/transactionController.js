@@ -2,6 +2,7 @@ const _ = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
+const controller = require('../controllers')
 
 async function getListTransacation() {
     try {
@@ -57,17 +58,101 @@ async function createTransaction(transactionToCreate) {
             return utils.makeResponse(203, validation)
 
         transactionToCreate.userId = global.userId
-        transactionToCreate.efectedDate = utils.getDateInformed(transactionToCreate.efectedDate)
-        transactionToCreate.createDate = utils.getMomentNow()
-        
-        const transactionToSave = new model.transactionModel(transactionToCreate)
-        const response = await db.save(transactionToSave)
+        transactionToCreate.efectedDate = new Date(utils.getDateInformed(transactionToCreate.efectedDate))
+        transactionToCreate.createDate = new Date()
+        console.log(transactionToCreate)
+        if (!transactionToCreate.isCredit){
+            transactionToCreate.value = -1 * transactionToCreate.value
+        }
+
+        let totalTransaction = 1
+        if (transactionToCreate.finalRecurrence) {
+            totalTransaction = transactionToCreate.finalRecurrence
+
+            if (transactionToCreate.isSimples) {
+                delete transactionToCreate.finalRecurrence
+            } else {
+                if (transactionToCreate.finalRecurrence == 1) {
+                    delete transactionToCreate.finalRecurrence
+                } else {
+                    transactionToCreate.currentRecurrence = 1
+                }
+            }
+        }
+
+        const bankParams = { _id: transactionToCreate.bank_id, userId: global.userId }
+        const bankFind = await db.findOne(model.bankModel, bankParams)
+        let fature
+        if (bankFind.bankType === "Cartão de Crédito") {
+            fature = await getFature(transactionToCreate.fature, bankFind._id)
+            delete transactionToCreate.fature
+            transactionToCreate.fature_id = fature._id
+        }
+
+        let response = []
+        for (let i = 0; i < totalTransaction; i++) {
+
+            if (i > 0) {
+
+                if (!transactionToCreate.isSimples) {
+                    transactionToCreate.currentRecurrence++
+                }
+
+                if (bankFind.bankType === "Conta Corrente" || bankFind.bankType === "Conta Cartão") {
+                    let dataInicial = new Date(transactionToCreate.efectedDate)
+                    let dataFinal = new Date(dataInicial.setMonth(dataInicial.getMonth() + 1));
+                    transactionToCreate.efectedDate = dataFinal
+                }
+
+                if (bankFind.bankType === "Cartão de Crédito") {
+                    let now = new Date(fature.name.replace('/', '-') + '-10')
+                    now.setDate(now.getDate() + 30)
+
+                    const mes = now.getMonth() + 1
+                    const ano = now.getFullYear()
+                    let mesFinal = '00' + mes
+                    mesFinal = mesFinal.substr(mesFinal.length - 2)
+                    let fatureName = ano + '/' + mesFinal
+
+                    fature = await getFature(fatureName, bankFind._id)
+                    transactionToCreate.fature_id = fature._id
+                }
+            }
+            //console.log(transactionToCreate)
+            const transactionToSave = new model.transactionModel(transactionToCreate)
+            response.push(await db.save(transactionToSave))
+        }
+
+        if (response.length == 0)
+            return utils.makeResponse(203, 'A transação não pode ser salva')
+
         return utils.makeResponse(201, 'Transação criada com sucesso', response)
     } catch (error) {
+        console.log(error)
         throw {
             error: error
         }
     }
+}
+
+async function getFature(fatureName, bank_id) {
+
+    const fatureParams = { name: fatureName, bank_id: bank_id, userId: global.userId }
+    let fature = await db.findOne(model.faturesModel, fatureParams)
+
+    if (!fature) {
+
+        fature = {
+            userId: global.userId,
+            name: fatureName,
+            createDate: new Date(),
+            bank_id: bank_id
+        }
+        fature = new model.faturesModel(fature)
+        await db.save(fature)
+    }
+
+    return fature
 }
 
 async function updateTransaction(idTransaction, transacationToUpdate) {
@@ -135,6 +220,9 @@ async function validadeTransaction(transactionToCreate) {
 
     if (!await existBank(transactionToCreate.bank_id))
         return 'Banco não encontrado'
+
+    if (transactionToCreate.finalRecurrence <= 0)
+        return 'Recorrência menor ou igual a zero. Deixe em branco em caso de única transação.'
 
 }
 
