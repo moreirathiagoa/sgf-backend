@@ -46,7 +46,7 @@ async function createUser(userToCreate) {
         if (!_.isEmpty(userFinded))
             return utils.makeResponse(203, 'Usuários já cadastrado')
 
-        userToCreate.userPassword = bcrypt.hashSync(userToCreate.userPassword,10)
+        userToCreate.userPassword = bcrypt.hashSync(userToCreate.userPassword, 10)
 
         const userToSave = new model.userModel(userToCreate)
         let response = await db.save(userToSave)
@@ -80,7 +80,7 @@ async function updateUser(idUser, userToUpdate) {
             return utils.makeResponse(203, 'Usuários não encontrado')
         }
 
-        userToUpdate.userPassword = bcrypt.hashSync(userToUpdate.userPassword,10)
+        userToUpdate.userPassword = bcrypt.hashSync(userToUpdate.userPassword, 10)
 
         await model.userModel.updateOne(
             params,

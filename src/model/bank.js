@@ -10,7 +10,7 @@ const bank = new Schema({
     createDate: { type: String, required: true, default: utils.getMomentNow() },
     bankType: {
         type: String,
-        enum : ['Conta Corrente', 'Conta Cartão', 'Cartão de Crédito', 'Poupança'],
+        enum: ['Conta Corrente', 'Conta Cartão', 'Cartão de Crédito', 'Poupança'],
         required: true
     },
     systemBalance: { type: Number, required: true, default: 0 },
