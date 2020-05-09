@@ -2,17 +2,21 @@ const _ = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
-const controller = require('../controllers')
 
 async function getListTransacation() {
     try {
         const params = { userId: global.userId }
+
         const transactionFind = await db.find(model.transactionModel, params)
+            .populate('bank_id', 'name')
+            .populate('category_id', 'name')
+
         if (_.isEmpty(transactionFind))
             return utils.makeResponse(203, 'Transação não encontradas', [])
 
         return utils.makeResponse(200, 'Lista de Transações', transactionFind)
     } catch (error) {
+        console.log(error)
         throw {
             error: error
         }
@@ -29,6 +33,7 @@ async function getFilterTransacation(filters) {
 
         return utils.makeResponse(200, 'Lista de Transações', transactionFind)
     } catch (error) {
+        console.log(error)
         throw {
             error: error
         }
@@ -45,6 +50,7 @@ async function getTransaction(idTransaction) {
 
         return utils.makeResponse(200, 'Transação encontrada', transactionFind)
     } catch (error) {
+        console.log(error)
         throw {
             error: error
         }
@@ -60,8 +66,7 @@ async function createTransaction(transactionToCreate) {
         transactionToCreate.userId = global.userId
         transactionToCreate.efectedDate = new Date(utils.getDateInformed(transactionToCreate.efectedDate))
         transactionToCreate.createDate = new Date()
-        console.log(transactionToCreate)
-        if (!transactionToCreate.isCredit){
+        if (!transactionToCreate.isCredit) {
             transactionToCreate.value = -1 * transactionToCreate.value
         }
 
@@ -118,7 +123,6 @@ async function createTransaction(transactionToCreate) {
                     transactionToCreate.fature_id = fature._id
                 }
             }
-            //console.log(transactionToCreate)
             const transactionToSave = new model.transactionModel(transactionToCreate)
             response.push(await db.save(transactionToSave))
         }
@@ -173,6 +177,7 @@ async function updateTransaction(idTransaction, transacationToUpdate) {
             transacationToUpdate,
             (err, res) => {
                 if (err) {
+                    console.log(error)
                     throw new Error(err)
                 }
             }
@@ -181,6 +186,7 @@ async function updateTransaction(idTransaction, transacationToUpdate) {
         const transactionReturn = await db.findOne(model.transactionModel, params)
         return utils.makeResponse(202, 'Categoria atualizada com sucesso', transactionReturn)
     } catch (error) {
+        console.log(error)
         throw {
             error: error
         }
@@ -199,6 +205,7 @@ async function deleteTransaction(idTransaction) {
         const response = await db.remove(transactionToDelete)
         return utils.makeResponse(201, 'Transação removida com sucesso', response)
     } catch (error) {
+        console.log(error)
         throw {
             error: error
         }

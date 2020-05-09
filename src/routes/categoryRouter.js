@@ -11,13 +11,13 @@ router.get('/list', auth, async (req, res, next) => {
         res.status(response.code).send(response)
     } catch (error) {
         res.status(500).send(error)
-    }   
+    }
 
 })
 
 router.get('/:idCategory', auth, async (req, res, next) => {
     global.userId = res.locals.authData.userId
-    const {idCategory} = req.params
+    const { idCategory } = req.params
     try {
 
         const response = await controller.categoryController.getCategory(idCategory)
@@ -25,62 +25,62 @@ router.get('/:idCategory', auth, async (req, res, next) => {
 
     } catch (error) {
         res.status(500).send(error)
-    }   
+    }
 
 })
 
 router.post('/create', auth, async (req, res, next) => {
     global.userId = res.locals.authData.userId
     try {
-        
+
         let response
-        if (_.isEmpty(req.body)){
+        if (_.isEmpty(req.body)) {
             response = utils.makeResponse(204, 'Sem informação no corpo')
         } else {
             response = await controller.categoryController.createCategory(req.body)
         }
-        
+
         res.status(response.code).send(response)
-        
+
     } catch (error) {
         res.status(500).send(error)
-    }   
+    }
 
 })
 
 router.put('/update/:idCategory', auth, async (req, res, next) => {
     global.userId = res.locals.authData.userId
-    const {idCategory} = req.params
+    const { idCategory } = req.params
 
     try {
 
         let response
-        if (_.isEmpty(req.body)){
+        if (_.isEmpty(req.body)) {
             response = utils.makeResponse(204, 'Sem informação no corpo')
         }
-        else{
+        else {
             response = await controller.categoryController.updateCategory(idCategory, req.body)
         }
         res.status(response.code).send(response)
 
     } catch (error) {
         res.status(500).send(error)
-    }   
+    }
 
 })
 
 router.delete('/delete/:idCategory', auth, async (req, res, next) => {
     global.userId = res.locals.authData.userId
-    const {idCategory} = req.params
+    const { idCategory } = req.params
 
     try {
-        
+
         const response = await controller.categoryController.deleteCategory(idCategory)
         res.status(response.code).send(response)
 
     } catch (error) {
         res.status(500).send(error)
-    }   
+    }
 
 })
 

@@ -6,7 +6,7 @@ const bodyParser = require('body-parser')
 const routes = require('./routes')
 
 const app = express()
-app.use(cors({origin: '*'}))
+app.use(cors({ origin: '*' }))
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))

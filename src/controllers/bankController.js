@@ -20,7 +20,7 @@ async function getListBanks() {
 
 async function getBank(idBank) {
     try {
-        console.log('>>>',idBank)
+        console.log('>>>', idBank)
         const params = { _id: idBank, userId: global.userId }
         const bankFind = await db.findOne(model.bankModel, params)
         if (_.isEmpty(bankFind))

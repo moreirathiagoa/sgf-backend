@@ -5,13 +5,13 @@ const utils = require('../utils')
 const transaction = new Schema({
 
     userId: { type: String, required: true },
-    isCompesed: { type: Boolean, required: true, default: true },
+    value: { type: Number, required: true },
     createDate: { type: String, required: true },
     efectedDate: { type: String, required: true },
-    description: { type: String },
-    value: { type: Number, required: true },
+    isCompesed: { type: Boolean, required: true, default: true },
     currentRecurrence: { type: Number },
     finalRecurrence: { type: Number },
+    description: { type: String },
     bank_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Bank',
