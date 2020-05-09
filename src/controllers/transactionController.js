@@ -57,7 +57,9 @@ async function createTransaction(transactionToCreate) {
             return utils.makeResponse(203, validation)
 
         transactionToCreate.userId = global.userId
-        console.log(transactionToCreate)
+        transactionToCreate.efectedDate = utils.getDateInformed(transactionToCreate.efectedDate)
+        transactionToCreate.createDate = utils.getMomentNow()
+        
         const transactionToSave = new model.transactionModel(transactionToCreate)
         const response = await db.save(transactionToSave)
         return utils.makeResponse(201, 'Transação criada com sucesso', response)
