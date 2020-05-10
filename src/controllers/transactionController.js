@@ -3,31 +3,14 @@ const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
 
-async function getListTransacation() {
+async function getListTransacation(typeTransaction) {
     try {
-        const params = { userId: global.userId }
+        const params = { typeTransaction: typeTransaction, userId: global.userId }
 
         const transactionFind = await db.find(model.transactionModel, params)
             .populate('bank_id', 'name')
             .populate('category_id', 'name')
 
-        if (_.isEmpty(transactionFind))
-            return utils.makeResponse(203, 'Transação não encontradas', [])
-
-        return utils.makeResponse(200, 'Lista de Transações', transactionFind)
-    } catch (error) {
-        console.log(error)
-        throw {
-            error: error
-        }
-    }
-}
-
-async function getFilterTransacation(filters) {
-    try {
-        filters.userId = global.userId
-        const params = filters
-        const transactionFind = await db.find(model.transactionModel, params)
         if (_.isEmpty(transactionFind))
             return utils.makeResponse(203, 'Transação não encontradas', [])
 
@@ -195,7 +178,6 @@ async function updateTransaction(idTransaction, transacationToUpdate) {
 
 async function deleteTransaction(idTransaction) {
     try {
-
         const params = { _id: idTransaction, userId: global.userId }
         const transactionFind = await db.findOne(model.transactionModel, params)
         if (_.isEmpty(transactionFind))
@@ -203,7 +185,7 @@ async function deleteTransaction(idTransaction) {
 
         const transactionToDelete = new model.transactionModel(transactionFind)
         const response = await db.remove(transactionToDelete)
-        return utils.makeResponse(201, 'Transação removida com sucesso', response)
+        return utils.makeResponse(202, 'Transação removida com sucesso', response)
     } catch (error) {
         console.log(error)
         throw {
@@ -251,7 +233,6 @@ async function existBank(idBank) {
 
 module.exports = {
     getListTransacation,
-    getFilterTransacation,
     getTransaction,
     createTransaction,
     updateTransaction,
