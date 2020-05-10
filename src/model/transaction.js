@@ -12,6 +12,7 @@ const transaction = new Schema({
     currentRecurrence: { type: Number },
     finalRecurrence: { type: Number },
     description: { type: String },
+    typeTransaction: { type: String },
     bank_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Bank',
