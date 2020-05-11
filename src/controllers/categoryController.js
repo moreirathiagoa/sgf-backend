@@ -47,6 +47,8 @@ async function createCategory(categoryToCreate) {
             return utils.makeResponse(203, 'Categoria já cadastrada')
 
         categoryToCreate.userId = global.userId
+        categoryToCreate.createDate = utils.actualDateToBataBase()
+
         const categoryToSave = new model.categoryModel(categoryToCreate)
         const response = await db.save(categoryToSave)
         return utils.makeResponse(201, 'Categoria criada com sucesso', response)

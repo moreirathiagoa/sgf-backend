@@ -18,7 +18,7 @@ async function login(user) {
             return utils.makeResponse(401, 'Usuário ou senha inválida')
 
         userFinded.toObject()
-        userFinded.loginList.push(utils.getMomentNow())
+        userFinded.loginList.push(utils.actualDateToBataBase())
         if (userFinded.loginList.length > 50) {
             userFinded.loginList.shift()
         }

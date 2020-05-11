@@ -47,6 +47,7 @@ async function createUser(userToCreate) {
             return utils.makeResponse(203, 'Usuários já cadastrado')
 
         userToCreate.userPassword = bcrypt.hashSync(userToCreate.userPassword, 10)
+        userToCreate.createDate = utils.actualDateToBataBase()
 
         const userToSave = new model.userModel(userToCreate)
         let response = await db.save(userToSave)
