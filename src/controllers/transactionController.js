@@ -45,10 +45,11 @@ async function createTransaction(transactionToCreate) {
         const validation = await validadeTransaction(transactionToCreate)
         if (validation)
             return utils.makeResponse(203, validation)
-
+        
+        transactionToCreate.efectedDate = utils.formatDateToBataBase(transactionToCreate.efectedDate)
         transactionToCreate.userId = global.userId
-        transactionToCreate.efectedDate = new Date(utils.getDateInformed(transactionToCreate.efectedDate))
-        transactionToCreate.createDate = new Date()
+        transactionToCreate.createDate = utils.actualDateToBataBase()
+        
         if (!transactionToCreate.isCredit) {
             transactionToCreate.value = -1 * transactionToCreate.value
         }
@@ -87,9 +88,8 @@ async function createTransaction(transactionToCreate) {
                 }
 
                 if (bankFind.bankType === "Conta Corrente" || bankFind.bankType === "Conta Cartão") {
-                    let dataInicial = new Date(transactionToCreate.efectedDate)
-                    let dataFinal = new Date(dataInicial.setMonth(dataInicial.getMonth() + 1));
-                    transactionToCreate.efectedDate = dataFinal
+                    const nextDate = utils.addMonth(transactionToCreate.efectedDate, 1)
+                    transactionToCreate.efectedDate = utils.formatDateToBataBase(nextDate)
                 }
 
                 if (bankFind.bankType === "Cartão de Crédito") {

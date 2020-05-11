@@ -1,17 +1,63 @@
 const _ = require('lodash')
-const moment = require('moment')
-const momentTz = require('moment-timezone')
+const moment = require ('moment/min/moment-with-locales')
 
-function getMomentNow() {
-    return momentTz.tz(moment(), 'America/Sao_Paulo').format()
+function actualDateToUser() {
+    moment.locale('pt-br');
+    const now = moment()
+
+    const dateToUser = now.format("DD/MM/YYYY")
+    return dateToUser
 }
-/* 
-function getDateInformed(informedData){
-    return momentTz.tz(informedData, 'America/Sao_Paulo').format()
-} */
 
-function getDateInformed(informedData) {
-    return moment.tz(informedData).format("YYYY-MM-DDT00:00:00-03:00")
+function actualDateTimeToUser() {
+    moment.locale('pt-br');
+    const now = moment()
+
+    const dateTimeToUser = now.format("DD/MM/YYYY HH:MM")
+    return dateTimeToUser
+}
+
+function actualDateToBataBase() {
+    moment.locale('pt-br');
+    const now = moment()
+
+    const dateToDataBase = now.format()
+    return dateToDataBase
+}
+
+function formatDateToSelectBox(dateInformed){
+    moment.locale('pt-br')
+    const dateMoment = moment(dateInformed, "DD/MM/YYYY")
+
+    return dateMoment
+}
+
+function formatDateToUser(dateInformed) {
+    moment.locale('pt-br');
+    const dateToMoment = moment(dateInformed)
+
+    const dateToUser = dateToMoment.format("DD/MM/YYYY")
+    return dateToUser
+}
+
+function formatDateTimeToUser(dateInformed) {
+    moment.locale('pt-br');
+    const dateToMoment = moment(dateInformed)
+
+    const dateTimeToUser = dateToMoment.format("DD/MM/YYYY HH:MM")
+    return dateTimeToUser
+}
+
+function formatDateToBataBase(dateInformed) {
+    moment.locale('pt-br');
+    const dateToMoment = moment(dateInformed)
+
+    const dateToDataBase = dateToMoment.format()
+    return dateToDataBase
+}
+
+function addMonth(date, qtd){
+    return moment(date).add(qtd,'month')
 }
 
 function validateRequiredsElements(object, requireds) {
@@ -37,9 +83,15 @@ function isNumeric(n) {
 }
 
 module.exports = {
-    getMomentNow,
-    getDateInformed,
     validateRequiredsElements,
     isNumeric,
-    makeResponse
+    makeResponse,
+    actualDateToUser,
+    actualDateTimeToUser,
+    actualDateToBataBase,
+    formatDateToUser,
+    formatDateTimeToUser,
+    formatDateToBataBase,
+    formatDateToSelectBox,
+    addMonth,
 }

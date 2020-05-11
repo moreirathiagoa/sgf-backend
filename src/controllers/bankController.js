@@ -12,6 +12,7 @@ async function getListBanks() {
 
         return utils.makeResponse(200, 'Lista de Bancos', bankFind)
     } catch (error) {
+        console.log(error)
         throw {
             error: error
         }
@@ -20,7 +21,6 @@ async function getListBanks() {
 
 async function getBank(idBank) {
     try {
-        console.log('>>>', idBank)
         const params = { _id: idBank, userId: global.userId }
         const bankFind = await db.findOne(model.bankModel, params)
         if (_.isEmpty(bankFind))
@@ -28,6 +28,7 @@ async function getBank(idBank) {
 
         return utils.makeResponse(200, 'Banco encontrado', bankFind)
     } catch (error) {
+        console.log(error)
         throw {
             error: error
         }
@@ -46,10 +47,13 @@ async function createBank(bankToCreate) {
             return utils.makeResponse(203, 'Banco já cadastrado')
 
         bankToCreate.userId = global.userId
+        bankToCreate.createDate = utils.actualDateToBataBase()
+        
         const bankToSave = new model.bankModel(bankToCreate)
         const response = await db.save(bankToSave)
         return utils.makeResponse(201, 'Banco criado com sucesso', response)
     } catch (error) {
+        console.log(error)
         throw {
             error: error
         }
@@ -89,6 +93,7 @@ async function updateBank(idBank, bankToUpdate) {
         const categoryReturn = await db.findOne(model.bankModel, params)
         return utils.makeResponse(202, 'Banco atualizado com sucesso', categoryReturn)
     } catch (error) {
+        console.log(error)
         throw {
             error: error
         }
@@ -107,6 +112,7 @@ async function deleteBank(idBank) {
         const response = await db.remove(categoryToDelete)
         return utils.makeResponse(202, 'Banco removido com sucesso', response)
     } catch (error) {
+        console.log(error)
         throw {
             error: error
         }
