@@ -45,14 +45,10 @@ async function createTransaction(transactionToCreate) {
         const validation = await validadeTransaction(transactionToCreate)
         if (validation)
             return utils.makeResponse(203, validation)
-        
+
         transactionToCreate.efectedDate = utils.formatDateToBataBase(transactionToCreate.efectedDate)
         transactionToCreate.userId = global.userId
         transactionToCreate.createDate = utils.actualDateToBataBase()
-        
-        if (!transactionToCreate.isCredit) {
-            transactionToCreate.value = -1 * transactionToCreate.value
-        }
 
         let totalTransaction = 1
         if (transactionToCreate.finalRecurrence) {
@@ -71,8 +67,9 @@ async function createTransaction(transactionToCreate) {
 
         const bankParams = { _id: transactionToCreate.bank_id, userId: global.userId }
         const bankFind = await db.findOne(model.bankModel, bankParams)
+
         let fature
-        if (bankFind.bankType === "Cartão de Crédito") {
+        if (transactionToCreate.typeTransaction === "cartaoCredito") {
             fature = await getFature(transactionToCreate.fature, bankFind._id)
             delete transactionToCreate.fature
             transactionToCreate.fature_id = fature._id
@@ -87,12 +84,12 @@ async function createTransaction(transactionToCreate) {
                     transactionToCreate.currentRecurrence++
                 }
 
-                if (bankFind.bankType === "Conta Corrente" || bankFind.bankType === "Conta Cartão") {
+                if (transactionToCreate.typeTransaction === "contaCorrente" || transactionToCreate.typeTransaction === "planejamento") {
                     const nextDate = utils.addMonth(transactionToCreate.efectedDate, 1)
                     transactionToCreate.efectedDate = utils.formatDateToBataBase(nextDate)
                 }
 
-                if (bankFind.bankType === "Cartão de Crédito") {
+                if (transactionToCreate.typeTransaction === "cartaoCredito") {
                     let now = new Date(fature.name.replace('/', '-') + '-10')
                     now.setDate(now.getDate() + 30)
 
@@ -107,7 +104,17 @@ async function createTransaction(transactionToCreate) {
                 }
             }
             const transactionToSave = new model.transactionModel(transactionToCreate)
-            response.push(await db.save(transactionToSave))
+            const transactionSaved = await db.save(transactionToSave)
+
+            switch (transactionToCreate.typeTransaction) {
+                case "contaCorrente":
+                    await updateSaldoContaCorrente(bankFind._id, transactionSaved.value)
+                    break;
+
+                default:
+            }
+
+            response.push(transactionSaved)
         }
 
         if (response.length == 0)
@@ -122,26 +129,6 @@ async function createTransaction(transactionToCreate) {
     }
 }
 
-async function getFature(fatureName, bank_id) {
-
-    const fatureParams = { name: fatureName, bank_id: bank_id, userId: global.userId }
-    let fature = await db.findOne(model.faturesModel, fatureParams)
-
-    if (!fature) {
-
-        fature = {
-            userId: global.userId,
-            name: fatureName,
-            createDate: new Date(),
-            bank_id: bank_id
-        }
-        fature = new model.faturesModel(fature)
-        await db.save(fature)
-    }
-
-    return fature
-}
-
 async function updateTransaction(idTransaction, transacationToUpdate) {
     try {
         const validation = await validadeTransaction(transacationToUpdate)
@@ -149,9 +136,11 @@ async function updateTransaction(idTransaction, transacationToUpdate) {
             return utils.makeResponse(203, validation)
 
         const params = { _id: idTransaction, userId: global.userId }
-        const transactionFind = await db.findOne(model.transactionModel, params)
+        const oldTransaction = await db.findOne(model.transactionModel, params)
 
-        if (_.isEmpty(transactionFind)) {
+        transacationToUpdate.efectedDate = utils.formatDateToBataBase(transacationToUpdate.efectedDate)
+
+        if (_.isEmpty(oldTransaction)) {
             return utils.makeResponse(203, 'Transação não encontrada')
         }
 
@@ -167,6 +156,16 @@ async function updateTransaction(idTransaction, transacationToUpdate) {
         )
 
         const transactionReturn = await db.findOne(model.transactionModel, params)
+
+        const saldoAjust = transactionReturn.value - oldTransaction.value
+        switch (transactionReturn.typeTransaction) {
+            case "contaCorrente":
+                await updateSaldoContaCorrente(transactionReturn.bank_id, saldoAjust)
+                break;
+
+            default:
+        }
+
         return utils.makeResponse(202, 'Categoria atualizada com sucesso', transactionReturn)
     } catch (error) {
         console.log(error)
@@ -185,6 +184,10 @@ async function deleteTransaction(idTransaction) {
 
         const transactionToDelete = new model.transactionModel(transactionFind)
         const response = await db.remove(transactionToDelete)
+
+        const saldoAjust = -1 * transactionToDelete.value
+        await updateSaldoContaCorrente(transactionToDelete.bank_id, saldoAjust)
+
         return utils.makeResponse(202, 'Transação removida com sucesso', response)
     } catch (error) {
         console.log(error)
@@ -193,6 +196,8 @@ async function deleteTransaction(idTransaction) {
         }
     }
 }
+
+/* FUNÇÕES DE APOIO */
 
 async function validadeTransaction(transactionToCreate) {
 
@@ -229,6 +234,44 @@ async function existBank(idBank) {
     if (_.isEmpty(bankFind))
         return false
     return true
+}
+
+async function getFature(fatureName, bank_id) {
+
+    const fatureParams = { name: fatureName, bank_id: bank_id, userId: global.userId }
+    let fature = await db.findOne(model.faturesModel, fatureParams)
+
+    if (!fature) {
+
+        fature = {
+            userId: global.userId,
+            name: fatureName,
+            createDate: new Date(),
+            bank_id: bank_id
+        }
+        fature = new model.faturesModel(fature)
+        await db.save(fature)
+    }
+
+    return fature
+}
+
+async function updateSaldoContaCorrente(idBank, valor) {
+
+    const params = { _id: idBank, userId: global.userId }
+    const bankFind = await db.findOne(model.bankModel, params).select('systemBalance')
+
+    const bankToUpdate = { systemBalance: bankFind.systemBalance + valor }
+
+    await model.bankModel.updateOne(
+        params,
+        bankToUpdate,
+        (err, res) => {
+            if (err) {
+                throw new Error(err)
+            }
+        }
+    )
 }
 
 module.exports = {
