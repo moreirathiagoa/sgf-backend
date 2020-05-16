@@ -5,25 +5,24 @@ const model = require('../model')
 
 async function getListBanks(typeTransaction) {
     try {
-
+        let params = { userId: global.userId }
         switch (typeTransaction) {
             case 'contaCorrente':
-                bankType = ['Conta Corrente', 'Conta Cartão']
+                params.bankType = {'$in': ['Conta Corrente', 'Conta Cartão']}
                 break;
 
             case 'cartaoCredito':
-                bankType = ['Cartão de Crédito']
+                params.bankType = {'$in': ['Cartão de Crédito']}
                 break;
 
             case 'planejamento':
-                bankType = ['Conta Corrente', 'Conta Cartão']
+                params.bankType = {'$in': ['Conta Corrente', 'Conta Cartão']}
                 break;
 
             default:
                 break;
         }
 
-        const params = { bankType: {'$in': bankType}, userId: global.userId }
         const bankFind = await db.find(model.bankModel, params)
         if (_.isEmpty(bankFind))
             return utils.makeResponse(203, 'Bancos não encontrados', [])
