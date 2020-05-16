@@ -3,9 +3,27 @@ const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
 
-async function getListBanks() {
+async function getListBanks(typeTransaction) {
     try {
-        const params = { userId: global.userId }
+
+        switch (typeTransaction) {
+            case 'contaCorrente':
+                bankType = ['Conta Corrente', 'Conta Cartão']
+                break;
+
+            case 'cartaoCredito':
+                bankType = ['Cartão de Crédito']
+                break;
+
+            case 'planejamento':
+                bankType = ['Conta Corrente', 'Conta Cartão']
+                break;
+
+            default:
+                break;
+        }
+
+        const params = { bankType: {'$in': bankType}, userId: global.userId }
         const bankFind = await db.find(model.bankModel, params)
         if (_.isEmpty(bankFind))
             return utils.makeResponse(203, 'Bancos não encontrados', [])
@@ -48,7 +66,7 @@ async function createBank(bankToCreate) {
 
         bankToCreate.userId = global.userId
         bankToCreate.createDate = utils.actualDateToBataBase()
-        
+
         const bankToSave = new model.bankModel(bankToCreate)
         const response = await db.save(bankToSave)
         return utils.makeResponse(201, 'Banco criado com sucesso', response)

@@ -7,12 +7,14 @@ const properties = () => {
     switch (env) {
         case 'dev':
             KEY_TOKEN = process.env.KEY_TOKEN
-            DB_URL = 'localhost'
-            DATA_BASE = 'sgfTest'
-            DB_PORT = '27017'
+            DB_USERNAME = process.env.DB_USERNAME
+            DB_PASSWORD = process.env.DB_PASSWORD
+            DB_URL = 'sgfcluster-nrl0f.mongodb.net'
+            DB_PARAMS = 'retryWrites=true&w=majority'
+            DATA_BASE = 'test'
 
             return {
-                uriDataBase: `mongodb://${DB_URL}:${DB_PORT}/${DATA_BASE}`,
+                uriDataBase: `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_URL}/${DATA_BASE}?${DB_PARAMS}`,
                 keyToken: KEY_TOKEN
             }
 

@@ -16,6 +16,7 @@ app.use('/user', routes.userRouter)
 app.use('/login', routes.loginRouter)
 app.use('/category', routes.categoryRouter)
 app.use('/bank', routes.bankRouter)
+app.use('/fature', routes.fatureRouter)
 app.use('/transaction', routes.transactionRouter)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs))
 
