@@ -10,6 +10,7 @@ async function getListTransacation(typeTransaction) {
         const transactionFind = await db.find(model.transactionModel, params)
             .populate('bank_id', 'name')
             .populate('category_id', 'name')
+            .populate('fature_id', 'name')
 
         if (_.isEmpty(transactionFind))
             return utils.makeResponse(203, 'Transação não encontradas', [])
@@ -107,10 +108,12 @@ async function createTransaction(transactionToCreate) {
             const transactionSaved = await db.save(transactionToSave)
 
             switch (transactionToCreate.typeTransaction) {
-                case "contaCorrente":
+                case 'contaCorrente':
                     await updateSaldoContaCorrente(bankFind._id, transactionSaved.value)
-                    break;
-
+                    break
+                case 'cartaoCredito':
+                    await updateSaldoFatura(transactionSaved.fature_id, transactionSaved.value)
+                    break
                 default:
             }
 
@@ -159,10 +162,12 @@ async function updateTransaction(idTransaction, transacationToUpdate) {
 
         const saldoAjust = transactionReturn.value - oldTransaction.value
         switch (transactionReturn.typeTransaction) {
-            case "contaCorrente":
+            case 'contaCorrente':
                 await updateSaldoContaCorrente(transactionReturn.bank_id, saldoAjust)
-                break;
-
+                break
+            case 'cartaoCredito':
+                await updateSaldoFatura(transactionReturn.fature_id, saldoAjust)
+                break
             default:
         }
 
@@ -186,7 +191,16 @@ async function deleteTransaction(idTransaction) {
         const response = await db.remove(transactionToDelete)
 
         const saldoAjust = -1 * transactionToDelete.value
-        await updateSaldoContaCorrente(transactionToDelete.bank_id, saldoAjust)
+
+        switch (transactionToDelete.typeTransaction) {
+            case 'contaCorrente':
+                await updateSaldoContaCorrente(transactionToDelete.bank_id, saldoAjust)
+                break
+            case 'cartaoCredito':
+                await updateSaldoFatura(transactionToDelete.fature_id, saldoAjust)
+                break
+            default:
+        }
 
         return utils.makeResponse(202, 'Transação removida com sucesso', response)
     } catch (error) {
@@ -266,6 +280,24 @@ async function updateSaldoContaCorrente(idBank, valor) {
     await model.bankModel.updateOne(
         params,
         bankToUpdate,
+        (err, res) => {
+            if (err) {
+                throw new Error(err)
+            }
+        }
+    )
+}
+
+async function updateSaldoFatura(idFatura, valor) {
+
+    const fatureParams = { _id: idFatura, userId: global.userId }
+    let fatureFind = await db.findOne(model.faturesModel, fatureParams).select('fatureBalance')
+
+    const fatureToUpdate = { fatureBalance: fatureFind.fatureBalance + valor }
+
+    await model.faturesModel.updateOne(
+        fatureParams,
+        fatureToUpdate,
         (err, res) => {
             if (err) {
                 throw new Error(err)

@@ -12,7 +12,11 @@ const transaction = new Schema({
     currentRecurrence: { type: Number },
     finalRecurrence: { type: Number },
     description: { type: String },
-    typeTransaction: { type: String },
+    typeTransaction: {
+        type: String,
+        enum: ['contaCorrente', 'cartaoCredito', 'planejamento'],
+        required: true
+    },
     bank_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Bank',
