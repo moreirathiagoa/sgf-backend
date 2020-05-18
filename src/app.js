@@ -20,4 +20,12 @@ app.use('/fature', routes.fatureRouter)
 app.use('/transaction', routes.transactionRouter)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs))
 
+// const controller = require('./controllers')
+
+// async function teste (){
+//     const xxx = await controller.transactionController.transactionNotCompesed()
+//     console.log('xxx>',xxx)
+// }
+// teste()
+
 module.exports = app

@@ -34,18 +34,6 @@ router.post('/filter', auth, async (req, res, next) => {
 
 })
 
-router.get('/:idTransaction', auth, async (req, res, next) => {
-    global.userId = res.locals.authData.userId
-    const { idTransaction } = req.params
-    try {
-        const response = await controller.transactionController.getTransaction(idTransaction)
-        res.status(response.code).send(response)
-    } catch (error) {
-        res.status(500).send(error)
-    }
-
-})
-
 router.post('/create', auth, async (req, res, next) => {
     global.userId = res.locals.authData.userId
     try {
@@ -92,6 +80,30 @@ router.delete('/delete/:idTransaction', auth, async (req, res, next) => {
         const response = await controller.transactionController.deleteTransaction(idTransaction)
         res.status(response.code).send(response)
 
+    } catch (error) {
+        res.status(500).send(error)
+    }
+
+})
+
+router.get('/not-compensated', auth, async (req, res, next) => {
+    global.userId = res.locals.authData.userId
+    try {
+        const response = await controller.transactionController.transactionNotCompesed()
+        res.status(response.code).send(response)
+    } catch (error) {
+        console.log(error)
+        res.status(500).send(error)
+    }
+
+})
+
+router.get('/:idTransaction', auth, async (req, res, next) => {
+    global.userId = res.locals.authData.userId
+    const { idTransaction } = req.params
+    try {
+        const response = await controller.transactionController.getTransaction(idTransaction)
+        res.status(response.code).send(response)
     } catch (error) {
         res.status(500).send(error)
     }
