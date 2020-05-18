@@ -22,9 +22,10 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs))
 
 // const controller = require('./controllers')
 
-// async function teste (){
-//     const xxx = await controller.transactionController.transactionNotCompesed()
-//     console.log('xxx>',xxx)
+// async function teste() {
+//     console.log('iniciou')
+//     const xxx = await controller.transactionController.transactionNotCompesedDebit()
+//     console.log('xxx>', xxx)
 // }
 // teste()
 
