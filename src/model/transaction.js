@@ -4,6 +4,7 @@ const utils = require('../utils')
 
 const transaction = new Schema({
 
+    _id: { type: Object },
     userId: { type: String, required: true },
     value: { type: Number, required: true },
     createDate: { type: String, required: true },

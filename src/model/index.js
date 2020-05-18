@@ -9,5 +9,5 @@ module.exports = {
     categoryModel,
     faturesModel,
     bankModel,
-    userModel
+    userModel,
 }

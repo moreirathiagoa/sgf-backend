@@ -211,6 +211,24 @@ async function deleteTransaction(idTransaction) {
     }
 }
 
+async function transactionNotCompesed() {
+    //const params = { userId: global.userId, isCompesed: false  }
+    const params = {  isCompesed: false  }
+    let response = await model.transactionModel.aggregate([
+        { $match: params },
+        { $group: { _id: { bank_id: "$bank_id" }, saldoNotCompesated: { $sum: "$value" } } }
+    ])
+
+    responseToSend = []
+    response.forEach((el)=>{
+        el.bank_id = el._id.bank_id
+        delete el._id
+        responseToSend.push(el)
+    })
+
+    return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
+}
+
 /* FUNÇÕES DE APOIO */
 
 async function validadeTransaction(transactionToCreate) {
@@ -311,5 +329,6 @@ module.exports = {
     getTransaction,
     createTransaction,
     updateTransaction,
-    deleteTransaction
+    deleteTransaction,
+    transactionNotCompesed,
 }

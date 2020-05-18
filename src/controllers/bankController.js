@@ -5,18 +5,19 @@ const model = require('../model')
 
 async function getListBanks(typeTransaction) {
     try {
+
         let params = { userId: global.userId }
         switch (typeTransaction) {
             case 'contaCorrente':
-                params.bankType = {'$in': ['Conta Corrente', 'Conta Cartão']}
+                params.bankType = { '$in': ['Conta Corrente', 'Conta Cartão'] }
                 break;
 
             case 'cartaoCredito':
-                params.bankType = {'$in': ['Cartão de Crédito']}
+                params.bankType = { '$in': ['Cartão de Crédito'] }
                 break;
 
             case 'planejamento':
-                params.bankType = {'$in': ['Conta Corrente', 'Conta Cartão']}
+                params.bankType = { '$in': ['Conta Corrente', 'Conta Cartão'] }
                 break;
 
             default:
