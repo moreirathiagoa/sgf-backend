@@ -211,20 +211,41 @@ async function deleteTransaction(idTransaction) {
     }
 }
 
-async function transactionNotCompesed() {
-    //const params = { userId: global.userId, isCompesed: false  }
-    const params = {  isCompesed: false  }
+async function transactionNotCompesedByBank() {
+    const params = { userId: global.userId, isCompesed: false }
     let response = await model.transactionModel.aggregate([
         { $match: params },
         { $group: { _id: { bank_id: "$bank_id" }, saldoNotCompesated: { $sum: "$value" } } }
     ])
 
-    responseToSend = []
-    response.forEach((el)=>{
+    let responseToSend = []
+    response.forEach((el) => {
         el.bank_id = el._id.bank_id
         delete el._id
         responseToSend.push(el)
     })
+
+    return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
+}
+
+async function transactionNotCompesedDebit() {
+    const params = { userId: global.userId, isCompesed: false, value: {$lte:0}  }
+    let response = await model.transactionModel.aggregate([
+        { $match: params },
+        { $group: { _id: null, saldoNotCompesated: { $sum: "$value" } } }
+    ])
+    let responseToSend = response[0].saldoNotCompesated
+
+    return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
+}
+
+async function transactionNotCompesedCredit() {
+    const params = { userId: global.userId, isCompesed: false, value: {$gt:0}  }
+    let response = await model.transactionModel.aggregate([
+        { $match: params },
+        { $group: { _id: null, saldoNotCompesated: { $sum: "$value" } } }
+    ])
+    let responseToSend = response[0].saldoNotCompesated
 
     return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
 }
@@ -330,5 +351,7 @@ module.exports = {
     createTransaction,
     updateTransaction,
     deleteTransaction,
-    transactionNotCompesed,
+    transactionNotCompesedByBank,
+    transactionNotCompesedDebit,
+    transactionNotCompesedCredit,
 }
