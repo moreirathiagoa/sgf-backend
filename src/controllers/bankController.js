@@ -80,9 +80,9 @@ async function createBank(bankToCreate) {
 
 async function updateBank(idBank, bankToUpdate) {
     try {
-        const validation = await validateBank(bankToUpdate)
-        if (validation)
-            return utils.makeResponse(203, validation)
+        // const validation = await validateBank(bankToUpdate)
+        // if (validation)
+        //     return utils.makeResponse(203, validation)
 
         let param = { name: bankToUpdate.name, userId: global.userId }
         let bankFind = await db.findOne(model.bankModel, param)
