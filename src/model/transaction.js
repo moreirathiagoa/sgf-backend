@@ -20,17 +20,17 @@ const transaction = new Schema({
     },
     bank_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Bank',
+        ref: properties.prefixo+'Bank',
         required: true
     },
     category_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category',
+        ref: properties.prefixo+'Category',
         required: true
     },
     fature_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Fature'
+        ref: properties.prefixo+'Fature'
     },
 
 })
