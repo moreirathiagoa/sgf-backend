@@ -2,6 +2,7 @@ const _ = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
+const transactionController = require('./transactionController')
 
 async function getListBanks(typeTransaction) {
     try {
@@ -29,6 +30,52 @@ async function getListBanks(typeTransaction) {
             return utils.makeResponse(203, 'Bancos não encontrados', [])
 
         return utils.makeResponse(200, 'Lista de Bancos', bankFind)
+    } catch (error) {
+        console.log(error)
+        throw {
+            error: error
+        }
+    }
+}
+
+async function getListBanksDahsboard() {
+    try {
+
+        let params = { userId: global.userId, bankType: { '$in': ['Conta Corrente', 'Conta Cartão'] } }
+        const bankFind = await db.find(model.bankModel, params)
+        if (_.isEmpty(bankFind))
+            return utils.makeResponse(203, 'Bancos não encontrados', [])
+
+        const transactionNotCompesedByBank = await transactionController.transactionNotCompesedByBank()
+
+        let banksToReturn = []
+
+        bankFind.forEach(bank => {
+            const result = transactionNotCompesedByBank.data.filter(saldoBank => {
+                return saldoBank.bank_id.toString() === bank._id.toString()
+            })
+
+            let saldoNotCompesated
+            if (result.length > 0) {
+                saldoNotCompesated = result[0].saldoNotCompesated
+            } else {
+                saldoNotCompesated = 0
+            }
+
+            const saldoSistemaDeduzido = bank.systemBalance - saldoNotCompesated
+            const diference = saldoSistemaDeduzido - bank.manualBalance
+            const content = {
+                id: bank._id,
+                name: bank.name,
+                saldoSistemaDeduzido: saldoSistemaDeduzido,
+                saldoSistema: bank.systemBalance,
+                saldoManual: bank.manualBalance,
+                diference: diference,
+            }
+            banksToReturn.push(content)
+        });
+
+        return utils.makeResponse(200, 'Lista de Bancos', banksToReturn)
     } catch (error) {
         console.log(error)
         throw {
@@ -158,5 +205,6 @@ module.exports = {
     getBank,
     createBank,
     updateBank,
-    deleteBank
+    deleteBank,
+    getListBanksDahsboard
 }
