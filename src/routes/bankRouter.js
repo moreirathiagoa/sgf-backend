@@ -16,6 +16,17 @@ router.get('/list/:typeTransaction', auth, async (req, res, next) => {
 
 })
 
+router.get('/list-dashboard', auth, async (req, res, next) => {
+    global.userId = res.locals.authData.userId
+    try {
+        const response = await controller.bankController.getListBanksDahsboard()
+        res.status(response.code).send(response)
+    } catch (error) {
+        res.status(500).send(error)
+    }
+
+})
+
 router.get('/:idBank', auth, async (req, res, next) => {
     global.userId = res.locals.authData.userId
     const { idBank } = req.params
