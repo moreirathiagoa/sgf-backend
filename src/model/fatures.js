@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const utils = require('../utils')
+const properties = require('../properties')
 
 const fature = new Schema({
 
@@ -16,6 +17,6 @@ const fature = new Schema({
     }
 })
 
-const fatureModel = mongoose.model('Fature', fature)
+const fatureModel = mongoose.model(properties.prefixo+'Fature', fature)
 
 module.exports = fatureModel

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const utils = require('../utils')
+const properties = require('../properties')
 
 const bank = new Schema({
 
@@ -17,6 +18,6 @@ const bank = new Schema({
     manualBalance: { type: Number, required: true, default: 0 },
 })
 
-const bankModel = mongoose.model('Bank', bank)
+const bankModel = mongoose.model(properties.prefixo+'Bank', bank)
 
 module.exports = bankModel
