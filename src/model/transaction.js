@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const utils = require('../utils')
+const properties = require('../properties')
 
 const transaction = new Schema({
 
@@ -34,6 +35,6 @@ const transaction = new Schema({
 
 })
 
-const transactionModel = mongoose.model('Transaction', transaction)
+const transactionModel = mongoose.model(properties.prefixo+'Transaction', transaction)
 
 module.exports = transactionModel

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const utils = require('../utils')
+const properties = require('../properties')
 
 const user = new Schema({
 
@@ -12,6 +13,6 @@ const user = new Schema({
 
 })
 
-const userModel = mongoose.model('User', user)
+const userModel = mongoose.model(properties.prefixo+'User', user)
 
 module.exports = userModel
