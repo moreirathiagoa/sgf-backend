@@ -229,23 +229,35 @@ async function transactionNotCompesedByBank() {
 }
 
 async function transactionNotCompesedDebit() {
-    const params = { userId: global.userId, isCompesed: false, value: {$lte:0}  }
+    const params = { userId: global.userId, isCompesed: false, value: { $lte: 0 } }
     let response = await model.transactionModel.aggregate([
         { $match: params },
         { $group: { _id: null, saldoNotCompesated: { $sum: "$value" } } }
     ])
-    let responseToSend = response[0].saldoNotCompesated
+
+    let responseToSend
+    if (response.length === 0) {
+        responseToSend = 0
+    } else {
+        responseToSend = response[0].saldoNotCompesated
+    }
 
     return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
 }
 
 async function transactionNotCompesedCredit() {
-    const params = { userId: global.userId, isCompesed: false, value: {$gt:0}  }
+    const params = { userId: global.userId, isCompesed: false, value: { $gt: 0 } }
     let response = await model.transactionModel.aggregate([
         { $match: params },
         { $group: { _id: null, saldoNotCompesated: { $sum: "$value" } } }
     ])
-    let responseToSend = response[0].saldoNotCompesated
+    let responseToSend
+    if (response.length === 0) {
+        responseToSend = 0
+    } else {
+
+        responseToSend = response[0].saldoNotCompesated
+    }
 
     return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
 }

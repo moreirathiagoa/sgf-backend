@@ -12,7 +12,7 @@ const fature = new Schema({
     fatureBalance: { type: Number, required: true, default: 0 },
     bank_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Bank',
+        ref: properties.prefixo+'Bank',
         required: true
     }
 })
