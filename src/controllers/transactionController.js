@@ -29,6 +29,7 @@ async function getTransaction(idTransaction) {
 
         const params = { _id: idTransaction, userId: global.userId }
         const transactionFind = await db.findOne(model.transactionModel, params)
+            .populate('fature_id', 'name')
         if (_.isEmpty(transactionFind))
             return utils.makeResponse(203, 'Transação não encontradas', [])
 
