@@ -12,6 +12,6 @@ const category = new Schema({
 
 })
 
-const categoryModel = mongoose.model(properties.prefixo+'Category', category)
+const categoryModel = mongoose.model(properties.prefixo + 'Category', category)
 
 module.exports = categoryModel

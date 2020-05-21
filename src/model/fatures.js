@@ -12,11 +12,11 @@ const fature = new Schema({
     fatureBalance: { type: Number, required: true, default: 0 },
     bank_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: properties.prefixo+'Bank',
+        ref: properties.prefixo + 'Bank',
         required: true
     }
 })
 
-const fatureModel = mongoose.model(properties.prefixo+'Fature', fature)
+const fatureModel = mongoose.model(properties.prefixo + 'Fature', fature)
 
 module.exports = fatureModel

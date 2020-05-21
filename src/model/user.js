@@ -13,6 +13,6 @@ const user = new Schema({
 
 })
 
-const userModel = mongoose.model(properties.prefixo+'User', user)
+const userModel = mongoose.model(properties.prefixo + 'User', user)
 
 module.exports = userModel
