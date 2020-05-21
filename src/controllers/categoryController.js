@@ -7,7 +7,7 @@ async function getListCategory() {
 
     const params = { userId: global.userId }
     try {
-        const categoryFind = await db.find(model.categoryModel, params)
+        const categoryFind = await db.find(model.categoryModel, params).sort('name')
         if (_.isEmpty(categoryFind))
             return utils.makeResponse(203, 'Categorias não encontradas', [])
 
