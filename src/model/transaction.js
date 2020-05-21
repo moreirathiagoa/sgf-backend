@@ -20,21 +20,21 @@ const transaction = new Schema({
     },
     bank_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: properties.prefixo+'Bank',
+        ref: properties.prefixo + 'Bank',
         required: true
     },
     category_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: properties.prefixo+'Category',
+        ref: properties.prefixo + 'Category',
         required: true
     },
     fature_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: properties.prefixo+'Fature'
+        ref: properties.prefixo + 'Fature'
     },
 
 })
 
-const transactionModel = mongoose.model(properties.prefixo+'Transaction', transaction)
+const transactionModel = mongoose.model(properties.prefixo + 'Transaction', transaction)
 
 module.exports = transactionModel
