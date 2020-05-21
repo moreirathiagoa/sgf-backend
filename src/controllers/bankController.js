@@ -25,7 +25,7 @@ async function getListBanks(typeTransaction) {
                 break;
         }
 
-        const bankFind = await db.find(model.bankModel, params)
+        const bankFind = await db.find(model.bankModel, params).sort('name')
         if (_.isEmpty(bankFind))
             return utils.makeResponse(203, 'Bancos não encontrados', [])
 
@@ -42,7 +42,7 @@ async function getListBanksDahsboard() {
     try {
 
         let params = { userId: global.userId, bankType: { '$in': ['Conta Corrente', 'Conta Cartão'] } }
-        const bankFind = await db.find(model.bankModel, params)
+        const bankFind = await db.find(model.bankModel, params).sort('name')
         if (_.isEmpty(bankFind))
             return utils.makeResponse(203, 'Bancos não encontrados', [])
 
