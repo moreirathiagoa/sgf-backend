@@ -122,6 +122,23 @@ router.get('/not-compensated-debit', auth, async (req, res, next) => {
 
 })
 
+router.post('/planToPrincipal', auth, async (req, res, next) => {
+    global.userId = res.locals.authData.userId
+    try {
+        let response
+        if (_.isEmpty(req.body)) {
+            response = utils.makeResponse(204, 'Sem informação no corpo')
+        } else {
+            response = await controller.transactionController.planToPrincipal(req.body)
+        }
+        res.status(response.code).send(response)
+
+    } catch (error) {
+        res.status(500).send(error)
+    }
+
+})
+
 router.get('/:idTransaction', auth, async (req, res, next) => {
     global.userId = res.locals.authData.userId
     const { idTransaction } = req.params
