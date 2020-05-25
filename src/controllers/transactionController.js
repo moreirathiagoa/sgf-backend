@@ -263,6 +263,35 @@ async function transactionNotCompesedCredit() {
     return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
 }
 
+async function planToPrincipal(transations) {
+
+    const transationToUpdate = {
+        isCompesed: false,
+        typeTransaction: 'contaCorrente'
+    }
+
+    let response = []
+
+    for (let transation of transations) {
+        await updateSaldoContaCorrente(transation.bank_id, transation.value)
+
+        const params = { _id: transation._id }
+        const transationToReturn = await model.transactionModel.updateOne(
+            params,
+            transationToUpdate,
+            (err, res) => {
+                if (err) {
+                    console.log(error)
+                    throw new Error(err)
+                }
+            }
+        )
+        response.push(transationToReturn)
+    }
+
+    return utils.makeResponse(201, 'Transação atualizada com sucesso', response)
+}
+
 /* FUNÇÕES DE APOIO */
 
 async function validadeTransaction(transactionToCreate) {
@@ -367,4 +396,5 @@ module.exports = {
     transactionNotCompesedByBank,
     transactionNotCompesedDebit,
     transactionNotCompesedCredit,
+    planToPrincipal,
 }
