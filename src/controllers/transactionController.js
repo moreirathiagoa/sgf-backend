@@ -292,6 +292,100 @@ async function planToPrincipal(transations) {
     return utils.makeResponse(201, 'Transação atualizada com sucesso', response)
 }
 
+async function futureTransationBalance() {
+
+    // const paramsCredit = { userId: global.userId, typeTransaction: 'planejamento', value: { $gt: 0 } }
+    // const paramsDebit = { userId: global.userId, typeTransaction: 'planejamento', value: { $lte: 0 } }
+
+    const paramsCredit = { typeTransaction: 'planejamento', value: { $gt: 0 } }
+    const paramsDebit = { typeTransaction: 'planejamento', value: { $lte: 0 } }
+
+    let transactionCredit = await model.transactionModel.aggregate([
+        { $match: paramsCredit },
+        {
+            $group: {
+                _id: {
+                    month: { $month: { $dateFromString: { dateString: '$efectedDate' } } },
+                    year: { $year: { $dateFromString: { dateString: '$efectedDate' } } }
+                },
+                credit: { $sum: "$value" }
+            }
+        },
+        { $sort: { '_id.year': 1, '_id.month': 1 } }
+    ])
+
+    let transactionDebit = await model.transactionModel.aggregate([
+        { $match: paramsDebit },
+        {
+            $group: {
+                _id: {
+                    month: { $month: { $dateFromString: { dateString: '$efectedDate' } } },
+                    year: { $year: { $dateFromString: { dateString: '$efectedDate' } } }
+                },
+                debit: { $sum: "$value" }
+            }
+        },
+        { $sort: { '_id.year': 1, '_id.month': 1 } }
+    ])
+
+    if (transactionDebit.length == 0 && transactionCredit.length == 0) {
+        return utils.makeResponse(203, 'Não existem saldos para retorno')
+    }
+
+    let minDate = new Date()
+    minDate.setDate('10')
+    let maxDate = new Date()
+    maxDate.setDate('10')
+
+    let minDateCredit
+    let minDateDebit
+    let maxDateCredit
+    let maxDateDebit
+    if (transactionCredit.length > 0) {
+        const tam = transactionCredit.length - 1
+        minDateCredit = new Date(transactionCredit[0]._id.year + '-' + transactionCredit[0]._id.month + '-10')
+        maxDateCredit = new Date(transactionCredit[tam]._id.year + '-' + transactionCredit[tam]._id.month + '-10')
+    }
+    if (transactionDebit.length > 0) {
+        const tam = transactionDebit.length - 1
+        minDateDebit = new Date(transactionDebit[0]._id.year + '-' + transactionDebit[0]._id.month + '-10')
+        maxDateDebit = new Date(transactionDebit[tam]._id.year + '-' + transactionDebit[tam]._id.month + '-10')
+    }
+
+    if (minDateCredit < minDate) minDate = minDateCredit
+    if (minDateDebit < minDate) minDate = minDateDebit
+    if (maxDateCredit > maxDate) maxDate = maxDateCredit
+    if (maxDateDebit > maxDate) maxDate = maxDateDebit
+
+    let indexDate = minDate
+    let responseToreturn = []
+    while (indexDate <= maxDate) {
+
+        const month = indexDate.getMonth() + 1
+        const year = indexDate.getFullYear()
+
+        let finalDebit = transactionDebit.find((t) => {
+            return t._id.month == month && t._id.year == year
+        })
+        let finalCredit = transactionCredit.find((t) => {
+            return t._id.month == month && t._id.year == year
+        })
+
+        const response = {
+            month: month,
+            year: year,
+            debit: finalDebit ? finalDebit.debit : 0,
+            credit: finalCredit ? finalCredit.credit : 0,
+        }
+
+        responseToreturn.push(response)
+
+        indexDate.setDate(indexDate.getDate() + 30)
+    }
+
+    return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToreturn)
+}
+
 /* FUNÇÕES DE APOIO */
 
 async function validadeTransaction(transactionToCreate) {
@@ -397,4 +491,5 @@ module.exports = {
     transactionNotCompesedDebit,
     transactionNotCompesedCredit,
     planToPrincipal,
+    futureTransationBalance,
 }
