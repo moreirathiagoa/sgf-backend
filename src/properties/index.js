@@ -16,7 +16,6 @@ const properties = () => {
             return {
                 uriDataBase: `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_URL}/${DATA_BASE}?${DB_PARAMS}`,
                 keyToken: KEY_TOKEN,
-                prefixo: '_',
             }
 
         case 'prod':
@@ -25,12 +24,11 @@ const properties = () => {
             DB_PASSWORD = process.env.DB_PASSWORD
             DB_URL = 'sgfcluster-nrl0f.mongodb.net'
             DB_PARAMS = 'retryWrites=true&w=majority'
-            DATA_BASE = 'sgf'
+            DATA_BASE = 'test'
 
             return {
                 uriDataBase: `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_URL}/${DATA_BASE}?${DB_PARAMS}`,
                 keyToken: KEY_TOKEN,
-                prefixo: '',
             }
     }
 }

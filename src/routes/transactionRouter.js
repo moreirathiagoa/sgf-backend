@@ -113,7 +113,7 @@ router.get('/not-compensated-credit', auth, async (req, res, next) => {
 router.get('/future-balance', auth, async (req, res, next) => {
     global.userId = res.locals.authData.userId
     try {
-        const response = await controller.transactionController.futureTransationBalance()
+        const response = await controller.transactionController.futureTransactionBalance()
         res.status(response.code).send(response)
     } catch (error) {
         console.log(error)
