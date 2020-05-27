@@ -7,7 +7,7 @@ async function getListTransacation(typeTransaction) {
     try {
         const params = { typeTransaction: typeTransaction, userId: global.userId }
 
-        const transactionFind = await db.find(model.transactionModel, params)
+        const transactionFind = await db.find(model.transactionModel, params).sort({ efectedDate: -1 })
             .populate('bank_id', 'name')
             .populate('category_id', 'name')
             .populate('fature_id', 'name')
@@ -263,22 +263,22 @@ async function transactionNotCompesedCredit() {
     return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
 }
 
-async function planToPrincipal(transations) {
+async function planToPrincipal(transactions) {
 
-    const transationToUpdate = {
+    const transactionToUpdate = {
         isCompesed: false,
         typeTransaction: 'contaCorrente'
     }
 
     let response = []
 
-    for (let transation of transations) {
-        await updateSaldoContaCorrente(transation.bank_id, transation.value)
+    for (let transaction of transactions) {
+        await updateSaldoContaCorrente(transaction.bank_id, transaction.value)
 
-        const params = { _id: transation._id }
-        const transationToReturn = await model.transactionModel.updateOne(
+        const params = { _id: transaction._id }
+        const transactionToReturn = await model.transactionModel.updateOne(
             params,
-            transationToUpdate,
+            transactionToUpdate,
             (err, res) => {
                 if (err) {
                     console.log(error)
@@ -286,19 +286,16 @@ async function planToPrincipal(transations) {
                 }
             }
         )
-        response.push(transationToReturn)
+        response.push(transactionToReturn)
     }
 
     return utils.makeResponse(201, 'Transação atualizada com sucesso', response)
 }
 
-async function futureTransationBalance() {
+async function futureTransactionBalance() {
 
-    // const paramsCredit = { userId: global.userId, typeTransaction: 'planejamento', value: { $gt: 0 } }
-    // const paramsDebit = { userId: global.userId, typeTransaction: 'planejamento', value: { $lte: 0 } }
-
-    const paramsCredit = { typeTransaction: 'planejamento', value: { $gt: 0 } }
-    const paramsDebit = { typeTransaction: 'planejamento', value: { $lte: 0 } }
+    const paramsCredit = { userId: global.userId, typeTransaction: 'planejamento', value: { $gt: 0 } }
+    const paramsDebit = { userId: global.userId, typeTransaction: 'planejamento', value: { $lte: 0 } }
 
     let transactionCredit = await model.transactionModel.aggregate([
         { $match: paramsCredit },
@@ -491,5 +488,5 @@ module.exports = {
     transactionNotCompesedDebit,
     transactionNotCompesedCredit,
     planToPrincipal,
-    futureTransationBalance,
+    futureTransactionBalance,
 }

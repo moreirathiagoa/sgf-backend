@@ -23,7 +23,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs))
 // const controller = require('./controllers')
 // async function teste() {
 //     console.log('iniciou')
-//     const xxx = await controller.transactionController.futureTransationBalance()
+//     const xxx = await controller.transactionController.futureTransactionBalance()
 //     console.log('xxx>', xxx)
 // }
 // teste()
