@@ -9,7 +9,7 @@ const transaction = new Schema({
     value: { type: Number, required: true },
     createDate: { type: String, required: true },
     efectedDate: { type: String, required: true },
-    isCompesed: { type: Boolean, required: true, default: true },
+    isCompesed: { type: Boolean, required: true },
     currentRecurrence: { type: Number },
     finalRecurrence: { type: Number },
     description: { type: String },

@@ -39,8 +39,8 @@ async function getFature(idFature) {
 
 async function payFature(idFature) {
     try {
-        const params = { _id: idFature, userId: global.userId }
-        const fatureFind = await db.findOne(model.faturesModel, params)
+        const paramsFature = { _id: idFature, userId: global.userId }
+        const fatureFind = await db.findOne(model.faturesModel, paramsFature)
             .populate('bank_id', 'name')
 
         if (_.isEmpty(fatureFind))
@@ -51,8 +51,24 @@ async function payFature(idFature) {
         }
 
         await model.faturesModel.updateOne(
-            params,
+            paramsFature,
             fatureToUpdate,
+            (err, res) => {
+                if (err) {
+                    throw new Error(err)
+                }
+            }
+        )
+
+        const paramsTransation = { fature_id: idFature, userId: global.userId }
+
+        const transactionToUpdate = {
+            isCompesed: true
+        }
+
+        await model.transactionModel.updateMany(
+            paramsTransation,
+            transactionToUpdate,
             (err, res) => {
                 if (err) {
                     throw new Error(err)
