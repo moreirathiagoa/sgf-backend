@@ -329,30 +329,8 @@ async function futureTransactionBalance() {
         return utils.makeResponse(203, 'Não existem saldos para retorno')
     }
 
-    let minDate = new Date()
-    minDate.setDate('10')
-    let maxDate = new Date()
-    maxDate.setDate('10')
-
-    let minDateCredit
-    let minDateDebit
-    let maxDateCredit
-    let maxDateDebit
-    if (transactionCredit.length > 0) {
-        const tam = transactionCredit.length - 1
-        minDateCredit = new Date(transactionCredit[0]._id.year + '-' + transactionCredit[0]._id.month + '-10')
-        maxDateCredit = new Date(transactionCredit[tam]._id.year + '-' + transactionCredit[tam]._id.month + '-10')
-    }
-    if (transactionDebit.length > 0) {
-        const tam = transactionDebit.length - 1
-        minDateDebit = new Date(transactionDebit[0]._id.year + '-' + transactionDebit[0]._id.month + '-10')
-        maxDateDebit = new Date(transactionDebit[tam]._id.year + '-' + transactionDebit[tam]._id.month + '-10')
-    }
-
-    if (minDateCredit < minDate) minDate = minDateCredit
-    if (minDateDebit < minDate) minDate = minDateDebit
-    if (maxDateCredit > maxDate) maxDate = maxDateCredit
-    if (maxDateDebit > maxDate) maxDate = maxDateDebit
+    const minDate = getMinData(transactionDebit, transactionCredit)
+    const maxDate = getMaxData(transactionDebit, transactionCredit)
 
     let indexDate = minDate
     let responseToreturn = []
@@ -384,6 +362,49 @@ async function futureTransactionBalance() {
 }
 
 /* FUNÇÕES DE APOIO */
+
+function getMinData(transactionDebit, transactionCredit) {
+
+    let minDate = new Date()
+    minDate.setDate('10')
+
+    let minDateCredit
+    let minDateDebit
+
+    if (transactionCredit.length > 0) {
+        minDateCredit = new Date(transactionCredit[0]._id.year + '-' + transactionCredit[0]._id.month + '-10')
+    }
+    if (transactionDebit.length > 0) {
+        minDateDebit = new Date(transactionDebit[0]._id.year + '-' + transactionDebit[0]._id.month + '-10')
+    }
+
+    if (minDateCredit < minDate) minDate = minDateCredit
+    if (minDateDebit < minDate) minDate = minDateDebit
+
+    return minDate
+}
+
+function getMaxData(transactionDebit, transactionCredit) {
+
+    let maxDate = new Date()
+    maxDate.setDate('10')
+
+    let maxDateCredit
+    let maxDateDebit
+    if (transactionCredit.length > 0) {
+        const tam = transactionCredit.length - 1
+        maxDateCredit = new Date(transactionCredit[tam]._id.year + '-' + transactionCredit[tam]._id.month + '-10')
+    }
+    if (transactionDebit.length > 0) {
+        const tam = transactionDebit.length - 1
+        maxDateDebit = new Date(transactionDebit[tam]._id.year + '-' + transactionDebit[tam]._id.month + '-10')
+    }
+
+    if (maxDateCredit > maxDate) maxDate = maxDateCredit
+    if (maxDateDebit > maxDate) maxDate = maxDateDebit
+
+    return maxDate
+}
 
 async function validadeTransaction(transactionToCreate) {
 
