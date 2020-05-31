@@ -75,6 +75,11 @@ async function createTransaction(transactionToCreate) {
             fature = await getFature(transactionToCreate.fature, bankFind._id)
             delete transactionToCreate.fature
             transactionToCreate.fature_id = fature._id
+            transactionToCreate.isCompesed = false
+        }
+
+        if (transactionToCreate.typeTransaction === "planejamento") {
+            transactionToCreate.isCompesed = false
         }
 
         let response = []
@@ -141,6 +146,14 @@ async function updateTransaction(idTransaction, transacationToUpdate) {
 
         const params = { _id: idTransaction, userId: global.userId }
         const oldTransaction = await db.findOne(model.transactionModel, params)
+
+        if (transacationToUpdate.typeTransaction === "cartaoCredito") {
+            transacationToUpdate.isCompesed = false
+        }
+
+        if (transacationToUpdate.typeTransaction === "planejamento") {
+            transacationToUpdate.isCompesed = false
+        }
 
         transacationToUpdate.efectedDate = utils.formatDateToBataBase(transacationToUpdate.efectedDate)
 
