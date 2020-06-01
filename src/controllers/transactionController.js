@@ -307,43 +307,16 @@ async function planToPrincipal(transactions) {
 
 async function futureTransactionBalance() {
 
-    const paramsCredit = { userId: global.userId, typeTransaction: 'planejamento', value: { $gt: 0 } }
-    const paramsDebit = { userId: global.userId, typeTransaction: 'planejamento', value: { $lte: 0 } }
+    const transactionCredit = await getFutureTransactionCredit()
+    const transactionDebit = await getFutureTransactionDebit()
+    const cardDebit = await getCardTransactionDebit()
 
-    let transactionCredit = await model.transactionModel.aggregate([
-        { $match: paramsCredit },
-        {
-            $group: {
-                _id: {
-                    month: { $month: { $dateFromString: { dateString: '$efectedDate' } } },
-                    year: { $year: { $dateFromString: { dateString: '$efectedDate' } } }
-                },
-                credit: { $sum: "$value" }
-            }
-        },
-        { $sort: { '_id.year': 1, '_id.month': 1 } }
-    ])
-
-    let transactionDebit = await model.transactionModel.aggregate([
-        { $match: paramsDebit },
-        {
-            $group: {
-                _id: {
-                    month: { $month: { $dateFromString: { dateString: '$efectedDate' } } },
-                    year: { $year: { $dateFromString: { dateString: '$efectedDate' } } }
-                },
-                debit: { $sum: "$value" }
-            }
-        },
-        { $sort: { '_id.year': 1, '_id.month': 1 } }
-    ])
-
-    if (transactionDebit.length == 0 && transactionCredit.length == 0) {
+    if (transactionDebit.length == 0 && transactionCredit.length == 0 && cardDebit.length == 0) {
         return utils.makeResponse(203, 'Não existem saldos para retorno')
     }
 
-    const minDate = getMinData(transactionDebit, transactionCredit)
-    const maxDate = getMaxData(transactionDebit, transactionCredit)
+    const minDate = getMinData(transactionDebit, transactionCredit, cardDebit)
+    const maxDate = getMaxData(transactionDebit, transactionCredit, cardDebit)
 
     let indexDate = minDate
     let responseToreturn = []
@@ -358,12 +331,16 @@ async function futureTransactionBalance() {
         let finalCredit = transactionCredit.find((t) => {
             return t._id.month == month && t._id.year == year
         })
+        let finalCard = cardDebit.find((t) => {
+            return t._id.month == month && t._id.year == year
+        })
 
         const response = {
             month: month,
             year: year,
             debit: finalDebit ? finalDebit.debit : 0,
-            credit: finalCredit ? finalCredit.credit : 0,
+			credit: finalCredit ? finalCredit.credit : 0,
+			card: finalCard ? finalCard.debit : 0,
         }
 
         responseToreturn.push(response)
@@ -376,13 +353,81 @@ async function futureTransactionBalance() {
 
 /* FUNÇÕES DE APOIO */
 
-function getMinData(transactionDebit, transactionCredit) {
+async function getFutureTransactionCredit() {
+    const paramsCredit = { userId: global.userId, typeTransaction: 'planejamento', value: { $gt: 0 } }
+    const transactionCredit = await model.transactionModel.aggregate([
+        { $match: paramsCredit },
+        {
+            $group: {
+                _id: {
+                    month: { $month: { $dateFromString: { dateString: '$efectedDate' } } },
+                    year: { $year: { $dateFromString: { dateString: '$efectedDate' } } }
+                },
+                credit: { $sum: "$value" }
+            }
+        },
+        { $sort: { '_id.year': 1, '_id.month': 1 } }
+    ])
+
+    return transactionCredit
+}
+
+async function getFutureTransactionDebit() {
+    const paramsDebit = { userId: global.userId, typeTransaction: 'planejamento', value: { $lte: 0 } }
+    const transactionDebit = await model.transactionModel.aggregate([
+        { $match: paramsDebit },
+        {
+            $group: {
+                _id: {
+                    month: { $month: { $dateFromString: { dateString: '$efectedDate' } } },
+                    year: { $year: { $dateFromString: { dateString: '$efectedDate' } } }
+                },
+                debit: { $sum: "$value" }
+            }
+        },
+        { $sort: { '_id.year': 1, '_id.month': 1 } }
+    ])
+
+    return transactionDebit
+}
+
+async function getCardTransactionDebit() {
+
+    const paramsDebit = { userId: global.userId, typeTransaction: 'cartaoCredito', isCompesed:false, value: { $lte: 0 } }
+    let transactionDebit = await model.transactionModel.aggregate([
+        { $match: paramsDebit },
+        {
+            $group: {
+                _id: { fature_id: '$fature_id'},
+                debit: { $sum: "$value" }
+            }
+        },
+	])
+	
+	let transactionReturn = []
+	for (let el of transactionDebit){
+		const fature_id = el._id.fature_id
+		const fature = await db.findOne(model.faturesModel, {_id:fature_id})
+		const fatureName = fature.name
+		const year = fatureName.split('/')[0]
+		const month = fatureName.split('/')[1]
+		el._id.month = month
+		el._id.year = year
+		delete el._id.fature_id
+		transactionReturn.push(el)
+	}
+
+    return transactionReturn
+}
+
+function getMinData(transactionDebit, transactionCredit, cardDebit) {
 
     let minDate = new Date()
     minDate.setDate('10')
 
     let minDateCredit
     let minDateDebit
+    let minDateCard
 
     if (transactionCredit.length > 0) {
         minDateCredit = new Date(transactionCredit[0]._id.year + '-' + transactionCredit[0]._id.month + '-10')
@@ -390,20 +435,26 @@ function getMinData(transactionDebit, transactionCredit) {
     if (transactionDebit.length > 0) {
         minDateDebit = new Date(transactionDebit[0]._id.year + '-' + transactionDebit[0]._id.month + '-10')
     }
+    if (cardDebit.length > 0) {
+        minDateCard = new Date(cardDebit[0]._id.year + '-' + cardDebit[0]._id.month + '-10')
+    }
 
     if (minDateCredit < minDate) minDate = minDateCredit
     if (minDateDebit < minDate) minDate = minDateDebit
+    if (minDateCard < minDate) minDate = minDateCard
 
     return minDate
 }
 
-function getMaxData(transactionDebit, transactionCredit) {
+function getMaxData(transactionDebit, transactionCredit, cardDebit) {
 
     let maxDate = new Date()
     maxDate.setDate('10')
 
     let maxDateCredit
-    let maxDateDebit
+	let maxDateDebit
+	let maxDateCard
+	
     if (transactionCredit.length > 0) {
         const tam = transactionCredit.length - 1
         maxDateCredit = new Date(transactionCredit[tam]._id.year + '-' + transactionCredit[tam]._id.month + '-10')
@@ -412,9 +463,14 @@ function getMaxData(transactionDebit, transactionCredit) {
         const tam = transactionDebit.length - 1
         maxDateDebit = new Date(transactionDebit[tam]._id.year + '-' + transactionDebit[tam]._id.month + '-10')
     }
+    if (cardDebit.length > 0) {
+        const tam = cardDebit.length - 1
+        maxDateCard = new Date(cardDebit[tam]._id.year + '-' + cardDebit[tam]._id.month + '-10')
+    }
 
     if (maxDateCredit > maxDate) maxDate = maxDateCredit
     if (maxDateDebit > maxDate) maxDate = maxDateDebit
+    if (maxDateCard > maxDate) maxDate = maxDateCard
 
     return maxDate
 }
