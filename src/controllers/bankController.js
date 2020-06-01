@@ -67,6 +67,7 @@ async function getListBanksDahsboard() {
             const content = {
                 id: bank._id,
                 name: bank.name,
+                bankType: bank.bankType,
                 saldoSistemaDeduzido: saldoSistemaDeduzido,
                 saldoSistema: bank.systemBalance,
                 saldoManual: bank.manualBalance,
