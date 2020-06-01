@@ -241,7 +241,11 @@ async function deleteTransaction(idTransaction) {
 }
 
 async function transactionNotCompesedByBank() {
-	const params = { userId: global.userId, isCompesed: false }
+	const params = {
+		userId: global.userId,
+		typeTransaction: 'contaCorrente',
+		isCompesed: false,
+	}
 	let response = await model.transactionModel.aggregate([
 		{ $match: params },
 		{
