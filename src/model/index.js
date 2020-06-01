@@ -5,9 +5,9 @@ const bankModel = require('./bank')
 const userModel = require('./user')
 
 module.exports = {
-    transactionModel,
-    categoryModel,
-    faturesModel,
-    bankModel,
-    userModel,
+	transactionModel,
+	categoryModel,
+	faturesModel,
+	bankModel,
+	userModel,
 }
