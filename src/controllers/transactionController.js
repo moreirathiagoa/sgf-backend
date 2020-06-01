@@ -243,7 +243,7 @@ async function transactionNotCompesedByBank() {
 }
 
 async function transactionNotCompesedDebit() {
-    const params = { userId: global.userId, isCompesed: false, value: { $lte: 0 } }
+    const params = { userId: global.userId, isCompesed: false, typeTransaction: 'contaCorrente', value: { $lte: 0 } }
     let response = await model.transactionModel.aggregate([
         { $match: params },
         { $group: { _id: null, saldoNotCompesated: { $sum: "$value" } } }
@@ -260,7 +260,7 @@ async function transactionNotCompesedDebit() {
 }
 
 async function transactionNotCompesedCredit() {
-    const params = { userId: global.userId, isCompesed: false, value: { $gt: 0 } }
+    const params = { userId: global.userId, isCompesed: false, typeTransaction: 'contaCorrente', value: { $gt: 0 } }
     let response = await model.transactionModel.aggregate([
         { $match: params },
         { $group: { _id: null, saldoNotCompesated: { $sum: "$value" } } }
