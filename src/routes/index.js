@@ -7,11 +7,11 @@ const loginRouter = require('./loginRouter')
 const userRouter = require('./userRouter')
 
 module.exports = {
-    homeRouter,
-    categoryRouter,
-    bankRouter,
-    transactionRouter,
-    loginRouter,
-    userRouter,
-    fatureRouter,
+	homeRouter,
+	categoryRouter,
+	bankRouter,
+	transactionRouter,
+	loginRouter,
+	userRouter,
+	fatureRouter,
 }

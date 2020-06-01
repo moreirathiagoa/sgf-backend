@@ -1,97 +1,97 @@
 const _ = require('lodash')
-const moment = require ('moment/min/moment-with-locales')
+const moment = require('moment/min/moment-with-locales')
 
 function actualDateToUser() {
-    moment.locale('pt-br');
-    const now = moment()
+	moment.locale('pt-br')
+	const now = moment()
 
-    const dateToUser = now.format("DD/MM/YYYY")
-    return dateToUser
+	const dateToUser = now.format('DD/MM/YYYY')
+	return dateToUser
 }
 
 function actualDateTimeToUser() {
-    moment.locale('pt-br');
-    const now = moment()
+	moment.locale('pt-br')
+	const now = moment()
 
-    const dateTimeToUser = now.format("DD/MM/YYYY HH:MM")
-    return dateTimeToUser
+	const dateTimeToUser = now.format('DD/MM/YYYY HH:MM')
+	return dateTimeToUser
 }
 
 function actualDateToBataBase() {
-    moment.locale('pt-br');
-    const now = moment()
+	moment.locale('pt-br')
+	const now = moment()
 
-    const dateToDataBase = now.format()
-    return dateToDataBase
+	const dateToDataBase = now.format()
+	return dateToDataBase
 }
 
-function formatDateToSelectBox(dateInformed){
-    moment.locale('pt-br')
-    const dateMoment = moment(dateInformed, "DD/MM/YYYY")
+function formatDateToSelectBox(dateInformed) {
+	moment.locale('pt-br')
+	const dateMoment = moment(dateInformed, 'DD/MM/YYYY')
 
-    return dateMoment
+	return dateMoment
 }
 
 function formatDateToUser(dateInformed) {
-    moment.locale('pt-br');
-    const dateToMoment = moment(dateInformed)
+	moment.locale('pt-br')
+	const dateToMoment = moment(dateInformed)
 
-    const dateToUser = dateToMoment.format("DD/MM/YYYY")
-    return dateToUser
+	const dateToUser = dateToMoment.format('DD/MM/YYYY')
+	return dateToUser
 }
 
 function formatDateTimeToUser(dateInformed) {
-    moment.locale('pt-br');
-    const dateToMoment = moment(dateInformed)
+	moment.locale('pt-br')
+	const dateToMoment = moment(dateInformed)
 
-    const dateTimeToUser = dateToMoment.format("DD/MM/YYYY HH:MM")
-    return dateTimeToUser
+	const dateTimeToUser = dateToMoment.format('DD/MM/YYYY HH:MM')
+	return dateTimeToUser
 }
 
 function formatDateToBataBase(dateInformed) {
-    moment.locale('pt-br');
-    const dateToMoment = moment(dateInformed)
+	moment.locale('pt-br')
+	const dateToMoment = moment(dateInformed)
 
-    const dateToDataBase = dateToMoment.format()
-    return dateToDataBase
+	const dateToDataBase = dateToMoment.format()
+	return dateToDataBase
 }
 
-function addMonth(date, qtd){
-    return moment(date).add(qtd,'month')
+function addMonth(date, qtd) {
+	return moment(date).add(qtd, 'month')
 }
 
 function validateRequiredsElements(object, requireds) {
-    let emptyAtributes = []
-    requireds.forEach(element => {
-        if (!object.hasOwnProperty(element)) {
-            emptyAtributes.push(element)
-        }
-    });
-    return emptyAtributes.join(', ')
+	let emptyAtributes = []
+	requireds.forEach((element) => {
+		if (!object.hasOwnProperty(element)) {
+			emptyAtributes.push(element)
+		}
+	})
+	return emptyAtributes.join(', ')
 }
 
 function makeResponse(code, message, data) {
-    return {
-        code: code,
-        message: message,
-        data: data
-    }
+	return {
+		code: code,
+		message: message,
+		data: data,
+	}
 }
 
 function isNumeric(n) {
-    return !isNaN(parseFloat(n)) && isFinite(n);
+	return !isNaN(parseFloat(n)) && isFinite(n)
 }
 
 module.exports = {
-    validateRequiredsElements,
-    isNumeric,
-    makeResponse,
-    actualDateToUser,
-    actualDateTimeToUser,
-    actualDateToBataBase,
-    formatDateToUser,
-    formatDateTimeToUser,
-    formatDateToBataBase,
-    formatDateToSelectBox,
-    addMonth,
+	validateRequiredsElements,
+	isNumeric,
+	makeResponse,
+	actualDateToUser,
+	actualDateTimeToUser,
+	actualDateToBataBase,
+	formatDateToUser,
+	formatDateTimeToUser,
+	formatDateToBataBase,
+	formatDateToSelectBox,
+	addMonth,
 }

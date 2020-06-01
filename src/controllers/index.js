@@ -6,10 +6,10 @@ const loginController = require('./loginController')
 const userController = require('./userController')
 
 module.exports = {
-    categoryController,
-    bankController,
-    transactionController,
-    loginController,
-    userController,
-    fatureController,
-} 
+	categoryController,
+	bankController,
+	transactionController,
+	loginController,
+	userController,
+	fatureController,
+}
