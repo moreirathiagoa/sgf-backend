@@ -69,10 +69,10 @@ async function getListBanksDahsboard() {
 				id: bank._id,
 				name: bank.name,
 				bankType: bank.bankType,
-				saldoSistemaDeduzido: saldoSistemaDeduzido,
-				saldoSistema: bank.systemBalance,
-				saldoManual: bank.manualBalance,
-				diference: diference,
+				saldoSistemaDeduzido: _.round(saldoSistemaDeduzido, 2),
+				saldoSistema: _.round(bank.systemBalance, 2),
+				saldoManual: _.round(bank.manualBalance, 2),
+				diference: _.round(diference, 2),
 			}
 			banksToReturn.push(content)
 		})

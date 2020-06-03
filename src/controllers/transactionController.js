@@ -184,15 +184,44 @@ async function updateTransaction(idTransaction, transacationToUpdate) {
 		)
 
 		const transactionReturn = await db.findOne(model.transactionModel, params)
-
 		const saldoAjust = transactionReturn.value - oldTransaction.value
 		switch (transactionReturn.typeTransaction) {
-			case 'contaCorrente':
-				await updateSaldoContaCorrente(transactionReturn.bank_id, saldoAjust)
+			case 'contaCorrente': {
+				if (
+					transactionReturn.bank_id.toString() !=
+					oldTransaction.bank_id.toString()
+				) {
+					await updateSaldoContaCorrente(
+						transactionReturn.bank_id,
+						transactionReturn.value
+					)
+					await updateSaldoContaCorrente(
+						oldTransaction.bank_id,
+						oldTransaction.value * -1
+					)
+				} else {
+					await updateSaldoContaCorrente(transactionReturn.bank_id, saldoAjust)
+				}
 				break
-			case 'cartaoCredito':
-				await updateSaldoFatura(transactionReturn.fature_id, saldoAjust)
+			}
+			case 'cartaoCredito': {
+				if (
+					transactionReturn.fature_id.toString() !=
+					oldTransaction.fature_id.toString()
+				) {
+					await updateSaldoFatura(
+						transactionReturn.fature_id,
+						transactionReturn.value
+					)
+					await updateSaldoFatura(
+						oldTransaction.fature_id,
+						oldTransaction.value * -1
+					)
+				} else {
+					await updateSaldoFatura(transactionReturn.fature_id, saldoAjust)
+				}
 				break
+			}
 			default:
 		}
 
@@ -202,7 +231,7 @@ async function updateTransaction(idTransaction, transacationToUpdate) {
 			transactionReturn
 		)
 	} catch (error) {
-		console.log(error)
+		console.log('erro: ', error)
 		throw {
 			error: error,
 		}
@@ -608,7 +637,8 @@ async function updateSaldoContaCorrente(idBank, valor) {
 		.findOne(model.bankModel, params)
 		.select('systemBalance')
 
-	const bankToUpdate = { systemBalance: bankFind.systemBalance + valor }
+	const finalBalance = _.round(bankFind.systemBalance + valor, 2)
+	const bankToUpdate = { systemBalance: finalBalance }
 
 	await model.bankModel.updateOne(params, bankToUpdate, (err, res) => {
 		if (err) {
@@ -623,7 +653,8 @@ async function updateSaldoFatura(idFatura, valor) {
 		.findOne(model.faturesModel, fatureParams)
 		.select('fatureBalance')
 
-	const fatureToUpdate = { fatureBalance: fatureFind.fatureBalance + valor }
+	const finalBalance = _.round(fatureFind.fatureBalance + valor, 2)
+	const fatureToUpdate = { fatureBalance: finalBalance }
 
 	await model.faturesModel.updateOne(
 		fatureParams,

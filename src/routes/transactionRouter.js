@@ -54,7 +54,6 @@ router.post('/create', auth, async (req, res, next) => {
 router.put('/update/:idTransaction', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	const { idTransaction } = req.params
-
 	try {
 		let response
 		if (_.isEmpty(req.body)) {
