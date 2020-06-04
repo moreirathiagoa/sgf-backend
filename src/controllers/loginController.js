@@ -4,7 +4,7 @@ const db = require('../database')
 const model = require('../model')
 const jwt = require('jsonwebtoken')
 const properties = require('../properties')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 
 async function login(user) {
 	try {
