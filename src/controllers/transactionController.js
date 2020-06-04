@@ -231,7 +231,6 @@ async function updateTransaction(idTransaction, transacationToUpdate) {
 			transactionReturn
 		)
 	} catch (error) {
-		console.log('erro: ', error)
 		throw {
 			error: error,
 		}

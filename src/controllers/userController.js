@@ -2,7 +2,7 @@ const _ = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 
 async function getListUsers() {
 	try {
