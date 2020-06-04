@@ -9,9 +9,11 @@ mongoose
 	})
 	.then(() => {
 		console.log('Conectado ao banco de dados com sucesso')
+		console.log('URL: ' + properties.uriDataBase)
 	})
 	.catch((err) => {
 		console.log('Não foi possível conectar ao banco de dados: ' + err)
+		console.log('URL: ' + properties.uriDataBase)
 		process.exit
 	})
 
