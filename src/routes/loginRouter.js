@@ -2,8 +2,9 @@ const _ = require('lodash')
 const express = require('express')
 const controller = require('../controllers')
 const router = express.Router()
+const logAccess = require('../middlewares/logAccess')
 
-router.post('/', async (req, res, next) => {
+router.post('/', logAccess, async (req, res, next) => {
 	try {
 		let response
 		if (_.isEmpty(req.body)) {
