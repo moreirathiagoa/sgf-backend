@@ -24,7 +24,7 @@ router.post('/filter', auth, async (req, res, next) => {
 		if (_.isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
-			response = await controller.transactionController.getFilterTransacation(
+			response = await controller.transactionController.getFilterTransaction(
 				req.body
 			)
 		}
@@ -120,7 +120,7 @@ router.get('/future-balance', auth, async (req, res, next) => {
 router.get('/not-compensated-debit', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
-		const response = await controller.transactionController.transactionNotCompesedDebit()
+		const response = await controller.transactionController.transactionNotCompensatedDebit()
 		res.status(response.code).send(response)
 	} catch (error) {
 		console.log(error)

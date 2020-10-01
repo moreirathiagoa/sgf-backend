@@ -294,7 +294,7 @@ async function transactionNotCompensatedByBank() {
 	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
 }
 
-async function transactionNotCompesedDebit() {
+async function transactionNotCompensatedDebit() {
 	const params = {
 		userId: global.userId,
 		isCompesed: false,
@@ -673,7 +673,7 @@ module.exports = {
 	updateTransaction,
 	deleteTransaction,
 	transactionNotCompensatedByBank,
-	transactionNotCompesedDebit,
+	transactionNotCompensatedDebit,
 	transactionNotCompensatedCredit,
 	planToPrincipal,
 	futureTransactionBalance,
