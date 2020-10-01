@@ -62,14 +62,14 @@ async function payFature(idFature) {
 			}
 		)
 
-		const paramsTransation = { fature_id: idFature, userId: global.userId }
+		const paramsTransaction = { fature_id: idFature, userId: global.userId }
 
 		const transactionToUpdate = {
 			isCompesed: true,
 		}
 
 		await model.transactionModel.updateMany(
-			paramsTransation,
+			paramsTransaction,
 			transactionToUpdate,
 			(err, res) => {
 				if (err) {
