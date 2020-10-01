@@ -87,7 +87,7 @@ router.delete('/delete/:idTransaction', auth, async (req, res, next) => {
 router.get('/not-compensated-by-bank', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
-		const response = await controller.transactionController.transactionNotCompesedByBank()
+		const response = await controller.transactionController.transactionNotCompensatedByBank()
 		res.status(response.code).send(response)
 	} catch (error) {
 		console.log(error)

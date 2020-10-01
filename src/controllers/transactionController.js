@@ -268,7 +268,7 @@ async function deleteTransaction(idTransaction) {
 	}
 }
 
-async function transactionNotCompesedByBank() {
+async function transactionNotCompensatedByBank() {
 	const params = {
 		userId: global.userId,
 		typeTransaction: 'contaCorrente',
@@ -672,7 +672,7 @@ module.exports = {
 	createTransaction,
 	updateTransaction,
 	deleteTransaction,
-	transactionNotCompesedByBank,
+	transactionNotCompensatedByBank,
 	transactionNotCompesedDebit,
 	transactionNotCompensatedCredit,
 	planToPrincipal,
