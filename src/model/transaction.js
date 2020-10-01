@@ -1,33 +1,36 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
-const utils = require('../utils')
 
 const transaction = new Schema({
-
-    isCompesed: { type: Boolean, required: true, default: true },
-    createDate: { type: String, required: true, default: utils.getMomentNow() },
-    efectedDate: { type: String, required: true, default: utils.getMomentNow() },
-    description: { type: String },
-    value: { type: Number, required: true },
-    currentRecurrence: { type: Number },
-    finalRecurrence: { type: Number },
-    bank_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'bank',
-        required: true
-    },
-    category_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'category',
-        required: true
-    },
-    fature_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'fature'
-    },
-
+	userId: { type: String, required: true },
+	value: { type: Number, required: true },
+	createDate: { type: String, required: true },
+	efectedDate: { type: String, required: true },
+	isCompesed: { type: Boolean, required: true },
+	currentRecurrence: { type: Number },
+	finalRecurrence: { type: Number },
+	description: { type: String },
+	typeTransaction: {
+		type: String,
+		enum: ['contaCorrente', 'cartaoCredito', 'planejamento'],
+		required: true,
+	},
+	bank_id: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Bank',
+		required: true,
+	},
+	category_id: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Category',
+		required: true,
+	},
+	fature_id: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Fature',
+	},
 })
 
-const transactionModel = mongoose.model('transaction', transaction)
+const transactionModel = mongoose.model('Transaction', transaction)
 
 module.exports = transactionModel

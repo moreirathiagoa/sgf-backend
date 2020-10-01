@@ -10,18 +10,18 @@
     Acessando:
         http://localhost:3000/api-docs/
 */
-const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerJsdoc = require('swagger-jsdoc')
 const options = {
-    apis: ['./src/routes/*.js'],
-    basePath: '/',
-    swaggerDefinition: {
-        info: {
-            description: 'Sistema de Gerenciamento Financeiro',
-            version: '1.0.0',
-            title: 'SGF'
-        },
-    },
-};
-const specs = swaggerJsdoc(options);
+	apis: ['./src/routes/*.js'],
+	basePath: '/',
+	swaggerDefinition: {
+		info: {
+			description: 'Sistema de Gerenciamento Financeiro',
+			version: '1.0.0',
+			title: 'SGF',
+		},
+	},
+}
+const specs = swaggerJsdoc(options)
 
-module.exports = specs;
+module.exports = specs
