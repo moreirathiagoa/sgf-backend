@@ -5,6 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "jest",
+		"tdd":"jest -- watch",
 		"dev": "node node_modules/nodemon/bin/nodemon server",
 		"start": "node server.js"
 	},
