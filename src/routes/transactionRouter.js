@@ -8,7 +8,7 @@ router.get('/list/:typeTransaction', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	const { typeTransaction } = req.params
 	try {
-		const response = await controller.transactionController.getListTransacation(
+		const response = await controller.transactionController.getListTransaction(
 			typeTransaction
 		)
 		res.status(response.code).send(response)
@@ -98,7 +98,7 @@ router.get('/not-compensated-by-bank', auth, async (req, res, next) => {
 router.get('/not-compensated-credit', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
-		const response = await controller.transactionController.transactionNotCompesedCredit()
+		const response = await controller.transactionController.transactionNotCompensatedCredit()
 		res.status(response.code).send(response)
 	} catch (error) {
 		console.log(error)

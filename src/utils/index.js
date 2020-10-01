@@ -60,7 +60,7 @@ function addMonth(date, qtd) {
 	return moment(date).add(qtd, 'month')
 }
 
-function validateRequiredsElements(object, requireds) {
+function validateRequestedElements(object, requireds) {
 	let emptyAtributes = []
 	requireds.forEach((element) => {
 		if (!object.hasOwnProperty(element)) {
@@ -83,7 +83,7 @@ function isNumeric(n) {
 }
 
 module.exports = {
-	validateRequiredsElements,
+	validateRequestedElements,
 	isNumeric,
 	makeResponse,
 	actualDateToUser,

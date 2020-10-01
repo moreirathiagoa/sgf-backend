@@ -186,7 +186,7 @@ async function deleteBank(idBank) {
 
 function validateBank(bankToCreate) {
 	requireds = ['name', 'bankType']
-	const response = utils.validateRequiredsElements(bankToCreate, requireds)
+	const response = utils.validateRequestedElements(bankToCreate, requireds)
 	if (response)
 		return 'Os atributo(s) a seguir não foi(ram) informados: ' + response
 
