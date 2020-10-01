@@ -1,43 +1,59 @@
-const _ = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
 const jwt = require('jsonwebtoken')
-const moment = require('moment')
 const properties = require('../properties')
+const bcrypt = require('bcryptjs')
 
-const createToken = (user_id) =>{
-    return 
-}
+async function login(user) {
+	try {
+		const params = { userName: user.userName.toLowerCase() }
+		let userFound = await db.findOne(model.userModel, params)
 
-async function login(user){
-    try {
-        
-        //verificar se usuário existe no env
-        if (user.userName != properties.defaultUserName || user.password != properties.defaultUserPassword)
-            return utils.makeResponse(401, 'Usuário ou senha inválida')
-        
-        const tokenContent = {
-            userName: user.userName,
-            data_geracao: moment()
-        }
-        const keyToken= properties.keyToken    
-        const option = { expiresIn: '1h' }
-        const token = jwt.sign(tokenContent, keyToken, option)
-        
-        const response = {
-            userName: user.userName,
-            token: token
-        }
-        
-        return utils.makeResponse(200, 'Login Efetuado', response)
-    } catch (error) {
-        throw {
-            error: error
-        }
-    }
+		const accessGranted = await bcrypt.compareSync(
+			user.userPassword,
+			userFound.userPassword
+		)
+
+		if (!accessGranted)
+			return utils.makeResponse(401, 'Usuário ou senha inválida')
+
+		userFound.toObject()
+		userFound.loginList.push(utils.actualDateToBataBase())
+		if (userFound.loginList.length > 50) {
+			userFound.loginList.shift()
+		}
+
+		await model.userModel.updateOne(params, userFound, (err, res) => {
+			if (err) {
+				throw new Error(err)
+			}
+		})
+
+		const tokenContent = {
+			userId: userFound._id,
+			userName: userFound.userName,
+		}
+
+		const tokenExpiration = user.remember ? '30d' : '30m'
+
+		const keyToken = properties.keyToken
+		const option = { expiresIn: tokenExpiration }
+		const token = jwt.sign(tokenContent, keyToken, option)
+
+		const response = {
+			userName: user.userName,
+			token: token,
+		}
+
+		return utils.makeResponse(200, 'Login Efetuado', response)
+	} catch (error) {
+		throw {
+			error: error,
+		}
+	}
 }
 
 module.exports = {
-    login
+	login,
 }

@@ -1,137 +1,211 @@
-const _ = require('lodash')
+const { isEmpty, round } = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
+const transactionController = require('./transactionController')
 
-async function getListBanks(){
-    
-    try {
-        const bankFind = await db.find(model.bankModel)
-        if (_.isEmpty(bankFind))
-        return utils.makeResponse(203, 'Bancos não encontrados',[])
+async function getListBanks(typeTransaction) {
+	try {
+		let params = { userId: global.userId }
+		switch (typeTransaction) {
+			case 'contaCorrente':
+				params.bankType = { $in: ['Conta Corrente', 'Conta Cartão'] }
+				break
 
-        return utils.makeResponse(200, 'Lista de Bancos', bankFind)
-    } catch (error) {
-        throw {
-            error: error
-        }
-    }
+			case 'cartaoCredito':
+				params.bankType = { $in: ['Cartão de Crédito'] }
+				break
+
+			case 'planejamento':
+				params.bankType = { $in: ['Conta Corrente', 'Conta Cartão'] }
+				break
+
+			default:
+				break
+		}
+
+		const bankFind = await db.find(model.bankModel, params).sort('name')
+		if (isEmpty(bankFind))
+			return utils.makeResponse(203, 'Bancos não encontrados', [])
+
+		return utils.makeResponse(200, 'Lista de Bancos', bankFind)
+	} catch (error) {
+		console.log(error)
+		throw {
+			error: error,
+		}
+	}
 }
 
-async function getBank(idBank){
-    try {
+async function getListBanksDashboard() {
+	try {
+		let params = {
+			userId: global.userId,
+			bankType: { $in: ['Conta Corrente', 'Conta Cartão'] },
+		}
+		const bankFind = await db.find(model.bankModel, params).sort('name')
+		if (isEmpty(bankFind))
+			return utils.makeResponse(203, 'Bancos não encontrados', [])
 
-        const params = { _id: idBank }
-        const bankFind = await db.findOne(model.bankModel, params)
-        if (_.isEmpty(bankFind))
-            return utils.makeResponse(203, 'Banco não encontrado')
+		const transactionNotCompensatedByBank = await transactionController.transactionNotCompensatedByBank()
 
-        return utils.makeResponse(200, 'Banco encontrado', bankFind)
-    } catch (error) {
-        throw {
-            error: error
-        }
-    }
+		let banksToReturn = []
+
+		bankFind.forEach((bank) => {
+			const result = transactionNotCompensatedByBank.data.filter(
+				(saldoBank) => {
+					return saldoBank.bank_id.toString() === bank._id.toString()
+				}
+			)
+
+			let saldoNotCompensated
+			if (result.length > 0) {
+				saldoNotCompensated = result[0].saldoNotCompesated
+			} else {
+				saldoNotCompensated = 0
+			}
+
+			const saldoSistemaDeduzido = bank.systemBalance - saldoNotCompensated
+			const diference = saldoSistemaDeduzido - bank.manualBalance
+			const content = {
+				id: bank._id,
+				name: bank.name,
+				bankType: bank.bankType,
+				saldoSistemaDeduzido: round(saldoSistemaDeduzido, 2),
+				saldoSistema: round(bank.systemBalance, 2),
+				saldoManual: round(bank.manualBalance, 2),
+				diference: round(diference, 2),
+			}
+			banksToReturn.push(content)
+		})
+
+		return utils.makeResponse(200, 'Lista de Bancos', banksToReturn)
+	} catch (error) {
+		console.log(error)
+		throw {
+			error: error,
+		}
+	}
 }
 
-async function createBank(bankToCreate){
-    try {
-        const validation = await validateBank(bankToCreate)
-        if (validation)
-            return utils.makeResponse(203, validation)
+async function getBank(idBank) {
+	try {
+		const params = { _id: idBank, userId: global.userId }
+		const bankFind = await db.findOne(model.bankModel, params)
+		if (isEmpty(bankFind))
+			return utils.makeResponse(203, 'Banco não encontrado')
 
-        const params = { name: bankToCreate.name }
-        const bankFind = await db.findOne(model.bankModel, params)
-        if (!_.isEmpty(bankFind))
-            return utils.makeResponse(203, 'Banco já cadastrado')
-
-        const bankToSave = new model.bankModel(bankToCreate)
-        const response = await db.save(bankToSave)
-        return utils.makeResponse(201, 'Banco criado com sucesso', response)
-    } catch (error) {
-        throw {
-            error: error
-        }
-    }
+		return utils.makeResponse(200, 'Banco encontrado', bankFind)
+	} catch (error) {
+		console.log(error)
+		throw {
+			error: error,
+		}
+	}
 }
 
-async function updateBank(idBank, bankToUpdate){
-    try {
-        const validation = await validateBank(bankToUpdate)
-        if (validation)
-            return utils.makeResponse(203, validation)
+async function createBank(bankToCreate) {
+	try {
+		const validation = await validateBank(bankToCreate)
+		if (validation) return utils.makeResponse(203, validation)
 
-        let param = { name: bankToUpdate.name }
-        let bankFind = await db.findOne(model.bankModel, param)
-        if (!_.isEmpty(bankFind)){
-            if(bankFind._id != idBank)
-                return utils.makeResponse(203, 'Banco já cadastrado')
-        }
+		const params = { name: bankToCreate.name, userId: global.userId }
+		const bankFind = await db.findOne(model.bankModel, params)
+		if (!isEmpty(bankFind))
+			return utils.makeResponse(203, 'Banco já cadastrado')
 
-        params = { _id: idBank }
-        bankFind = await db.findOne(model.bankModel, params)
+		bankToCreate.userId = global.userId
+		bankToCreate.createDate = utils.actualDateToBataBase()
 
-        if (_.isEmpty(bankFind)) {
-            return utils.makeResponse(203, 'Banco não encontrado')
-        }
-
-        await model.bankModel.updateOne(
-            params,
-            bankToUpdate,
-            (err, res) => {
-                if (err) {
-                    throw new Error(err)
-                }
-            }
-        )
-
-        const categoryReturn = await db.findOne(model.bankModel, params)
-        return utils.makeResponse(202, 'Banco atualizado com sucesso', categoryReturn)
-    } catch (error) {
-        throw {
-            error: error
-        }
-    }
+		const bankToSave = new model.bankModel(bankToCreate)
+		const response = await db.save(bankToSave)
+		return utils.makeResponse(201, 'Banco criado com sucesso', response)
+	} catch (error) {
+		console.log(error)
+		throw {
+			error: error,
+		}
+	}
 }
 
-async function deleteBank(idBank){
-    try {
-        
-        const params = { _id: idBank }
-        const bankFind = await db.findOne(model.bankModel, params)
-        if (_.isEmpty(bankFind))
-            return utils.makeResponse(203, 'Banco não encontrado')
+async function updateBank(idBank, bankToUpdate) {
+	try {
+		// const validation = await validateBank(bankToUpdate)
+		// if (validation)
+		//     return utils.makeResponse(203, validation)
 
-        const categoryToDelete = new model.bankModel(bankFind)
-        const response = await db.remove(categoryToDelete)
-        return utils.makeResponse(202, 'Banco removido com sucesso', response)
-    } catch (error) {
-        throw {
-            error: error
-        }
-    }
+		let param = { name: bankToUpdate.name, userId: global.userId }
+		let bankFind = await db.findOne(model.bankModel, param)
+		if (!isEmpty(bankFind)) {
+			if (bankFind._id != idBank)
+				return utils.makeResponse(203, 'Banco já cadastrado')
+		}
+
+		params = { _id: idBank, userId: global.userId }
+		bankFind = await db.findOne(model.bankModel, params)
+
+		if (isEmpty(bankFind)) {
+			return utils.makeResponse(203, 'Banco não encontrado')
+		}
+
+		await model.bankModel.updateOne(params, bankToUpdate, (err, res) => {
+			if (err) {
+				throw new Error(err)
+			}
+		})
+
+		const categoryReturn = await db.findOne(model.bankModel, params)
+		return utils.makeResponse(
+			202,
+			'Banco atualizado com sucesso',
+			categoryReturn
+		)
+	} catch (error) {
+		console.log(error)
+		throw {
+			error: error,
+		}
+	}
 }
 
-function validateBank(bankToCreate){
-    
-    requireds = ['name', 'bankType']
-    const response = utils.validateRequiredsElements(bankToCreate, requireds)
-    if(response)
-        return 'Os atributo(s) a seguir não foi(ram) informados: ' + response
-    
-    if (bankToCreate.name.length < 3)
-        return 'O nome não pode ter menos de 3 caracteres'
+async function deleteBank(idBank) {
+	try {
+		const params = { _id: idBank, userId: global.userId }
+		const bankFind = await db.findOne(model.bankModel, params)
+		if (isEmpty(bankFind))
+			return utils.makeResponse(203, 'Banco não encontrado')
 
-    let arr = ['Conta Corrente', 'Conta Cartão', 'Cartão de Crédito', 'Poupança']
+		const categoryToDelete = new model.bankModel(bankFind)
+		const response = await db.remove(categoryToDelete)
+		return utils.makeResponse(202, 'Banco removido com sucesso', response)
+	} catch (error) {
+		console.log(error)
+		throw {
+			error: error,
+		}
+	}
+}
 
-    if (!arr.includes(bankToCreate.bankType))
-        return 'O tipo de banco não foi informado corretamente'
+function validateBank(bankToCreate) {
+	let requested = ['name', 'bankType']
+	const response = utils.validateRequestedElements(bankToCreate, requested)
+	if (response)
+		return 'Os atributo(s) a seguir não foi(ram) informados: ' + response
+
+	if (bankToCreate.name.length < 3)
+		return 'O nome não pode ter menos de 3 caracteres'
+
+	let arr = ['Conta Corrente', 'Conta Cartão', 'Cartão de Crédito', 'Poupança']
+
+	if (!arr.includes(bankToCreate.bankType))
+		return 'O tipo de banco não foi informado corretamente'
 }
 
 module.exports = {
-    getListBanks,
-    getBank,
-    createBank,
-    updateBank,
-    deleteBank
+	getListBanks,
+	getBank,
+	createBank,
+	updateBank,
+	deleteBank,
+	getListBanksDashboard,
 }

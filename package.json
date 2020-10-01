@@ -1,37 +1,38 @@
 {
-  "name": "sgf-backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "jest",
-    "dev": "node node_modules/nodemon/bin/nodemon server",
-    "start": "node server.js"
-  },
-  "author": "Thiago Moreira",
-  "license": "ISC",
-  "dependencies": {
-    "bcrypt": "^4.0.1",
-    "cors": "^2.8.5",
-    "dotenv": "^8.2.0",
-    "express": "^4.17.1",
-    "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.15",
-    "moment": "^2.24.0",
-    "moment-timezone": "^0.5.28",
-    "mongoose": "^5.9.9",
-    "swagger-jsdoc": "^4.0.0",
-    "swagger-ui-express": "^4.1.4",
-    "xborder-log-messages": "^1.0.0"
-  },
-  "devDependencies": {
-    "jest": "^24.9.0",
-    "mockingoose": "^2.13.2",
-    "moxios": "^0.4.0",
-    "nock": "^11.7.0",
-    "nodemon": "^2.0.1"
-  },
-  "jest": {
-    "testEnvironment": "node"
-  }
+	"name": "sgf-backend",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "jest",
+		"tdd": "jest -- watch",
+		"dev": "node node_modules/nodemon/bin/nodemon server",
+		"start": "node server.js"
+	},
+	"author": "Thiago Moreira",
+	"license": "ISC",
+	"dependencies": {
+		"bcryptjs": "^2.4.3",
+		"cors": "^2.8.5",
+		"dotenv": "^8.2.0",
+		"express": "^4.17.1",
+		"jsonwebtoken": "^8.5.1",
+		"lodash": "^4.17.19",
+		"moment": "^2.29.0",
+		"moment-timezone": "^0.5.31",
+		"mongoose": "^5.10.7",
+		"swagger-jsdoc": "^4.2.0",
+		"swagger-ui-express": "^4.1.4",
+		"xborder-log-messages": "^1.0.0"
+	},
+	"devDependencies": {
+		"jest": "^24.9.0",
+		"mockingoose": "^2.13.2",
+		"moxios": "^0.4.0",
+		"nock": "^11.7.0",
+		"nodemon": "^2.0.4"
+	},
+	"jest": {
+		"testEnvironment": "node"
+	}
 }

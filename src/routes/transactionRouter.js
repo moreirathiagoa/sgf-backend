@@ -1,101 +1,161 @@
-const _ = require('lodash')
+const { isEmpty } = require('lodash')
 const express = require('express')
 const controller = require('../controllers')
 const router = express.Router()
 const auth = require('../middlewares/auth')
 
-router.get('/list', auth, async (req, res, next) => {
-    //console.log(res.locals.authData)
-
-    try {    
-        const response = await controller.transactionController.getListTransacation()
-        res.status(response.code).send(response)
-    } catch (error) {
-        res.status(500).send(error)
-    }   
-
+router.get('/list/:typeTransaction', auth, async (req, res, next) => {
+	global.userId = res.locals.authData.userId
+	const { typeTransaction } = req.params
+	try {
+		const response = await controller.transactionController.getListTransaction(
+			typeTransaction
+		)
+		res.status(response.code).send(response)
+	} catch (error) {
+		res.status(500).send(error)
+	}
 })
 
 router.post('/filter', auth, async (req, res, next) => {
-    
-    try {
-
-        let response
-        if (_.isEmpty(req.body)){
-            response = utils.makeResponse(204, 'Sem informação no corpo')
-        } else {
-            response = await controller.transactionController.getFilterTransacation(req.body)
-        }
-        res.status(response.code).send(response)
-
-    } catch (error) {
-        res.status(500).send(error)
-    }   
-
-})
-
-router.get('/:idTransaction', auth, async (req, res, next) => {
-    
-    const {idTransaction} = req.params
-    try {
-        const response = await controller.transactionController.getTransaction(idTransaction)
-        res.status(response.code).send(response)
-    } catch (error) {
-        res.status(500).send(error)
-    }   
-
+	global.userId = res.locals.authData.userId
+	try {
+		let response
+		if (isEmpty(req.body)) {
+			response = utils.makeResponse(204, 'Sem informação no corpo')
+		} else {
+			response = await controller.transactionController.getFilterTransaction(
+				req.body
+			)
+		}
+		res.status(response.code).send(response)
+	} catch (error) {
+		res.status(500).send(error)
+	}
 })
 
 router.post('/create', auth, async (req, res, next) => {
-    
-    try {
-        let response
-        if (_.isEmpty(req.body)){
-            response = utils.makeResponse(204, 'Sem informação no corpo')
-        } else {
-            response = await controller.transactionController.createTransaction(req.body)
-        }
-        res.status(response.code).send(response)
-
-    } catch (error) {
-        res.status(500).send(error)
-    }   
-
+	global.userId = res.locals.authData.userId
+	try {
+		let response
+		if (isEmpty(req.body)) {
+			response = utils.makeResponse(204, 'Sem informação no corpo')
+		} else {
+			response = await controller.transactionController.createTransaction(
+				req.body
+			)
+		}
+		res.status(response.code).send(response)
+	} catch (error) {
+		res.status(500).send(error)
+	}
 })
 
 router.put('/update/:idTransaction', auth, async (req, res, next) => {
-    
-    const {idTransaction} = req.params
-
-    try {
-        let response
-        if (_.isEmpty(req.body)){
-            response = utils.makeResponse(204, 'Sem informação no corpo')
-        }
-        else{
-            response = await controller.transactionController.updateTransaction(idTransaction, req.body)
-        }
-        res.status(response.code).send(response)
-        
-    } catch (error) {
-        res.status(500).send(error)
-    }   
-
+	global.userId = res.locals.authData.userId
+	const { idTransaction } = req.params
+	try {
+		let response
+		if (isEmpty(req.body)) {
+			response = utils.makeResponse(204, 'Sem informação no corpo')
+		} else {
+			response = await controller.transactionController.updateTransaction(
+				idTransaction,
+				req.body
+			)
+		}
+		res.status(response.code).send(response)
+	} catch (error) {
+		res.status(500).send(error)
+	}
 })
 
 router.delete('/delete/:idTransaction', auth, async (req, res, next) => {
-    
-    const {idTransaction} = req.params
+	global.userId = res.locals.authData.userId
+	const { idTransaction } = req.params
 
-    try {
-        
-        const response = await controller.transactionController.deleteTransaction(idTransaction)
-        res.status(response.code).send(response)
+	try {
+		const response = await controller.transactionController.deleteTransaction(
+			idTransaction
+		)
+		res.status(response.code).send(response)
+	} catch (error) {
+		res.status(500).send(error)
+	}
+})
 
-    } catch (error) {
-        res.status(500).send(error)
-    }   
+router.get('/not-compensated-by-bank', auth, async (req, res, next) => {
+	global.userId = res.locals.authData.userId
+	try {
+		const response = await controller.transactionController.transactionNotCompensatedByBank()
+		res.status(response.code).send(response)
+	} catch (error) {
+		console.log(error)
+		res.status(500).send(error)
+	}
+})
 
+router.get('/not-compensated-credit', auth, async (req, res, next) => {
+	global.userId = res.locals.authData.userId
+	try {
+		const response = await controller.transactionController.transactionNotCompensatedCredit()
+		res.status(response.code).send(response)
+	} catch (error) {
+		console.log(error)
+		res.status(500).send(error)
+	}
+})
+
+router.get('/future-balance', auth, async (req, res, next) => {
+	global.userId = res.locals.authData.userId
+	try {
+		const response = await controller.transactionController.futureTransactionBalance()
+		res.status(response.code).send(response)
+	} catch (error) {
+		console.log(error)
+		res.status(500).send(error)
+	}
+})
+
+router.get('/not-compensated-debit', auth, async (req, res, next) => {
+	global.userId = res.locals.authData.userId
+	try {
+		const response = await controller.transactionController.transactionNotCompensatedDebit()
+		res.status(response.code).send(response)
+	} catch (error) {
+		console.log(error)
+		res.status(500).send(error)
+	}
+})
+
+router.post('/planToPrincipal', auth, async (req, res, next) => {
+	global.userId = res.locals.authData.userId
+	try {
+		let response
+		if (isEmpty(req.body)) {
+			response = utils.makeResponse(204, 'Sem informação no corpo')
+		} else {
+			response = await controller.transactionController.planToPrincipal(
+				req.body
+			)
+		}
+		res.status(response.code).send(response)
+	} catch (error) {
+		res.status(500).send(error)
+	}
+})
+
+router.get('/:idTransaction', auth, async (req, res, next) => {
+	global.userId = res.locals.authData.userId
+	const { idTransaction } = req.params
+	try {
+		const response = await controller.transactionController.getTransaction(
+			idTransaction
+		)
+		res.status(response.code).send(response)
+	} catch (error) {
+		res.status(500).send(error)
+	}
 })
 
 module.exports = router
