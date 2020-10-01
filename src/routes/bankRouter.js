@@ -1,4 +1,4 @@
-const _ = require('lodash')
+const { isEmpty } = require('lodash')
 const express = require('express')
 const controller = require('../controllers')
 const router = express.Router()
@@ -20,7 +20,7 @@ router.get('/list/:typeTransaction', auth, async (req, res, next) => {
 router.get('/list-dashboard', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
-		const response = await controller.bankController.getListBanksDahsboard()
+		const response = await controller.bankController.getListBanksDashboard()
 		res.status(response.code).send(response)
 	} catch (error) {
 		res.status(500).send(error)
@@ -42,7 +42,7 @@ router.post('/create', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
 		let response
-		if (_.isEmpty(req.body)) {
+		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
 			response = await controller.bankController.createBank(req.body)
@@ -60,7 +60,7 @@ router.put('/update/:idBank', auth, async (req, res, next) => {
 
 	try {
 		let response
-		if (_.isEmpty(req.body)) {
+		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
 			response = await controller.bankController.updateBank(idBank, req.body)

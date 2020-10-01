@@ -1,4 +1,4 @@
-const _ = require('lodash')
+const { isEmpty } = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
@@ -6,13 +6,11 @@ const bcrypt = require('bcryptjs')
 
 async function getListUsers() {
 	try {
-		const userFinded = await db
-			.find(model.userModel)
-			.select('userName isActive')
-		if (_.isEmpty(userFinded))
+		const userFound = await db.find(model.userModel).select('userName isActive')
+		if (isEmpty(userFound))
 			return utils.makeResponse(203, 'Usuários não encontrados', [])
 
-		return utils.makeResponse(200, 'Lista de Usuários', userFinded)
+		return utils.makeResponse(200, 'Lista de Usuários', userFound)
 	} catch (error) {
 		throw {
 			error: error,
@@ -23,13 +21,13 @@ async function getListUsers() {
 async function getUser(idUser) {
 	try {
 		const params = { _id: idUser }
-		const userFinded = await db
+		const userFound = await db
 			.findOne(model.userModel, params)
 			.select('userName isActive')
-		if (_.isEmpty(userFinded))
+		if (isEmpty(userFound))
 			return utils.makeResponse(203, 'Usuários não encontrado')
 
-		return utils.makeResponse(200, 'Usuários encontrado', userFinded)
+		return utils.makeResponse(200, 'Usuários encontrado', userFound)
 	} catch (error) {
 		throw {
 			error: error,
@@ -43,8 +41,8 @@ async function createUser(userToCreate) {
 		if (validation) return utils.makeResponse(203, validation)
 
 		const params = { userName: userToCreate.userName }
-		const userFinded = await db.findOne(model.userModel, params)
-		if (!_.isEmpty(userFinded))
+		const userFound = await db.findOne(model.userModel, params)
+		if (!isEmpty(userFound))
 			return utils.makeResponse(203, 'Usuários já cadastrado')
 
 		userToCreate.userPassword = bcrypt.hashSync(userToCreate.userPassword, 10)
@@ -68,16 +66,16 @@ async function updateUser(idUser, userToUpdate) {
 		if (validation) return utils.makeResponse(203, validation)
 
 		let param = { userName: userToUpdate.userName }
-		let userFinded = await db.findOne(model.userModel, param)
-		if (!_.isEmpty(userFinded)) {
-			if (userFinded._id != idUser)
+		let userFound = await db.findOne(model.userModel, param)
+		if (!isEmpty(userFound)) {
+			if (userFound._id != idUser)
 				return utils.makeResponse(203, 'Usuários já cadastrado')
 		}
 
 		params = { _id: idUser }
-		userFinded = await db.findOne(model.userModel, params)
+		userFound = await db.findOne(model.userModel, params)
 
-		if (_.isEmpty(userFinded)) {
+		if (isEmpty(userFound)) {
 			return utils.makeResponse(203, 'Usuários não encontrado')
 		}
 
@@ -105,8 +103,8 @@ async function updateUser(idUser, userToUpdate) {
 }
 
 function validateUser(userToCreate) {
-	requireds = ['userName', 'userPassword']
-	const response = utils.validateRequiredsElements(userToCreate, requireds)
+	let requested = ['userName', 'userPassword']
+	const response = utils.validateRequestedElements(userToCreate, requested)
 	if (response)
 		return 'Os atributo(s) a seguir não foi(ram) informados: ' + response
 

@@ -1,4 +1,3 @@
-const _ = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
@@ -9,31 +8,31 @@ const bcrypt = require('bcryptjs')
 async function login(user) {
 	try {
 		const params = { userName: user.userName.toLowerCase() }
-		let userFinded = await db.findOne(model.userModel, params)
+		let userFound = await db.findOne(model.userModel, params)
 
 		const accessGranted = await bcrypt.compareSync(
 			user.userPassword,
-			userFinded.userPassword
+			userFound.userPassword
 		)
 
 		if (!accessGranted)
 			return utils.makeResponse(401, 'Usuário ou senha inválida')
 
-		userFinded.toObject()
-		userFinded.loginList.push(utils.actualDateToBataBase())
-		if (userFinded.loginList.length > 50) {
-			userFinded.loginList.shift()
+		userFound.toObject()
+		userFound.loginList.push(utils.actualDateToBataBase())
+		if (userFound.loginList.length > 50) {
+			userFound.loginList.shift()
 		}
 
-		await model.userModel.updateOne(params, userFinded, (err, res) => {
+		await model.userModel.updateOne(params, userFound, (err, res) => {
 			if (err) {
 				throw new Error(err)
 			}
 		})
 
 		const tokenContent = {
-			userId: userFinded._id,
-			userName: userFinded.userName,
+			userId: userFound._id,
+			userName: userFound.userName,
 		}
 
 		const tokenExpiration = user.remember ? '30d' : '30m'

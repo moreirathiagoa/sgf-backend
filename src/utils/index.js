@@ -1,4 +1,3 @@
-const _ = require('lodash')
 const moment = require('moment/min/moment-with-locales')
 
 function actualDateToUser() {
@@ -60,9 +59,9 @@ function addMonth(date, qtd) {
 	return moment(date).add(qtd, 'month')
 }
 
-function validateRequiredsElements(object, requireds) {
+function validateRequestedElements(object, requested) {
 	let emptyAtributes = []
-	requireds.forEach((element) => {
+	requested.forEach((element) => {
 		if (!object.hasOwnProperty(element)) {
 			emptyAtributes.push(element)
 		}
@@ -83,7 +82,7 @@ function isNumeric(n) {
 }
 
 module.exports = {
-	validateRequiredsElements,
+	validateRequestedElements,
 	isNumeric,
 	makeResponse,
 	actualDateToUser,

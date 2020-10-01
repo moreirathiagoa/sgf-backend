@@ -1,4 +1,4 @@
-const _ = require('lodash')
+const { isEmpty } = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
@@ -7,7 +7,7 @@ async function getListFatures(idBank) {
 	try {
 		const params = { bank_id: idBank, userId: global.userId }
 		const fatureFind = await db.find(model.faturesModel, params)
-		if (_.isEmpty(fatureFind))
+		if (isEmpty(fatureFind))
 			return utils.makeResponse(203, 'Faturas não encontradas', [])
 
 		return utils.makeResponse(200, 'Lista de Faturas', fatureFind)
@@ -26,7 +26,7 @@ async function getFature(idFature) {
 			.findOne(model.faturesModel, params)
 			.populate('bank_id', 'name')
 
-		if (_.isEmpty(fatureFind))
+		if (isEmpty(fatureFind))
 			return utils.makeResponse(203, 'Fatura não encontrada', '')
 
 		return utils.makeResponse(200, 'Fatura encontrada', fatureFind)
@@ -45,7 +45,7 @@ async function payFature(idFature) {
 			.findOne(model.faturesModel, paramsFature)
 			.populate('bank_id', 'name')
 
-		if (_.isEmpty(fatureFind))
+		if (isEmpty(fatureFind))
 			return utils.makeResponse(203, 'Fatura não encontrada', '')
 
 		const fatureToUpdate = {
@@ -62,14 +62,14 @@ async function payFature(idFature) {
 			}
 		)
 
-		const paramsTransation = { fature_id: idFature, userId: global.userId }
+		const paramsTransaction = { fature_id: idFature, userId: global.userId }
 
 		const transactionToUpdate = {
 			isCompesed: true,
 		}
 
 		await model.transactionModel.updateMany(
-			paramsTransation,
+			paramsTransaction,
 			transactionToUpdate,
 			(err, res) => {
 				if (err) {
