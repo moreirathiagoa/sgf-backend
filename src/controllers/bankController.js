@@ -1,4 +1,4 @@
-const _ = require('lodash')
+const { isEmpty, round } = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
@@ -25,7 +25,7 @@ async function getListBanks(typeTransaction) {
 		}
 
 		const bankFind = await db.find(model.bankModel, params).sort('name')
-		if (_.isEmpty(bankFind))
+		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Bancos não encontrados', [])
 
 		return utils.makeResponse(200, 'Lista de Bancos', bankFind)
@@ -44,7 +44,7 @@ async function getListBanksDashboard() {
 			bankType: { $in: ['Conta Corrente', 'Conta Cartão'] },
 		}
 		const bankFind = await db.find(model.bankModel, params).sort('name')
-		if (_.isEmpty(bankFind))
+		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Bancos não encontrados', [])
 
 		const transactionNotCompensatedByBank = await transactionController.transactionNotCompensatedByBank()
@@ -71,10 +71,10 @@ async function getListBanksDashboard() {
 				id: bank._id,
 				name: bank.name,
 				bankType: bank.bankType,
-				saldoSistemaDeduzido: _.round(saldoSistemaDeduzido, 2),
-				saldoSistema: _.round(bank.systemBalance, 2),
-				saldoManual: _.round(bank.manualBalance, 2),
-				diference: _.round(diference, 2),
+				saldoSistemaDeduzido: round(saldoSistemaDeduzido, 2),
+				saldoSistema: round(bank.systemBalance, 2),
+				saldoManual: round(bank.manualBalance, 2),
+				diference: round(diference, 2),
 			}
 			banksToReturn.push(content)
 		})
@@ -92,7 +92,7 @@ async function getBank(idBank) {
 	try {
 		const params = { _id: idBank, userId: global.userId }
 		const bankFind = await db.findOne(model.bankModel, params)
-		if (_.isEmpty(bankFind))
+		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Banco não encontrado')
 
 		return utils.makeResponse(200, 'Banco encontrado', bankFind)
@@ -111,7 +111,7 @@ async function createBank(bankToCreate) {
 
 		const params = { name: bankToCreate.name, userId: global.userId }
 		const bankFind = await db.findOne(model.bankModel, params)
-		if (!_.isEmpty(bankFind))
+		if (!isEmpty(bankFind))
 			return utils.makeResponse(203, 'Banco já cadastrado')
 
 		bankToCreate.userId = global.userId
@@ -136,7 +136,7 @@ async function updateBank(idBank, bankToUpdate) {
 
 		let param = { name: bankToUpdate.name, userId: global.userId }
 		let bankFind = await db.findOne(model.bankModel, param)
-		if (!_.isEmpty(bankFind)) {
+		if (!isEmpty(bankFind)) {
 			if (bankFind._id != idBank)
 				return utils.makeResponse(203, 'Banco já cadastrado')
 		}
@@ -144,7 +144,7 @@ async function updateBank(idBank, bankToUpdate) {
 		params = { _id: idBank, userId: global.userId }
 		bankFind = await db.findOne(model.bankModel, params)
 
-		if (_.isEmpty(bankFind)) {
+		if (isEmpty(bankFind)) {
 			return utils.makeResponse(203, 'Banco não encontrado')
 		}
 
@@ -172,7 +172,7 @@ async function deleteBank(idBank) {
 	try {
 		const params = { _id: idBank, userId: global.userId }
 		const bankFind = await db.findOne(model.bankModel, params)
-		if (_.isEmpty(bankFind))
+		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Banco não encontrado')
 
 		const categoryToDelete = new model.bankModel(bankFind)

@@ -1,7 +1,5 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
-const utils = require('../utils')
-const properties = require('../properties')
 
 const category = new Schema({
 	userId: { type: String, required: true },

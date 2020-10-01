@@ -1,4 +1,4 @@
-const _ = require('lodash')
+const { isEmpty } = require('lodash')
 const express = require('express')
 const controller = require('../controllers')
 const router = express.Router()
@@ -21,7 +21,7 @@ router.post('/filter', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
 		let response
-		if (_.isEmpty(req.body)) {
+		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
 			response = await controller.transactionController.getFilterTransaction(
@@ -38,7 +38,7 @@ router.post('/create', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
 		let response
-		if (_.isEmpty(req.body)) {
+		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
 			response = await controller.transactionController.createTransaction(
@@ -56,7 +56,7 @@ router.put('/update/:idTransaction', auth, async (req, res, next) => {
 	const { idTransaction } = req.params
 	try {
 		let response
-		if (_.isEmpty(req.body)) {
+		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
 			response = await controller.transactionController.updateTransaction(
@@ -132,7 +132,7 @@ router.post('/planToPrincipal', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
 		let response
-		if (_.isEmpty(req.body)) {
+		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
 			response = await controller.transactionController.planToPrincipal(
