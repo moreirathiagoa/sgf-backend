@@ -1,4 +1,4 @@
-const _ = require('lodash')
+const { isEmpty } = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
@@ -7,7 +7,7 @@ async function getListCategory() {
 	const params = { userId: global.userId }
 	try {
 		const categoryFind = await db.find(model.categoryModel, params).sort('name')
-		if (_.isEmpty(categoryFind))
+		if (isEmpty(categoryFind))
 			return utils.makeResponse(203, 'Categorias não encontradas', [])
 
 		return utils.makeResponse(200, 'Lista de Categorias', categoryFind)
@@ -22,7 +22,7 @@ async function getCategory(idCategory) {
 	try {
 		const params = { _id: idCategory, userId: global.userId }
 		const categoryFind = await db.findOne(model.categoryModel, params)
-		if (_.isEmpty(categoryFind))
+		if (isEmpty(categoryFind))
 			return utils.makeResponse(203, 'Categoria não encontrada')
 
 		return utils.makeResponse(200, 'Categoria encontrada', categoryFind)
@@ -40,7 +40,7 @@ async function createCategory(categoryToCreate) {
 
 		const params = { name: categoryToCreate.name, userId: global.userId }
 		const categoryFind = await db.findOne(model.categoryModel, params)
-		if (!_.isEmpty(categoryFind))
+		if (!isEmpty(categoryFind))
 			return utils.makeResponse(203, 'Categoria já cadastrada')
 
 		categoryToCreate.userId = global.userId
@@ -63,7 +63,7 @@ async function updateCategory(idCategory, categoryToUpdate) {
 
 		let param = { name: categoryToUpdate.name, userId: global.userId }
 		let categoryFind = await db.findOne(model.categoryModel, param)
-		if (!_.isEmpty(categoryFind)) {
+		if (!isEmpty(categoryFind)) {
 			if (categoryFind._id != idCategory)
 				return utils.makeResponse(203, 'Categoria já cadastrada')
 		}
@@ -71,7 +71,7 @@ async function updateCategory(idCategory, categoryToUpdate) {
 		params = { _id: idCategory, userId: global.userId }
 		categoryFind = await db.findOne(model.categoryModel, params)
 
-		if (_.isEmpty(categoryFind)) {
+		if (isEmpty(categoryFind)) {
 			return utils.makeResponse(203, 'Categoria não encontrada')
 		}
 
@@ -102,7 +102,7 @@ async function deleteCategory(idCategory) {
 	try {
 		const params = { _id: idCategory, userId: global.userId }
 		const categoryFind = await db.findOne(model.categoryModel, params)
-		if (_.isEmpty(categoryFind))
+		if (isEmpty(categoryFind))
 			return utils.makeResponse(203, 'Categoria não encontrada')
 
 		const categoryToDelete = new model.categoryModel(categoryFind)

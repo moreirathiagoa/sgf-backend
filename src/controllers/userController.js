@@ -1,4 +1,4 @@
-const _ = require('lodash')
+const { isEmpty } = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs')
 async function getListUsers() {
 	try {
 		const userFound = await db.find(model.userModel).select('userName isActive')
-		if (_.isEmpty(userFound))
+		if (isEmpty(userFound))
 			return utils.makeResponse(203, 'Usuários não encontrados', [])
 
 		return utils.makeResponse(200, 'Lista de Usuários', userFound)
@@ -24,7 +24,7 @@ async function getUser(idUser) {
 		const userFound = await db
 			.findOne(model.userModel, params)
 			.select('userName isActive')
-		if (_.isEmpty(userFound))
+		if (isEmpty(userFound))
 			return utils.makeResponse(203, 'Usuários não encontrado')
 
 		return utils.makeResponse(200, 'Usuários encontrado', userFound)
@@ -42,7 +42,7 @@ async function createUser(userToCreate) {
 
 		const params = { userName: userToCreate.userName }
 		const userFound = await db.findOne(model.userModel, params)
-		if (!_.isEmpty(userFound))
+		if (!isEmpty(userFound))
 			return utils.makeResponse(203, 'Usuários já cadastrado')
 
 		userToCreate.userPassword = bcrypt.hashSync(userToCreate.userPassword, 10)
@@ -67,7 +67,7 @@ async function updateUser(idUser, userToUpdate) {
 
 		let param = { userName: userToUpdate.userName }
 		let userFound = await db.findOne(model.userModel, param)
-		if (!_.isEmpty(userFound)) {
+		if (!isEmpty(userFound)) {
 			if (userFound._id != idUser)
 				return utils.makeResponse(203, 'Usuários já cadastrado')
 		}
@@ -75,7 +75,7 @@ async function updateUser(idUser, userToUpdate) {
 		params = { _id: idUser }
 		userFound = await db.findOne(model.userModel, params)
 
-		if (_.isEmpty(userFound)) {
+		if (isEmpty(userFound)) {
 			return utils.makeResponse(203, 'Usuários não encontrado')
 		}
 

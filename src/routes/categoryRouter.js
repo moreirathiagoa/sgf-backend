@@ -1,4 +1,4 @@
-const _ = require('lodash')
+const { isEmpty } = require('lodash')
 const express = require('express')
 const controller = require('../controllers')
 const router = express.Router()
@@ -31,7 +31,7 @@ router.post('/create', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
 		let response
-		if (_.isEmpty(req.body)) {
+		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
 			response = await controller.categoryController.createCategory(req.body)
@@ -49,7 +49,7 @@ router.put('/update/:idCategory', auth, async (req, res, next) => {
 
 	try {
 		let response
-		if (_.isEmpty(req.body)) {
+		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
 			response = await controller.categoryController.updateCategory(

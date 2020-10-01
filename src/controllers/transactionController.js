@@ -1,4 +1,4 @@
-const _ = require('lodash')
+const { round, isEmpty } = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
@@ -14,7 +14,7 @@ async function getListTransaction(typeTransaction) {
 			.populate('category_id', 'name')
 			.populate('fature_id', 'name')
 
-		if (_.isEmpty(transactionFind))
+		if (isEmpty(transactionFind))
 			return utils.makeResponse(203, 'Transação não encontradas', [])
 
 		return utils.makeResponse(200, 'Lista de Transações', transactionFind)
@@ -32,7 +32,7 @@ async function getTransaction(idTransaction) {
 		const transactionFind = await db
 			.findOne(model.transactionModel, params)
 			.populate('fature_id', 'name')
-		if (_.isEmpty(transactionFind))
+		if (isEmpty(transactionFind))
 			return utils.makeResponse(203, 'Transação não encontradas', [])
 
 		return utils.makeResponse(200, 'Transação encontrada', transactionFind)
@@ -168,7 +168,7 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 			transactionToUpdate.efectedDate
 		)
 
-		if (_.isEmpty(oldTransaction)) {
+		if (isEmpty(oldTransaction)) {
 			return utils.makeResponse(203, 'Transação não encontrada')
 		}
 
@@ -241,7 +241,7 @@ async function deleteTransaction(idTransaction) {
 	try {
 		const params = { _id: idTransaction, userId: global.userId }
 		const transactionFind = await db.findOne(model.transactionModel, params)
-		if (_.isEmpty(transactionFind))
+		if (isEmpty(transactionFind))
 			return utils.makeResponse(203, 'Transação não encontrada')
 
 		const transactionToDelete = new model.transactionModel(transactionFind)
@@ -597,14 +597,14 @@ async function validadeTransaction(transactionToCreate) {
 async function existCategory(idCategory) {
 	const params = { _id: idCategory }
 	const categoryFind = await db.findOne(model.categoryModel, params)
-	if (_.isEmpty(categoryFind)) return false
+	if (isEmpty(categoryFind)) return false
 	return true
 }
 
 async function existBank(idBank) {
 	const params = { _id: idBank }
 	const bankFind = await db.findOne(model.bankModel, params)
-	if (_.isEmpty(bankFind)) return false
+	if (isEmpty(bankFind)) return false
 	return true
 }
 
@@ -636,7 +636,7 @@ async function updateSaldoContaCorrente(idBank, valor) {
 		.findOne(model.bankModel, params)
 		.select('systemBalance')
 
-	const finalBalance = _.round(bankFind.systemBalance + valor, 2)
+	const finalBalance = round(bankFind.systemBalance + valor, 2)
 	const bankToUpdate = { systemBalance: finalBalance }
 
 	await model.bankModel.updateOne(params, bankToUpdate, (err, res) => {
@@ -652,7 +652,7 @@ async function updateSaldoFatura(idFatura, valor) {
 		.findOne(model.faturesModel, fatureParams)
 		.select('fatureBalance')
 
-	const finalBalance = _.round(fatureFind.fatureBalance + valor, 2)
+	const finalBalance = round(fatureFind.fatureBalance + valor, 2)
 	const fatureToUpdate = { fatureBalance: finalBalance }
 
 	await model.faturesModel.updateOne(

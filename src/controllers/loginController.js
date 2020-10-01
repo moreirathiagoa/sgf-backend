@@ -1,4 +1,3 @@
-const _ = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
