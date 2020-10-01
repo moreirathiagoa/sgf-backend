@@ -116,8 +116,8 @@ async function deleteCategory(idCategory) {
 }
 
 function validadeCategory(categoryToCreate) {
-	requireds = ['name']
-	const response = utils.validateRequestedElements(categoryToCreate, requireds)
+	let requested = ['name']
+	const response = utils.validateRequestedElements(categoryToCreate, requested)
 	if (response)
 		return 'Os atributo(s) a seguir não foi(ram) informados: ' + response
 
