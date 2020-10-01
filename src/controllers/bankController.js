@@ -37,7 +37,7 @@ async function getListBanks(typeTransaction) {
 	}
 }
 
-async function getListBanksDahsboard() {
+async function getListBanksDashboard() {
 	try {
 		let params = {
 			userId: global.userId,
@@ -47,23 +47,25 @@ async function getListBanksDahsboard() {
 		if (_.isEmpty(bankFind))
 			return utils.makeResponse(203, 'Bancos não encontrados', [])
 
-		const transactionNotCompesedByBank = await transactionController.transactionNotCompesedByBank()
+		const transactionNotCompensatedByBank = await transactionController.transactionNotCompensatedByBank()
 
 		let banksToReturn = []
 
 		bankFind.forEach((bank) => {
-			const result = transactionNotCompesedByBank.data.filter((saldoBank) => {
-				return saldoBank.bank_id.toString() === bank._id.toString()
-			})
+			const result = transactionNotCompensatedByBank.data.filter(
+				(saldoBank) => {
+					return saldoBank.bank_id.toString() === bank._id.toString()
+				}
+			)
 
-			let saldoNotCompesated
+			let saldoNotCompensated
 			if (result.length > 0) {
-				saldoNotCompesated = result[0].saldoNotCompesated
+				saldoNotCompensated = result[0].saldoNotCompesated
 			} else {
-				saldoNotCompesated = 0
+				saldoNotCompensated = 0
 			}
 
-			const saldoSistemaDeduzido = bank.systemBalance - saldoNotCompesated
+			const saldoSistemaDeduzido = bank.systemBalance - saldoNotCompensated
 			const diference = saldoSistemaDeduzido - bank.manualBalance
 			const content = {
 				id: bank._id,
@@ -185,8 +187,8 @@ async function deleteBank(idBank) {
 }
 
 function validateBank(bankToCreate) {
-	requireds = ['name', 'bankType']
-	const response = utils.validateRequestedElements(bankToCreate, requireds)
+	let requested = ['name', 'bankType']
+	const response = utils.validateRequestedElements(bankToCreate, requested)
 	if (response)
 		return 'Os atributo(s) a seguir não foi(ram) informados: ' + response
 
@@ -205,5 +207,5 @@ module.exports = {
 	createBank,
 	updateBank,
 	deleteBank,
-	getListBanksDahsboard,
+	getListBanksDashboard,
 }

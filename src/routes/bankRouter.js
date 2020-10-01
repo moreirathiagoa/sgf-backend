@@ -20,7 +20,7 @@ router.get('/list/:typeTransaction', auth, async (req, res, next) => {
 router.get('/list-dashboard', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
-		const response = await controller.bankController.getListBanksDahsboard()
+		const response = await controller.bankController.getListBanksDashboard()
 		res.status(response.code).send(response)
 	} catch (error) {
 		res.status(500).send(error)
