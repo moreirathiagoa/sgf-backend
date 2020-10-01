@@ -3,7 +3,7 @@ const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
 
-async function getListTransacation(typeTransaction) {
+async function getListTransaction(typeTransaction) {
 	try {
 		const params = { typeTransaction: typeTransaction, userId: global.userId }
 
@@ -148,24 +148,24 @@ async function createTransaction(transactionToCreate) {
 	}
 }
 
-async function updateTransaction(idTransaction, transacationToUpdate) {
+async function updateTransaction(idTransaction, transactionToUpdate) {
 	try {
-		const validation = await validadeTransaction(transacationToUpdate)
+		const validation = await validadeTransaction(transactionToUpdate)
 		if (validation) return utils.makeResponse(203, validation)
 
 		const params = { _id: idTransaction, userId: global.userId }
 		const oldTransaction = await db.findOne(model.transactionModel, params)
 
-		if (transacationToUpdate.typeTransaction === 'cartaoCredito') {
-			transacationToUpdate.isCompesed = false
+		if (transactionToUpdate.typeTransaction === 'cartaoCredito') {
+			transactionToUpdate.isCompesed = false
 		}
 
-		if (transacationToUpdate.typeTransaction === 'planejamento') {
-			transacationToUpdate.isCompesed = false
+		if (transactionToUpdate.typeTransaction === 'planejamento') {
+			transactionToUpdate.isCompesed = false
 		}
 
-		transacationToUpdate.efectedDate = utils.formatDateToBataBase(
-			transacationToUpdate.efectedDate
+		transactionToUpdate.efectedDate = utils.formatDateToBataBase(
+			transactionToUpdate.efectedDate
 		)
 
 		if (_.isEmpty(oldTransaction)) {
@@ -174,7 +174,7 @@ async function updateTransaction(idTransaction, transacationToUpdate) {
 
 		await model.transactionModel.updateOne(
 			params,
-			transacationToUpdate,
+			transactionToUpdate,
 			(err, res) => {
 				if (err) {
 					console.log(error)
@@ -184,7 +184,7 @@ async function updateTransaction(idTransaction, transacationToUpdate) {
 		)
 
 		const transactionReturn = await db.findOne(model.transactionModel, params)
-		const saldoAjust = transactionReturn.value - oldTransaction.value
+		const saldoAdjust = transactionReturn.value - oldTransaction.value
 		switch (transactionReturn.typeTransaction) {
 			case 'contaCorrente': {
 				if (
@@ -200,7 +200,7 @@ async function updateTransaction(idTransaction, transacationToUpdate) {
 						oldTransaction.value * -1
 					)
 				} else {
-					await updateSaldoContaCorrente(transactionReturn.bank_id, saldoAjust)
+					await updateSaldoContaCorrente(transactionReturn.bank_id, saldoAdjust)
 				}
 				break
 			}
@@ -218,7 +218,7 @@ async function updateTransaction(idTransaction, transacationToUpdate) {
 						oldTransaction.value * -1
 					)
 				} else {
-					await updateSaldoFatura(transactionReturn.fature_id, saldoAjust)
+					await updateSaldoFatura(transactionReturn.fature_id, saldoAdjust)
 				}
 				break
 			}
@@ -247,14 +247,14 @@ async function deleteTransaction(idTransaction) {
 		const transactionToDelete = new model.transactionModel(transactionFind)
 		const response = await db.remove(transactionToDelete)
 
-		const saldoAjust = -1 * transactionToDelete.value
+		const saldoAdjust = -1 * transactionToDelete.value
 
 		switch (transactionToDelete.typeTransaction) {
 			case 'contaCorrente':
-				await updateSaldoContaCorrente(transactionToDelete.bank_id, saldoAjust)
+				await updateSaldoContaCorrente(transactionToDelete.bank_id, saldoAdjust)
 				break
 			case 'cartaoCredito':
-				await updateSaldoFatura(transactionToDelete.fature_id, saldoAjust)
+				await updateSaldoFatura(transactionToDelete.fature_id, saldoAdjust)
 				break
 			default:
 		}
@@ -316,7 +316,7 @@ async function transactionNotCompesedDebit() {
 	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
 }
 
-async function transactionNotCompesedCredit() {
+async function transactionNotCompensatedCredit() {
 	const params = {
 		userId: global.userId,
 		isCompesed: false,
@@ -382,7 +382,7 @@ async function futureTransactionBalance() {
 	const maxDate = getMaxData(transactionDebit, transactionCredit, cardDebit)
 
 	let indexDate = minDate
-	let responseToreturn = []
+	let responseToReturn = []
 	while (indexDate <= maxDate) {
 		const month = indexDate.getMonth() + 1
 		const year = indexDate.getFullYear()
@@ -405,12 +405,12 @@ async function futureTransactionBalance() {
 			card: finalCard ? finalCard.debit : 0,
 		}
 
-		responseToreturn.push(response)
+		responseToReturn.push(response)
 
 		indexDate.setDate(indexDate.getDate() + 30)
 	}
 
-	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToreturn)
+	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToReturn)
 }
 
 /* FUNÇÕES DE APOIO */
@@ -573,10 +573,10 @@ function getMaxData(transactionDebit, transactionCredit, cardDebit) {
 }
 
 async function validadeTransaction(transactionToCreate) {
-	requireds = ['category_id', 'bank_id', 'value']
-	const response = utils.validateRequiredsElements(
+	let requested = ['category_id', 'bank_id', 'value']
+	const response = utils.validateRequestedElements(
 		transactionToCreate,
-		requireds
+		requested
 	)
 	if (response)
 		return 'Os atributo(s) a seguir não foi(ram) informados: ' + response
@@ -667,14 +667,14 @@ async function updateSaldoFatura(idFatura, valor) {
 }
 
 module.exports = {
-	getListTransacation,
+	getListTransaction,
 	getTransaction,
 	createTransaction,
 	updateTransaction,
 	deleteTransaction,
 	transactionNotCompesedByBank,
 	transactionNotCompesedDebit,
-	transactionNotCompesedCredit,
+	transactionNotCompensatedCredit,
 	planToPrincipal,
 	futureTransactionBalance,
 }

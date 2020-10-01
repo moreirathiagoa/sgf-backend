@@ -106,7 +106,7 @@ async function updateUser(idUser, userToUpdate) {
 
 function validateUser(userToCreate) {
 	requireds = ['userName', 'userPassword']
-	const response = utils.validateRequiredsElements(userToCreate, requireds)
+	const response = utils.validateRequestedElements(userToCreate, requireds)
 	if (response)
 		return 'Os atributo(s) a seguir não foi(ram) informados: ' + response
 
