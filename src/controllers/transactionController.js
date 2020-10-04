@@ -3,9 +3,14 @@ const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
 
-async function getListTransaction(typeTransaction) {
+async function getListTransaction(typeTransaction, filters) {
 	try {
 		const params = { typeTransaction: typeTransaction, userId: global.userId }
+		if (filters) {
+			const fatoredFilters = prepareFilters(filters)
+
+			Object.assign(params, fatoredFilters)
+		}
 
 		const transactionFind = await db
 			.find(model.transactionModel, params)
@@ -24,6 +29,49 @@ async function getListTransaction(typeTransaction) {
 			error: error,
 		}
 	}
+}
+
+function prepareFilters(filters) {
+	const { year, month, onlyFuture, bank_id, category_id, description } = filters
+
+	let monthNumber = Number(month)
+	let yearNumber = Number(year)
+	const min = `${yearNumber}-${monthNumber}-01 00:00:00Z`
+	if (monthNumber >= 12) {
+		monthNumber = 0
+		yearNumber++
+	}
+	const max = `${yearNumber}-${monthNumber + 1}-01 00:00:00Z`
+
+	const minimalDate = new Date(min)
+	const maximalDate = new Date(max)
+
+	const response = {
+		efectedDate: {
+			$gte: minimalDate.toISOString(),
+			$lt: maximalDate.toISOString(),
+		},
+	}
+
+	if (onlyFuture) {
+		Object.assign(response, { isCompesed: false })
+	}
+
+	if (bank_id !== 'Selecione' && bank_id) {
+		Object.assign(response, { bank_id: bank_id })
+	}
+
+	if (category_id !== 'Selecione' && category_id) {
+		Object.assign(response, { category_id: category_id })
+	}
+
+	if (description) {
+		Object.assign(response, {
+			description: { $regex: description, $options: 'i' },
+		})
+	}
+
+	return response
 }
 
 async function getTransaction(idTransaction) {
@@ -52,6 +100,7 @@ async function createTransaction(transactionToCreate) {
 		transactionToCreate.efectedDate = utils.formatDateToBataBase(
 			transactionToCreate.efectedDate
 		)
+
 		transactionToCreate.userId = global.userId
 		transactionToCreate.createDate = utils.actualDateToBataBase()
 

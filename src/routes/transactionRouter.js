@@ -2,32 +2,20 @@ const { isEmpty } = require('lodash')
 const express = require('express')
 const controller = require('../controllers')
 const router = express.Router()
+const { get } = require('lodash')
 const auth = require('../middlewares/auth')
 
-router.get('/list/:typeTransaction', auth, async (req, res, next) => {
+router.post('/list/:typeTransaction', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	const { typeTransaction } = req.params
+
+	const filters = get(req, 'body.filters', null)
+
 	try {
 		const response = await controller.transactionController.getListTransaction(
-			typeTransaction
+			typeTransaction,
+			filters
 		)
-		res.status(response.code).send(response)
-	} catch (error) {
-		res.status(500).send(error)
-	}
-})
-
-router.post('/filter', auth, async (req, res, next) => {
-	global.userId = res.locals.authData.userId
-	try {
-		let response
-		if (isEmpty(req.body)) {
-			response = utils.makeResponse(204, 'Sem informação no corpo')
-		} else {
-			response = await controller.transactionController.getFilterTransaction(
-				req.body
-			)
-		}
 		res.status(response.code).send(response)
 	} catch (error) {
 		res.status(500).send(error)
