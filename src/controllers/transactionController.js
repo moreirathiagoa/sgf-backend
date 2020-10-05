@@ -515,36 +515,63 @@ async function getFutureTransactionDebit() {
 }
 
 async function getCardTransactionDebit() {
-	const paramsDebit = {
+	const params = {
 		userId: global.userId,
 		typeTransaction: 'cartaoCredito',
 		isCompesed: false,
 		value: { $lte: 0 },
 	}
-	let transactionDebit = await model.transactionModel.aggregate([
-		{ $match: paramsDebit },
+
+	const transactionGrouped = await model.transactionModel.aggregate([
+		{ $match: params },
 		{
 			$group: {
-				_id: { fature_id: '$fature_id' },
+				_id: {
+					fature_id: '$fature_id',
+				},
 				debit: { $sum: '$value' },
 			},
 		},
 	])
 
-	let transactionReturn = []
-	for (let el of transactionDebit) {
+	let transactionNamed = []
+
+	for (let el of transactionGrouped) {
 		const fature_id = el._id.fature_id
 		const fature = await db.findOne(model.faturesModel, { _id: fature_id })
-		const fatureName = fature.name
-		const year = fatureName.split('/')[0]
-		const month = fatureName.split('/')[1]
-		el._id.month = month
-		el._id.year = year
+
+		el._id.name = fature.name
 		delete el._id.fature_id
-		transactionReturn.push(el)
+
+		transactionNamed.push(el)
 	}
 
-	return transactionReturn
+	transactionNamed.sort(function (a, b) {
+		if (a._id.name > b._id.name) {
+			return 1
+		}
+		if (a._id.name < b._id.name) {
+			return -1
+		}
+		// a must be equal to b
+		return 0
+	})
+
+	const transactionToReturn = transactionNamed.map((fature) => {
+		const fatureName = fature._id.name
+		const year = fatureName.split('/')[0]
+		const month = fatureName.split('/')[1]
+
+		return {
+			_id: {
+				month: month,
+				year: year,
+			},
+			debit: fature.debit,
+		}
+	})
+
+	return transactionToReturn
 }
 
 function getMinData(transactionDebit, transactionCredit, cardDebit) {
