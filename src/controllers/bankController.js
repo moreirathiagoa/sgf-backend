@@ -70,6 +70,7 @@ async function getListBanksDashboard() {
 			const content = {
 				id: bank._id,
 				name: bank.name,
+				isActive: bank.isActive,
 				bankType: bank.bankType,
 				saldoSistemaDeduzido: round(saldoSistemaDeduzido, 2),
 				saldoSistema: round(bank.systemBalance, 2),
@@ -130,32 +131,25 @@ async function createBank(bankToCreate) {
 
 async function updateBank(idBank, bankToUpdate) {
 	try {
-		// const validation = await validateBank(bankToUpdate)
-		// if (validation)
-		//     return utils.makeResponse(203, validation)
-
-		let param = { name: bankToUpdate.name, userId: global.userId }
-		let bankFind = await db.findOne(model.bankModel, param)
-		if (!isEmpty(bankFind)) {
-			if (bankFind._id != idBank)
+		const paramsName = { name: bankToUpdate.name, userId: global.userId }
+		const bankFindByName = await db.findOne(model.bankModel, paramsName)
+		if (!isEmpty(bankFindByName)) {
+			if (bankFindByName._id != idBank)
 				return utils.makeResponse(203, 'Banco já cadastrado')
 		}
 
-		params = { _id: idBank, userId: global.userId }
-		bankFind = await db.findOne(model.bankModel, params)
+		const paramsId = { _id: idBank, userId: global.userId }
+		const bankFindById = await db.findOne(model.bankModel, paramsId)
 
-		if (isEmpty(bankFind)) {
+		if (isEmpty(bankFindById)) {
 			return utils.makeResponse(203, 'Banco não encontrado')
 		}
 
-		bankToUpdate.manualBalance = bankToUpdate.manualBalance //.replace(',', '.')
-		await model.bankModel.updateOne(params, bankToUpdate, (err, res) => {
-			if (err) {
-				throw new Error(err)
-			}
-		})
+		Object.assign(bankFindById, bankToUpdate)
 
-		const categoryReturn = await db.findOne(model.bankModel, params)
+		bankFindById.save()
+
+		const categoryReturn = await db.findOne(model.bankModel, paramsId)
 		return utils.makeResponse(
 			202,
 			'Banco atualizado com sucesso',
@@ -171,10 +165,22 @@ async function updateBank(idBank, bankToUpdate) {
 
 async function deleteBank(idBank) {
 	try {
-		const params = { _id: idBank, userId: global.userId }
-		const bankFind = await db.findOne(model.bankModel, params)
+		const paramsBank = { _id: idBank, userId: global.userId }
+		const bankFind = await db.findOne(model.bankModel, paramsBank)
 		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Banco não encontrado')
+
+		const paramsTransaction = { bank_id: idBank, userId: global.userId }
+
+		const transactionFind = await db.findOne(
+			model.transactionModel,
+			paramsTransaction
+		)
+		if (!isEmpty(transactionFind))
+			return utils.makeResponse(
+				203,
+				'Banco possui transações atreladas e não pode ser removido.'
+			)
 
 		const categoryToDelete = new model.bankModel(bankFind)
 		const response = await db.remove(categoryToDelete)

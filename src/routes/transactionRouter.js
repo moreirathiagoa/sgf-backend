@@ -59,7 +59,6 @@ router.put('/update/:idTransaction', auth, async (req, res, next) => {
 })
 
 router.post('/bank-transfer', auth, async (req, res, next) => {
-	console.log('req.body :>> ', req.body)
 	global.userId = res.locals.authData.userId
 	try {
 		let response
