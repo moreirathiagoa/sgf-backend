@@ -148,7 +148,7 @@ async function updateBank(idBank, bankToUpdate) {
 			return utils.makeResponse(203, 'Banco não encontrado')
 		}
 
-		bankToUpdate.manualBalance = bankToUpdate.manualBalance.replace(',', '.')
+		bankToUpdate.manualBalance = bankToUpdate.manualBalance //.replace(',', '.')
 		await model.bankModel.updateOne(params, bankToUpdate, (err, res) => {
 			if (err) {
 				throw new Error(err)

@@ -58,6 +58,24 @@ router.put('/update/:idTransaction', auth, async (req, res, next) => {
 	}
 })
 
+router.post('/bank-transfer', auth, async (req, res, next) => {
+	console.log('req.body :>> ', req.body)
+	global.userId = res.locals.authData.userId
+	try {
+		let response
+		if (isEmpty(req.body)) {
+			response = utils.makeResponse(204, 'Sem informação no corpo')
+		} else {
+			response = await controller.transactionController.bankTransference(
+				req.body
+			)
+		}
+		res.status(response.code).send(response)
+	} catch (error) {
+		res.status(500).send(error)
+	}
+})
+
 router.delete('/delete/:idTransaction', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	const { idTransaction } = req.params
