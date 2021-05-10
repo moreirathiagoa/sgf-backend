@@ -136,7 +136,6 @@ async function bankTransference(data) {
 				}
 			})
 			.then((res) => {
-				console.log('object')
 				if (res.code != 201) {
 					throw new Erro('Erro no cadastro da segunda transação.')
 				}
