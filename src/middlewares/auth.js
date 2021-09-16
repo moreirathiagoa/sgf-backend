@@ -3,7 +3,8 @@ const utils = require('../utils')
 const properties = require('../properties')
 
 const auth = (req, res, next) => {
-	let log = req.route.path
+	const router = req.route.path
+	let user = ''
 	const tokenHeader = req.headers.auth
 
 	if (!tokenHeader) {
@@ -15,14 +16,14 @@ const auth = (req, res, next) => {
 	jwt.verify(tokenHeader, keyToken, (err, decoded) => {
 		if (err) {
 			res.status(401).send(utils.makeResponse(401, 'token inválido'))
-			log += ' - Invalid User'
+			user = 'Invalid User'
 		} else {
 			res.locals.authData = decoded
-			log += ' - ' + decoded.userName
+			user = decoded.userName
 			return next()
 		}
 	})
-	console.log(log)
+	console.log(`User: ${user} - Router: ${router}`)
 }
 
 module.exports = auth
