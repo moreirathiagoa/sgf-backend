@@ -7,9 +7,9 @@ async function getListTransaction(typeTransaction, filters) {
 	try {
 		const params = { typeTransaction: typeTransaction, userId: global.userId }
 		if (filters) {
-			const fatoredFilters = prepareFilters(filters)
+			const factoredFilters = prepareFilters(filters)
 
-			Object.assign(params, fatoredFilters)
+			Object.assign(params, factoredFilters)
 		}
 
 		const transactionFind = await db
@@ -89,6 +89,64 @@ async function getTransaction(idTransaction) {
 		throw {
 			error: error,
 		}
+	}
+}
+
+async function bankTransference(data) {
+	const { originalBankId, finalBankId, categoryId, value } = data
+
+	const paramsOrigin = { _id: originalBankId, userId: global.userId }
+	const originBankFind = await db.findOne(model.bankModel, paramsOrigin)
+	if (isEmpty(originBankFind))
+		return utils.makeResponse(203, 'Banco de origem não encontrado')
+
+	const paramsFinal = { _id: finalBankId, userId: global.userId }
+	const finalBankFind = await db.findOne(model.bankModel, paramsFinal)
+	if (isEmpty(finalBankFind))
+		return utils.makeResponse(203, 'Banco destino não encontrado')
+
+	const debitTransaction = {
+		efectedDate: new Date(),
+		bank_id: originalBankId,
+		category_id: categoryId,
+		isSimples: false,
+		value: -1 * value,
+		isCompesed: true,
+		typeTransaction: 'contaCorrente',
+		description: `Para: ${finalBankFind.name}`,
+	}
+
+	const creditTransaction = {
+		efectedDate: new Date(),
+		bank_id: finalBankId,
+		category_id: categoryId,
+		isSimples: false,
+		value: value,
+		isCompesed: true,
+		typeTransaction: 'contaCorrente',
+		description: `De: ${originBankFind.name}`,
+	}
+	try {
+		const response = await createTransaction(debitTransaction)
+			.then((res) => {
+				if (res.code == 201) {
+					return createTransaction(creditTransaction)
+				} else {
+					throw new Erro('Erro no cadastro da primeira transação.')
+				}
+			})
+			.then((res) => {
+				if (res.code != 201) {
+					throw new Erro('Erro no cadastro da segunda transação.')
+				}
+			})
+		return utils.makeResponse(201, 'Transferência efetuada com sucesso', {})
+	} catch (error) {
+		return utils.makeResponse(
+			203,
+			'A transferência não pode ser efetuada. Verifique no extrato se uma das transações foi efetuada.',
+			{}
+		)
 	}
 }
 
@@ -515,36 +573,63 @@ async function getFutureTransactionDebit() {
 }
 
 async function getCardTransactionDebit() {
-	const paramsDebit = {
+	const params = {
 		userId: global.userId,
 		typeTransaction: 'cartaoCredito',
 		isCompesed: false,
 		value: { $lte: 0 },
 	}
-	let transactionDebit = await model.transactionModel.aggregate([
-		{ $match: paramsDebit },
+
+	const transactionGrouped = await model.transactionModel.aggregate([
+		{ $match: params },
 		{
 			$group: {
-				_id: { fature_id: '$fature_id' },
+				_id: {
+					fature_id: '$fature_id',
+				},
 				debit: { $sum: '$value' },
 			},
 		},
 	])
 
-	let transactionReturn = []
-	for (let el of transactionDebit) {
+	let transactionNamed = []
+
+	for (let el of transactionGrouped) {
 		const fature_id = el._id.fature_id
 		const fature = await db.findOne(model.faturesModel, { _id: fature_id })
-		const fatureName = fature.name
-		const year = fatureName.split('/')[0]
-		const month = fatureName.split('/')[1]
-		el._id.month = month
-		el._id.year = year
+
+		el._id.name = fature.name
 		delete el._id.fature_id
-		transactionReturn.push(el)
+
+		transactionNamed.push(el)
 	}
 
-	return transactionReturn
+	transactionNamed.sort(function (a, b) {
+		if (a._id.name > b._id.name) {
+			return 1
+		}
+		if (a._id.name < b._id.name) {
+			return -1
+		}
+		// a must be equal to b
+		return 0
+	})
+
+	const transactionToReturn = transactionNamed.map((fature) => {
+		const fatureName = fature._id.name
+		const year = fatureName.split('/')[0]
+		const month = fatureName.split('/')[1]
+
+		return {
+			_id: {
+				month: month,
+				year: year,
+			},
+			debit: fature.debit,
+		}
+	})
+
+	return transactionToReturn
 }
 
 function getMinData(transactionDebit, transactionCredit, cardDebit) {
@@ -718,6 +803,7 @@ async function updateSaldoFatura(idFatura, valor) {
 module.exports = {
 	getListTransaction,
 	getTransaction,
+	bankTransference,
 	createTransaction,
 	updateTransaction,
 	deleteTransaction,
