@@ -7,7 +7,7 @@
 		"test": "jest",
 		"tdd": "jest -- watch",
 		"dev": "nodemon server.js",
-		"prd": "NODE_ENV=prod nodemon server.js",
+		"prd": "NODE_ENV=prd nodemon server.js",
 		"start": "node server.js"
 	},
 	"author": "Thiago Moreira",

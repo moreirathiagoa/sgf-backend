@@ -17,7 +17,7 @@ const properties = () => {
 				keyToken: KEY_TOKEN,
 			}
 
-		case 'prod':
+		case 'prd':
 			KEY_TOKEN = process.env.KEY_TOKEN
 			DB_USERNAME = process.env.DB_USERNAME
 			DB_PASSWORD = process.env.DB_PASSWORD
