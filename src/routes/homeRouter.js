@@ -7,7 +7,7 @@ router.get('/', logAccess, async (req, res, next) => {
 		res.status(200).send({
 			title: 'SGF',
 			version: '1.0.0',
-			message: 'Sistema funcionando perfeitamente!',
+			message: 'Sistema funcionando!',
 		})
 	} catch (error) {
 		res.status(500).send({
