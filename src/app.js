@@ -1,7 +1,4 @@
-const specs = require('./swagger')
 const routes = require('./routes')
-
-const swaggerUi = require('swagger-ui-express')
 const express = require('express')
 const cors = require('cors')
 
@@ -17,6 +14,5 @@ app.use('/category', routes.categoryRouter)
 app.use('/bank', routes.bankRouter)
 app.use('/fature', routes.fatureRouter)
 app.use('/transaction', routes.transactionRouter)
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs))
 
 module.exports = app
