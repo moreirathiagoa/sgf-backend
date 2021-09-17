@@ -3,13 +3,12 @@ const routes = require('./routes')
 
 const swaggerUi = require('swagger-ui-express')
 const express = require('express')
-const bodyParser = require('body-parser')
 const cors = require('cors')
 
 const app = express()
 app.use(cors({ origin: '*', methods: '*' }))
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
 
 app.use('/', routes.homeRouter)
 app.use('/user', routes.userRouter)
