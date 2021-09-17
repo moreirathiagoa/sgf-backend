@@ -1,6 +1,8 @@
 name: deploy to lambda
 on:
   pull_request:
+    branches:
+      - master
   push:
     branches:
       - master
