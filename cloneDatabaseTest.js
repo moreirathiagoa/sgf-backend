@@ -23,7 +23,7 @@ function runCommand(cmds, cb) {
 
 const commands = [
 	`mongodump -h sgfcluster-shard-00-00.nrl0f.mongodb.net:27017 --ssl -u ${DB_USERNAME} -p ${DB_PASSWORD} --authenticationDatabase admin -d sgf`,
-	`mongorestore -h sgfcluster-shard-00-02.nrl0f.mongodb.net:27017 --ssl -u ${DB_USERNAME} -p ${DB_PASSWORD} --authenticationDatabase admin -d test dump/sgf`,
+	`mongorestore -h sgfcluster-shard-00-02.nrl0f.mongodb.net:27017 --ssl -u ${DB_USERNAME} -p ${DB_PASSWORD} --authenticationDatabase admin -d test dump/sgf --drop`,
 ]
 
 runCommand(commands, (err) => {
