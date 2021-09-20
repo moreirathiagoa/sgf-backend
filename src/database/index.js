@@ -10,7 +10,7 @@ mongoose
 	.then((res) => {
 		const { name, host } = res.connection
 		console.log(
-			`Conectado ao banco de dados com sucesso - Host: ${host} | Database: ${name}`
+			`Conectado ao banco de dados com sucesso - Host: ${host} | Database: ${name.toUpperCase()}`
 		)
 	})
 	.catch((err) => {
