@@ -8,7 +8,8 @@
 		"tdd": "jest -- watch",
 		"dev": "nodemon server.js",
 		"prd": "NODE_ENV=prd nodemon server.js",
-		"start": "node server.js"
+		"start": "node server.js",
+		"backupDatabase": "node cloneDatabaseTest.js"
 	},
 	"author": "Thiago Moreira",
 	"license": "ISC",
