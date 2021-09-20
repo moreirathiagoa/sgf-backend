@@ -7,8 +7,11 @@ mongoose
 		useUnifiedTopology: true,
 		useNewUrlParser: true,
 	})
-	.then(() => {
-		console.log('Conectado ao banco de dados com sucesso')
+	.then((res) => {
+		const { name, host } = res.connection
+		console.log(
+			`Conectado ao banco de dados com sucesso - Host: ${host} | Database: ${name.toUpperCase()}`
+		)
 	})
 	.catch((err) => {
 		console.log('Não foi possível conectar ao banco de dados: ' + err)
