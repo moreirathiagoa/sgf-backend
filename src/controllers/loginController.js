@@ -24,11 +24,7 @@ async function login(user) {
 			userFound.loginList.shift()
 		}
 
-		await model.userModel.updateOne(params, userFound, (err, res) => {
-			if (err) {
-				throw new Error(err)
-			}
-		})
+		userFound.save()
 
 		const tokenContent = {
 			userId: userFound._id,
