@@ -279,18 +279,14 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 			return utils.makeResponse(203, 'Transação não encontrada')
 		}
 
-		await model.transactionModel.updateOne(
+		const transactionReturn = await model.transactionModel.findOneAndUpdate(
 			params,
 			transactionToUpdate,
-			(err, res) => {
-				if (err) {
-					console.log(error)
-					throw new Error(err)
-				}
+			{
+				new: true,
 			}
 		)
 
-		const transactionReturn = await db.findOne(model.transactionModel, params)
 		const saldoAdjust = transactionReturn.value - oldTransaction.value
 		switch (transactionReturn.typeTransaction) {
 			case 'contaCorrente': {
@@ -456,15 +452,10 @@ async function planToPrincipal(transactions) {
 		await updateSaldoContaCorrente(transaction.bank_id, transaction.value)
 
 		const params = { _id: transaction._id }
-		const transactionToReturn = await model.transactionModel.updateOne(
+		const transactionToReturn = await model.transactionModel.findByIdAndUpdate(
 			params,
 			transactionToUpdate,
-			(err, res) => {
-				if (err) {
-					console.log(error)
-					throw new Error(err)
-				}
-			}
+			{ new: true }
 		)
 		response.push(transactionToReturn)
 	}
@@ -766,18 +757,14 @@ async function getFature(fatureName, bank_id) {
 
 async function updateSaldoContaCorrente(idBank, valor) {
 	const params = { _id: idBank, userId: global.userId }
-	const bankFind = await db
+	let bankFind = await db
 		.findOne(model.bankModel, params)
 		.select('systemBalance')
 
 	const finalBalance = round(bankFind.systemBalance + valor, 2)
-	const bankToUpdate = { systemBalance: finalBalance }
+	bankFind.systemBalance = finalBalance
 
-	await model.bankModel.updateOne(params, bankToUpdate, (err, res) => {
-		if (err) {
-			throw new Error(err)
-		}
-	})
+	bankFind.save()
 }
 
 async function updateSaldoFatura(idFatura, valor) {
@@ -789,15 +776,7 @@ async function updateSaldoFatura(idFatura, valor) {
 	const finalBalance = round(fatureFind.fatureBalance + valor, 2)
 	const fatureToUpdate = { fatureBalance: finalBalance }
 
-	await model.faturesModel.updateOne(
-		fatureParams,
-		fatureToUpdate,
-		(err, res) => {
-			if (err) {
-				throw new Error(err)
-			}
-		}
-	)
+	await model.faturesModel.findOneAndUpdate(fatureParams, fatureToUpdate)
 }
 
 module.exports = {

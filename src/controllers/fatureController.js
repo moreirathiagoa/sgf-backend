@@ -52,15 +52,7 @@ async function payFature(idFature) {
 			isPayed: true,
 		}
 
-		await model.faturesModel.updateOne(
-			paramsFature,
-			fatureToUpdate,
-			(err, res) => {
-				if (err) {
-					throw new Error(err)
-				}
-			}
-		)
+		await model.faturesModel.findOneAndUpdate(paramsFature, fatureToUpdate)
 
 		const paramsTransaction = { fature_id: idFature, userId: global.userId }
 

@@ -75,17 +75,14 @@ async function updateCategory(idCategory, categoryToUpdate) {
 			return utils.makeResponse(203, 'Categoria não encontrada')
 		}
 
-		await model.categoryModel.updateOne(
+		const categoryReturn = await model.categoryModel.findOneAndUpdate(
 			params,
 			categoryToUpdate,
-			(err, res) => {
-				if (err) {
-					throw new Error(err)
-				}
+			{
+				new: true,
 			}
 		)
 
-		const categoryReturn = await db.findOne(model.categoryModel, params)
 		return utils.makeResponse(
 			202,
 			'Categoria atualizada com sucesso',

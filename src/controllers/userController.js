@@ -81,13 +81,12 @@ async function updateUser(idUser, userToUpdate) {
 
 		userToUpdate.userPassword = bcrypt.hashSync(userToUpdate.userPassword, 10)
 
-		await model.userModel.updateOne(params, userToUpdate, (err, res) => {
-			if (err) {
-				throw new Error(err)
-			}
-		})
+		let userReturn = await model.userModel.findOneAndUpdate(
+			params,
+			userToUpdate,
+			{ new: true }
+		)
 
-		let userReturn = await db.findOne(model.userModel, params)
 		userReturn = userReturn.toObject()
 		delete userReturn.userPassword
 		return utils.makeResponse(
