@@ -1,7 +1,7 @@
 const env = process.env.NODE_ENV || 'dev'
 
 const properties = () => {
-	let KEY_TOKEN, DB_USERNAME, DB_PASSWORD, DB_URL, DB_PARAMS, DB_PORT
+	let KEY_TOKEN, DB_USERNAME, DB_PASSWORD, DB_URL, DB_PARAMS
 
 	switch (env) {
 		case 'dev':
