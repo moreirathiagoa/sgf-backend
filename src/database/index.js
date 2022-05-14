@@ -17,9 +17,6 @@ mongoose
 		console.log('Não foi possível conectar ao banco de dados: ' + err)
 		process.exit
 	})
-	.finally(() => {
-		mongoose.connection.close()
-	})
 
 /**
  * Função que salva o modelo no banco de dados
