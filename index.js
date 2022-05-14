@@ -1,10 +1,7 @@
 const serverlessExpress = require('@vendia/serverless-express')
 const app = require('./src/app')
-//const db = require('./src/database')
+const db = require('./src/database')
 
-//exports.handler = serverlessExpress({ app })
-exports.handler = async () => {
-	const response = await serverlessExpress({ app })
-	//db.mongoose.connection.close()
-	return response
-}
+exports.handler = serverlessExpress({ app }).then(() => {
+	db.mongoose.connection.close()
+})
