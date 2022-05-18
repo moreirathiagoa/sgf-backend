@@ -1,9 +1,8 @@
 const routes = require('./routes')
 const express = require('express')
 const cors = require('cors')
-const database = require('./database')
-
-database.start()
+require('./database').start()
+global.logger = require('../config/logger')
 
 const app = express()
 app.use(cors({ origin: '*', methods: '*' }))

@@ -4,26 +4,28 @@ const properties = require('../properties')
 
 const auth = (req, res, next) => {
 	const router = req.route.path
-	let user = ''
 	const tokenHeader = req.headers.auth
 
 	if (!tokenHeader) {
+		logger.error({ router }, 'Token não informado')
 		res.status(401).send(utils.makeResponse(401, 'token não informado'))
+		return
 	}
 
 	const keyToken = properties.keyToken
 
 	jwt.verify(tokenHeader, keyToken, (err, decoded) => {
 		if (err) {
+			logger.error({ router }, 'Token Inválido')
 			res.status(401).send(utils.makeResponse(401, 'token inválido'))
-			user = 'Invalid User'
+			return
 		} else {
+			const user = decoded.userName
+			logger.info({ router, user })
 			res.locals.authData = decoded
-			user = decoded.userName
 			return next()
 		}
 	})
-	console.log(`User: ${user} - Router: ${router}`)
 }
 
 module.exports = auth
