@@ -1,8 +1,7 @@
 const express = require('express')
 const router = express.Router()
-const logAccess = require('../middlewares/logAccess')
 
-router.get('/', logAccess, async (req, res, next) => {
+router.get('/', async (req, res, next) => {
 	try {
 		res.status(200).send({
 			title: 'SGF',

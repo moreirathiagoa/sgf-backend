@@ -3,10 +3,12 @@ const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
 const transactionController = require('./transactionController')
+const logger = require('../../config/logger')
 
 async function getListBanks(typeTransaction) {
 	try {
 		let params = { userId: global.userId }
+
 		switch (typeTransaction) {
 			case 'contaCorrente':
 				params.bankType = { $in: ['Conta Corrente', 'Conta Cartão'] }
@@ -30,7 +32,7 @@ async function getListBanks(typeTransaction) {
 
 		return utils.makeResponse(200, 'Lista de Bancos', bankFind)
 	} catch (error) {
-		console.log(error)
+		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
 		throw {
 			error: error,
 		}
@@ -47,7 +49,8 @@ async function getListBanksDashboard() {
 		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Bancos não encontrados', [])
 
-		const transactionNotCompensatedByBank = await transactionController.transactionNotCompensatedByBank()
+		const transactionNotCompensatedByBank =
+			await transactionController.transactionNotCompensatedByBank()
 
 		let banksToReturn = []
 
@@ -82,7 +85,7 @@ async function getListBanksDashboard() {
 
 		return utils.makeResponse(200, 'Lista de Bancos', banksToReturn)
 	} catch (error) {
-		console.log(error)
+		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
 		throw {
 			error: error,
 		}
@@ -98,7 +101,7 @@ async function getBank(idBank) {
 
 		return utils.makeResponse(200, 'Banco encontrado', bankFind)
 	} catch (error) {
-		console.log(error)
+		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
 		throw {
 			error: error,
 		}
@@ -122,7 +125,7 @@ async function createBank(bankToCreate) {
 		const response = await db.save(bankToSave)
 		return utils.makeResponse(201, 'Banco criado com sucesso', response)
 	} catch (error) {
-		console.log(error)
+		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
 		throw {
 			error: error,
 		}
@@ -156,7 +159,7 @@ async function updateBank(idBank, bankToUpdate) {
 			categoryReturn
 		)
 	} catch (error) {
-		console.log(error)
+		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
 		throw {
 			error: error,
 		}
@@ -186,7 +189,7 @@ async function deleteBank(idBank) {
 		const response = await db.remove(categoryToDelete)
 		return utils.makeResponse(202, 'Banco removido com sucesso', response)
 	} catch (error) {
-		console.log(error)
+		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
 		throw {
 			error: error,
 		}

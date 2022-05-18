@@ -1,5 +1,6 @@
 const properties = require('../properties')
 const mongoose = require('mongoose')
+const logger = require('../../config/logger')
 mongoose.Promise = global.Promise
 
 function start(URI = properties.uriDataBase) {
@@ -10,12 +11,10 @@ function start(URI = properties.uriDataBase) {
 		})
 		.then((res) => {
 			const { name, host } = res.connection
-			console.log(
-				`Conectado ao banco de dados com sucesso - Host: ${host} | Database: ${name.toUpperCase()}`
-			)
+			logger.info({ host: host, database: name }, 'Connected at the database')
 		})
 		.catch((err) => {
-			console.log('Não foi possível conectar ao banco de dados: ' + err)
+			logger.error(`Falha ao conectar ao banco de dados - ${err.message}`)
 			throw err
 		})
 }

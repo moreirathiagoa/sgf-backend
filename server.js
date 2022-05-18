@@ -1,7 +1,7 @@
-require('dotenv').config()
-const port = process.env.PORT || 4000
+const CONSTANTS = require('./src/properties')
+const logger = require('./config/logger')
 const app = require('./src/app')
 
-app.listen(port, () => {
-	console.log(`Server is running at port: ${port}`)
+app.listen(CONSTANTS.PORT, () => {
+	logger.info({ port: CONSTANTS.PORT }, `Server started`)
 })

@@ -1,9 +1,18 @@
-const env = process.env.NODE_ENV || 'dev'
+require('dotenv').config()
+const ENV = process.env.NODE_ENV || 'dev'
+const PORT = process.env.PORT || 4000
+const APPLICATION = 'SGF'
+
+const base = {
+	APPLICATION,
+	ENV,
+	PORT,
+}
 
 const properties = () => {
 	let KEY_TOKEN, DB_USERNAME, DB_PASSWORD, DB_URL, DB_PARAMS
 
-	switch (env) {
+	switch (ENV) {
 		case 'dev':
 			KEY_TOKEN = process.env.KEY_TOKEN
 			DB_USERNAME = process.env.DB_USERNAME
@@ -13,6 +22,7 @@ const properties = () => {
 			DATA_BASE = 'test'
 
 			return {
+				...base,
 				uriDataBase: `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_URL}/${DATA_BASE}?${DB_PARAMS}`,
 				keyToken: KEY_TOKEN,
 			}
@@ -26,11 +36,11 @@ const properties = () => {
 			DATA_BASE = 'sgf'
 
 			return {
+				...base,
 				uriDataBase: `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_URL}/${DATA_BASE}?${DB_PARAMS}`,
 				keyToken: KEY_TOKEN,
 			}
 	}
 }
-console.log('Iniciado em ambiente ' + env.toLocaleUpperCase())
 
 module.exports = properties()
