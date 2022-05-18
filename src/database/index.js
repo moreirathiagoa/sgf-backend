@@ -2,21 +2,23 @@ const properties = require('../properties')
 const mongoose = require('mongoose')
 mongoose.Promise = global.Promise
 
-mongoose
-	.connect(properties.uriDataBase, {
-		useUnifiedTopology: true,
-		useNewUrlParser: true,
-	})
-	.then((res) => {
-		const { name, host } = res.connection
-		console.log(
-			`Conectado ao banco de dados com sucesso - Host: ${host} | Database: ${name.toUpperCase()}`
-		)
-	})
-	.catch((err) => {
-		console.log('Não foi possível conectar ao banco de dados: ' + err)
-		process.exit
-	})
+function start(URI = properties.uriDataBase) {
+	return mongoose
+		.connect(URI, {
+			useNewUrlParser: true,
+			useUnifiedTopology: true,
+		})
+		.then((res) => {
+			const { name, host } = res.connection
+			console.log(
+				`Conectado ao banco de dados com sucesso - Host: ${host} | Database: ${name.toUpperCase()}`
+			)
+		})
+		.catch((err) => {
+			console.log('Não foi possível conectar ao banco de dados: ' + err)
+			throw err
+		})
+}
 
 /**
  * Função que salva o modelo no banco de dados
@@ -68,7 +70,7 @@ async function remove(model) {
 }
 
 module.exports = {
-	mongoose,
+	start,
 	save,
 	find,
 	findOne,
