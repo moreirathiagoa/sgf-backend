@@ -44,9 +44,7 @@ async function login(user) {
 
 		return utils.makeResponse(200, 'Login Efetuado', response)
 	} catch (error) {
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 

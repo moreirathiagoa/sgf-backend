@@ -5,6 +5,7 @@ const fatureRouter = require('./fatureRouter')
 const transactionRouter = require('./transactionRouter')
 const loginRouter = require('./loginRouter')
 const userRouter = require('./userRouter')
+const balancesDashboard = require('./balancesDashboardRouter')
 
 module.exports = {
 	homeRouter,
@@ -14,4 +15,5 @@ module.exports = {
 	loginRouter,
 	userRouter,
 	fatureRouter,
+	balancesDashboard,
 }

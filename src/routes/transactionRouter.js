@@ -16,9 +16,9 @@ router.post('/list/:typeTransaction', auth, async (req, res, next) => {
 			typeTransaction,
 			filters
 		)
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -33,9 +33,9 @@ router.post('/create', auth, async (req, res, next) => {
 				req.body
 			)
 		}
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -52,9 +52,9 @@ router.put('/update/:idTransaction', auth, async (req, res, next) => {
 				req.body
 			)
 		}
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -69,9 +69,9 @@ router.post('/bank-transfer', auth, async (req, res, next) => {
 				req.body
 			)
 		}
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -83,9 +83,9 @@ router.delete('/delete/:idTransaction', auth, async (req, res, next) => {
 		const response = await controller.transactionController.deleteTransaction(
 			idTransaction
 		)
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -94,22 +94,10 @@ router.get('/not-compensated-by-bank', auth, async (req, res, next) => {
 	try {
 		const response =
 			await controller.transactionController.transactionNotCompensatedByBank()
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		res.status(500).send(error)
-	}
-})
-
-router.get('/not-compensated-credit', auth, async (req, res, next) => {
-	global.userId = res.locals.authData.userId
-	try {
-		const response =
-			await controller.transactionController.transactionNotCompensatedCredit()
-		res.status(response.code).send(response)
-	} catch (error) {
-		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -118,22 +106,10 @@ router.get('/future-balance', auth, async (req, res, next) => {
 	try {
 		const response =
 			await controller.transactionController.futureTransactionBalance()
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		res.status(500).send(error)
-	}
-})
-
-router.get('/not-compensated-debit', auth, async (req, res, next) => {
-	global.userId = res.locals.authData.userId
-	try {
-		const response =
-			await controller.transactionController.transactionNotCompensatedDebit()
-		res.status(response.code).send(response)
-	} catch (error) {
-		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -148,9 +124,9 @@ router.post('/planToPrincipal', auth, async (req, res, next) => {
 				req.body
 			)
 		}
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -161,9 +137,9 @@ router.get('/:idTransaction', auth, async (req, res, next) => {
 		const response = await controller.transactionController.getTransaction(
 			idTransaction
 		)
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
