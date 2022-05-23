@@ -25,9 +25,7 @@ async function getListTransaction(typeTransaction, filters) {
 		return utils.makeResponse(200, 'Lista de Transações', transactionFind)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
@@ -86,9 +84,7 @@ async function getTransaction(idTransaction) {
 		return utils.makeResponse(200, 'Transação encontrada', transactionFind)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
@@ -249,9 +245,7 @@ async function createTransaction(transactionToCreate) {
 		return utils.makeResponse(201, 'Transação criada com sucesso', response)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
@@ -334,9 +328,7 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 			transactionReturn
 		)
 	} catch (error) {
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
@@ -365,9 +357,7 @@ async function deleteTransaction(idTransaction) {
 		return utils.makeResponse(202, 'Transação removida com sucesso', response)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 

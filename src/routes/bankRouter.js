@@ -11,9 +11,9 @@ router.get('/list/:typeTransaction', auth, async (req, res, next) => {
 		const response = await controller.bankController.getListBanks(
 			typeTransaction
 		)
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -21,9 +21,9 @@ router.get('/list-dashboard', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
 		const response = await controller.bankController.getListBanksDashboard()
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -32,9 +32,9 @@ router.get('/:idBank', auth, async (req, res, next) => {
 	const { idBank } = req.params
 	try {
 		const response = await controller.bankController.getBank(idBank)
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -48,9 +48,9 @@ router.post('/create', auth, async (req, res, next) => {
 			response = await controller.bankController.createBank(req.body)
 		}
 
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -65,9 +65,9 @@ router.put('/update/:idBank', auth, async (req, res, next) => {
 		} else {
 			response = await controller.bankController.updateBank(idBank, req.body)
 		}
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -78,9 +78,9 @@ router.delete('/delete/:idBank', auth, async (req, res, next) => {
 	try {
 		const response = await controller.bankController.deleteBank(idBank)
 
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 

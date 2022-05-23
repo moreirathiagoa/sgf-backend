@@ -13,9 +13,7 @@ async function getListFatures(idBank) {
 		return utils.makeResponse(200, 'Lista de Faturas', fatureFind)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
@@ -32,9 +30,7 @@ async function getFature(idFature) {
 		return utils.makeResponse(200, 'Fatura encontrada', fatureFind)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
@@ -73,9 +69,7 @@ async function payFature(idFature) {
 		return utils.makeResponse(200, 'Fatura paga', fatureFind)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
