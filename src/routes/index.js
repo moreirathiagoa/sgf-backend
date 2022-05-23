@@ -1,19 +1,19 @@
-const homeRouter = require('./homeRouter')
-const categoryRouter = require('./categoryRouter')
-const bankRouter = require('./bankRouter')
-const fatureRouter = require('./fatureRouter')
-const transactionRouter = require('./transactionRouter')
-const loginRouter = require('./loginRouter')
-const userRouter = require('./userRouter')
+const home = require('./homeRouter')
+const category = require('./categoryRouter')
+const bank = require('./bankRouter')
+const fature = require('./fatureRouter')
+const transaction = require('./transactionRouter')
+const login = require('./loginRouter')
+const user = require('./userRouter')
 const balancesDashboard = require('./balancesDashboardRouter')
 
 module.exports = {
-	homeRouter,
-	categoryRouter,
-	bankRouter,
-	transactionRouter,
-	loginRouter,
-	userRouter,
-	fatureRouter,
+	home,
+	category,
+	bank,
+	transaction,
+	login,
+	user,
+	fature,
 	balancesDashboard,
 }

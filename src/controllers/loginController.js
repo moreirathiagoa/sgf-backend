@@ -8,7 +8,7 @@ const bcrypt = require('bcryptjs')
 async function login(user) {
 	try {
 		const params = { userName: user.userName.toLowerCase() }
-		let userFound = await db.findOne(model.userModel, params)
+		let userFound = await db.findOne(model.user, params)
 
 		const accessGranted = await bcrypt.compareSync(
 			user.userPassword,

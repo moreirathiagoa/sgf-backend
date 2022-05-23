@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs')
 
 async function getListUsers() {
 	try {
-		const userFound = await db.find(model.userModel).select('userName isActive')
+		const userFound = await db.find(model.user).select('userName isActive')
 		if (isEmpty(userFound))
 			return utils.makeResponse(203, 'Usuários não encontrados', [])
 
@@ -20,7 +20,7 @@ async function getUser(idUser) {
 	try {
 		const params = { _id: idUser }
 		const userFound = await db
-			.findOne(model.userModel, params)
+			.findOne(model.user, params)
 			.select('userName isActive')
 		if (isEmpty(userFound))
 			return utils.makeResponse(203, 'Usuários não encontrado')
@@ -33,18 +33,19 @@ async function getUser(idUser) {
 
 async function createUser(userToCreate) {
 	try {
-		const validation = await validateUser(userToCreate)
+		const validation = validateUser(userToCreate)
 		if (validation) return utils.makeResponse(203, validation)
 
 		const params = { userName: userToCreate.userName }
-		const userFound = await db.findOne(model.userModel, params)
+		const userFound = await db.findOne(model.user, params)
 		if (!isEmpty(userFound))
 			return utils.makeResponse(203, 'Usuários já cadastrado')
 
-		userToCreate.userPassword = bcrypt.hashSync(userToCreate.userPassword, 10)
+		const salt = bcrypt.genSaltSync(15)
+		userToCreate.userPassword = bcrypt.hashSync(userToCreate.userPassword, salt)
 		userToCreate.createDate = utils.actualDateToBataBase()
 
-		const userToSave = new model.userModel(userToCreate)
+		const userToSave = new model.user(userToCreate)
 		let response = await db.save(userToSave)
 		response = response.toObject()
 		delete response.userPassword
@@ -56,30 +57,29 @@ async function createUser(userToCreate) {
 
 async function updateUser(idUser, userToUpdate) {
 	try {
-		const validation = await validateUser(userToUpdate)
+		const validation = validateUser(userToUpdate)
 		if (validation) return utils.makeResponse(203, validation)
 
 		let param = { userName: userToUpdate.userName }
-		let userFound = await db.findOne(model.userModel, param)
+		let userFound = await db.findOne(model.user, param)
 		if (!isEmpty(userFound)) {
 			if (userFound._id != idUser)
 				return utils.makeResponse(203, 'Usuários já cadastrado')
 		}
 
 		params = { _id: idUser }
-		userFound = await db.findOne(model.userModel, params)
+		userFound = await db.findOne(model.user, params)
 
 		if (isEmpty(userFound)) {
 			return utils.makeResponse(203, 'Usuários não encontrado')
 		}
 
-		userToUpdate.userPassword = bcrypt.hashSync(userToUpdate.userPassword, 10)
+		const salt = bcrypt.genSaltSync(15)
+		userToUpdate.userPassword = bcrypt.hashSync(userToUpdate.userPassword, salt)
 
-		let userReturn = await model.userModel.findOneAndUpdate(
-			params,
-			userToUpdate,
-			{ new: true }
-		)
+		let userReturn = await model.user.findOneAndUpdate(params, userToUpdate, {
+			new: true,
+		})
 
 		userReturn = userReturn.toObject()
 		delete userReturn.userPassword

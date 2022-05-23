@@ -6,7 +6,7 @@ const model = require('../model')
 async function getListFatures(idBank) {
 	try {
 		const params = { bank_id: idBank, userId: global.userId }
-		const fatureFind = await db.find(model.faturesModel, params)
+		const fatureFind = await db.find(model.fature, params)
 		if (isEmpty(fatureFind))
 			return utils.makeResponse(203, 'Faturas não encontradas', [])
 
@@ -21,7 +21,7 @@ async function getFature(idFature) {
 	try {
 		const params = { _id: idFature, userId: global.userId }
 		const fatureFind = await db
-			.findOne(model.faturesModel, params)
+			.findOne(model.fature, params)
 			.populate('bank_id', 'name')
 
 		if (isEmpty(fatureFind))
@@ -38,7 +38,7 @@ async function payFature(idFature) {
 	try {
 		const paramsFature = { _id: idFature, userId: global.userId }
 		const fatureFind = await db
-			.findOne(model.faturesModel, paramsFature)
+			.findOne(model.fature, paramsFature)
 			.populate('bank_id', 'name')
 
 		if (isEmpty(fatureFind))
@@ -48,7 +48,7 @@ async function payFature(idFature) {
 			isPayed: true,
 		}
 
-		await model.faturesModel.findOneAndUpdate(paramsFature, fatureToUpdate)
+		await model.fature.findOneAndUpdate(paramsFature, fatureToUpdate)
 
 		const paramsTransaction = { fature_id: idFature, userId: global.userId }
 
@@ -56,7 +56,7 @@ async function payFature(idFature) {
 			isCompesed: true,
 		}
 
-		await model.transactionModel.updateMany(
+		await model.transaction.updateMany(
 			paramsTransaction,
 			transactionToUpdate,
 			(err, res) => {
