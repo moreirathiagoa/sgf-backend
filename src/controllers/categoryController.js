@@ -12,9 +12,7 @@ async function getListCategory() {
 
 		return utils.makeResponse(200, 'Lista de Categorias', categoryFind)
 	} catch (error) {
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
@@ -27,9 +25,7 @@ async function getCategory(idCategory) {
 
 		return utils.makeResponse(200, 'Categoria encontrada', categoryFind)
 	} catch (error) {
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
@@ -50,9 +46,7 @@ async function createCategory(categoryToCreate) {
 		const response = await db.save(categoryToSave)
 		return utils.makeResponse(201, 'Categoria criada com sucesso', response)
 	} catch (error) {
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
@@ -89,9 +83,7 @@ async function updateCategory(idCategory, categoryToUpdate) {
 			categoryReturn
 		)
 	} catch (error) {
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
@@ -106,9 +98,7 @@ async function deleteCategory(idCategory) {
 		const response = await db.remove(categoryToDelete)
 		return utils.makeResponse(202, 'Categoria removida com sucesso', response)
 	} catch (error) {
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 

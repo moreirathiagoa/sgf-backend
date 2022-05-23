@@ -12,9 +12,7 @@ async function getListUsers() {
 
 		return utils.makeResponse(200, 'Lista de Usuários', userFound)
 	} catch (error) {
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
@@ -29,9 +27,7 @@ async function getUser(idUser) {
 
 		return utils.makeResponse(200, 'Usuários encontrado', userFound)
 	} catch (error) {
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
@@ -54,9 +50,7 @@ async function createUser(userToCreate) {
 		delete response.userPassword
 		return utils.makeResponse(201, 'Usuários criado com sucesso', response)
 	} catch (error) {
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
@@ -95,9 +89,7 @@ async function updateUser(idUser, userToUpdate) {
 			userReturn
 		)
 	} catch (error) {
-		throw {
-			error: error,
-		}
+		throw error
 	}
 }
 
