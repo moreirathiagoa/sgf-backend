@@ -12,7 +12,7 @@ router.post('/list/:typeTransaction', auth, async (req, res, next) => {
 	const filters = get(req, 'body.filters', null)
 
 	try {
-		const response = await controller.transactionController.getListTransaction(
+		const response = await controller.transaction.getListTransaction(
 			typeTransaction,
 			filters
 		)
@@ -29,9 +29,7 @@ router.post('/create', auth, async (req, res, next) => {
 		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
-			response = await controller.transactionController.createTransaction(
-				req.body
-			)
+			response = await controller.transaction.createTransaction(req.body)
 		}
 		res.status(response.code).json(response)
 	} catch (error) {
@@ -47,7 +45,7 @@ router.put('/update/:idTransaction', auth, async (req, res, next) => {
 		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
-			response = await controller.transactionController.updateTransaction(
+			response = await controller.transaction.updateTransaction(
 				idTransaction,
 				req.body
 			)
@@ -65,9 +63,7 @@ router.post('/bank-transfer', auth, async (req, res, next) => {
 		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
-			response = await controller.transactionController.bankTransference(
-				req.body
-			)
+			response = await controller.transaction.bankTransference(req.body)
 		}
 		res.status(response.code).json(response)
 	} catch (error) {
@@ -80,7 +76,7 @@ router.delete('/delete/:idTransaction', auth, async (req, res, next) => {
 	const { idTransaction } = req.params
 
 	try {
-		const response = await controller.transactionController.deleteTransaction(
+		const response = await controller.transaction.deleteTransaction(
 			idTransaction
 		)
 		res.status(response.code).json(response)
@@ -93,7 +89,7 @@ router.get('/not-compensated-by-bank', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
 		const response =
-			await controller.transactionController.transactionNotCompensatedByBank()
+			await controller.transaction.transactionNotCompensatedByBank()
 		res.status(response.code).json(response)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
@@ -104,8 +100,7 @@ router.get('/not-compensated-by-bank', auth, async (req, res, next) => {
 router.get('/future-balance', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
-		const response =
-			await controller.transactionController.futureTransactionBalance()
+		const response = await controller.transaction.futureTransactionBalance()
 		res.status(response.code).json(response)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
@@ -120,9 +115,7 @@ router.post('/planToPrincipal', auth, async (req, res, next) => {
 		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
-			response = await controller.transactionController.planToPrincipal(
-				req.body
-			)
+			response = await controller.transaction.planToPrincipal(req.body)
 		}
 		res.status(response.code).json(response)
 	} catch (error) {
@@ -134,9 +127,7 @@ router.get('/:idTransaction', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	const { idTransaction } = req.params
 	try {
-		const response = await controller.transactionController.getTransaction(
-			idTransaction
-		)
+		const response = await controller.transaction.getTransaction(idTransaction)
 		res.status(response.code).json(response)
 	} catch (error) {
 		res.status(500).json(error)

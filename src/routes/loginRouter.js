@@ -9,7 +9,7 @@ router.post('/', async (req, res, next) => {
 		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
-			response = await controller.loginController.login(req.body)
+			response = await controller.login.login(req.body)
 		}
 		res.status(response.code).json(response)
 	} catch (error) {

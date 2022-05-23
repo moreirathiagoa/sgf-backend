@@ -1,15 +1,15 @@
-const categoryController = require('./categoryController')
-const bankController = require('./bankController')
-const fatureController = require('./fatureController')
-const transactionController = require('./transactionController')
-const loginController = require('./loginController')
-const userController = require('./userController')
+const category = require('./categoryController')
+const bank = require('./bankController')
+const fature = require('./fatureController')
+const transaction = require('./transactionController')
+const login = require('./loginController')
+const user = require('./userController')
 
 module.exports = {
-	categoryController,
-	bankController,
-	transactionController,
-	loginController,
-	userController,
-	fatureController,
+	category,
+	bank,
+	transaction,
+	login,
+	user,
+	fature,
 }

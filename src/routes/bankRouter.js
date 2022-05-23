@@ -8,9 +8,7 @@ router.get('/list/:typeTransaction', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	const { typeTransaction } = req.params
 	try {
-		const response = await controller.bankController.getListBanks(
-			typeTransaction
-		)
+		const response = await controller.bank.getListBanks(typeTransaction)
 		res.status(response.code).json(response)
 	} catch (error) {
 		res.status(500).json(error)
@@ -20,7 +18,7 @@ router.get('/list/:typeTransaction', auth, async (req, res, next) => {
 router.get('/list-dashboard', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
-		const response = await controller.bankController.getListBanksDashboard()
+		const response = await controller.bank.getListBanksDashboard()
 		res.status(response.code).json(response)
 	} catch (error) {
 		res.status(500).json(error)
@@ -31,7 +29,7 @@ router.get('/:idBank', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	const { idBank } = req.params
 	try {
-		const response = await controller.bankController.getBank(idBank)
+		const response = await controller.bank.getBank(idBank)
 		res.status(response.code).json(response)
 	} catch (error) {
 		res.status(500).json(error)
@@ -45,7 +43,7 @@ router.post('/create', auth, async (req, res, next) => {
 		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
-			response = await controller.bankController.createBank(req.body)
+			response = await controller.bank.createBank(req.body)
 		}
 
 		res.status(response.code).json(response)
@@ -63,7 +61,7 @@ router.put('/update/:idBank', auth, async (req, res, next) => {
 		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
-			response = await controller.bankController.updateBank(idBank, req.body)
+			response = await controller.bank.updateBank(idBank, req.body)
 		}
 		res.status(response.code).json(response)
 	} catch (error) {
@@ -76,7 +74,7 @@ router.delete('/delete/:idBank', auth, async (req, res, next) => {
 	const { idBank } = req.params
 
 	try {
-		const response = await controller.bankController.deleteBank(idBank)
+		const response = await controller.bank.deleteBank(idBank)
 
 		res.status(response.code).json(response)
 	} catch (error) {
