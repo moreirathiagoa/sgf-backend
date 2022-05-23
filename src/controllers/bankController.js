@@ -104,7 +104,7 @@ async function getBank(idBank) {
 
 async function createBank(bankToCreate) {
 	try {
-		const validation = await validateBank(bankToCreate)
+		const validation = validateBank(bankToCreate)
 		if (validation) return utils.makeResponse(203, validation)
 
 		const params = { name: bankToCreate.name, userId: global.userId }

@@ -33,7 +33,7 @@ async function getUser(idUser) {
 
 async function createUser(userToCreate) {
 	try {
-		const validation = await validateUser(userToCreate)
+		const validation = validateUser(userToCreate)
 		if (validation) return utils.makeResponse(203, validation)
 
 		const params = { userName: userToCreate.userName }
@@ -56,7 +56,7 @@ async function createUser(userToCreate) {
 
 async function updateUser(idUser, userToUpdate) {
 	try {
-		const validation = await validateUser(userToUpdate)
+		const validation = validateUser(userToUpdate)
 		if (validation) return utils.makeResponse(203, validation)
 
 		let param = { userName: userToUpdate.userName }

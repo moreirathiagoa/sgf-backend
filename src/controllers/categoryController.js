@@ -31,7 +31,7 @@ async function getCategory(idCategory) {
 
 async function createCategory(categoryToCreate) {
 	try {
-		const validation = await validadeCategory(categoryToCreate)
+		const validation = validadeCategory(categoryToCreate)
 		if (validation) return utils.makeResponse(203, validation)
 
 		const params = { name: categoryToCreate.name, userId: global.userId }
@@ -52,7 +52,7 @@ async function createCategory(categoryToCreate) {
 
 async function updateCategory(idCategory, categoryToUpdate) {
 	try {
-		const validation = await validadeCategory(categoryToUpdate)
+		const validation = validadeCategory(categoryToUpdate)
 		if (validation) return utils.makeResponse(203, validation)
 
 		let param = { name: categoryToUpdate.name, userId: global.userId }
