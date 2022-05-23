@@ -11,15 +11,12 @@ async function getListBanks(typeTransaction) {
 
 		switch (typeTransaction) {
 			case 'contaCorrente':
+			case 'planejamento':
 				params.bankType = { $in: ['Conta Corrente', 'Conta Cartão'] }
 				break
 
 			case 'cartaoCredito':
 				params.bankType = { $in: ['Cartão de Crédito'] }
-				break
-
-			case 'planejamento':
-				params.bankType = { $in: ['Conta Corrente', 'Conta Cartão'] }
 				break
 
 			default:

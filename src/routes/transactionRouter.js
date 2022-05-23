@@ -1,8 +1,7 @@
-const { isEmpty } = require('lodash')
+const { isEmpty, get } = require('lodash')
 const express = require('express')
 const controller = require('../controllers')
 const router = express.Router()
-const { get } = require('lodash')
 const auth = require('../middlewares/auth')
 
 router.post('/list/:typeTransaction', auth, async (req, res, next) => {
