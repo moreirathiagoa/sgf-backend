@@ -13,7 +13,7 @@ async function getListTransaction(typeTransaction, filters) {
 		}
 
 		const transactionFind = await db
-			.find(model.transactionModel, params)
+			.find(model.transaction, params)
 			.sort({ efectedDate: -1 })
 			.populate('bank_id', 'name')
 			.populate('category_id', 'name')
@@ -76,7 +76,7 @@ async function getTransaction(idTransaction) {
 	try {
 		const params = { _id: idTransaction, userId: global.userId }
 		const transactionFind = await db
-			.findOne(model.transactionModel, params)
+			.findOne(model.transaction, params)
 			.populate('fature_id', 'name')
 		if (isEmpty(transactionFind))
 			return utils.makeResponse(203, 'Transação não encontradas', [])
@@ -92,12 +92,12 @@ async function bankTransference(data) {
 	const { originalBankId, finalBankId, categoryId, value } = data
 
 	const paramsOrigin = { _id: originalBankId, userId: global.userId }
-	const originBankFind = await db.findOne(model.bankModel, paramsOrigin)
+	const originBankFind = await db.findOne(model.bank, paramsOrigin)
 	if (isEmpty(originBankFind))
 		return utils.makeResponse(203, 'Banco de origem não encontrado')
 
 	const paramsFinal = { _id: finalBankId, userId: global.userId }
-	const finalBankFind = await db.findOne(model.bankModel, paramsFinal)
+	const finalBankFind = await db.findOne(model.bank, paramsFinal)
 	if (isEmpty(finalBankFind))
 		return utils.makeResponse(203, 'Banco destino não encontrado')
 
@@ -177,7 +177,7 @@ async function createTransaction(transactionToCreate) {
 			_id: transactionToCreate.bank_id,
 			userId: global.userId,
 		}
-		const bankFind = await db.findOne(model.bankModel, bankParams)
+		const bankFind = await db.findOne(model.bank, bankParams)
 
 		let fature
 		if (transactionToCreate.typeTransaction === 'cartaoCredito') {
@@ -220,7 +220,7 @@ async function createTransaction(transactionToCreate) {
 					transactionToCreate.fature_id = fature._id
 				}
 			}
-			const transactionToSave = new model.transactionModel(transactionToCreate)
+			const transactionToSave = new model.transaction(transactionToCreate)
 			const transactionSaved = await db.save(transactionToSave)
 
 			switch (transactionToCreate.typeTransaction) {
@@ -255,7 +255,7 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 		if (validation) return utils.makeResponse(203, validation)
 
 		const params = { _id: idTransaction, userId: global.userId }
-		const oldTransaction = await db.findOne(model.transactionModel, params)
+		const oldTransaction = await db.findOne(model.transaction, params)
 
 		if (transactionToUpdate.typeTransaction === 'cartaoCredito') {
 			transactionToUpdate.isCompesed = false
@@ -273,7 +273,7 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 			return utils.makeResponse(203, 'Transação não encontrada')
 		}
 
-		const transactionReturn = await model.transactionModel.findOneAndUpdate(
+		const transactionReturn = await model.transaction.findOneAndUpdate(
 			params,
 			transactionToUpdate,
 			{
@@ -335,11 +335,11 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 async function deleteTransaction(idTransaction) {
 	try {
 		const params = { _id: idTransaction, userId: global.userId }
-		const transactionFind = await db.findOne(model.transactionModel, params)
+		const transactionFind = await db.findOne(model.transaction, params)
 		if (isEmpty(transactionFind))
 			return utils.makeResponse(203, 'Transação não encontrada')
 
-		const transactionToDelete = new model.transactionModel(transactionFind)
+		const transactionToDelete = new model.transaction(transactionFind)
 		const response = await db.remove(transactionToDelete)
 
 		const saldoAdjust = -1 * transactionToDelete.value
@@ -367,7 +367,7 @@ async function transactionNotCompensatedByBank() {
 		typeTransaction: 'contaCorrente',
 		isCompesed: false,
 	}
-	let response = await model.transactionModel.aggregate([
+	let response = await model.transaction.aggregate([
 		{ $match: params },
 		{
 			$group: {
@@ -394,7 +394,7 @@ async function transactionNotCompensatedDebit() {
 		typeTransaction: 'contaCorrente',
 		value: { $lte: 0 },
 	}
-	let response = await model.transactionModel.aggregate([
+	let response = await model.transaction.aggregate([
 		{ $match: params },
 		{ $group: { _id: null, saldoNotCompesated: { $sum: '$value' } } },
 	])
@@ -416,7 +416,7 @@ async function transactionNotCompensatedCredit() {
 		typeTransaction: 'contaCorrente',
 		value: { $gt: 0 },
 	}
-	let response = await model.transactionModel.aggregate([
+	let response = await model.transaction.aggregate([
 		{ $match: params },
 		{ $group: { _id: null, saldoNotCompesated: { $sum: '$value' } } },
 	])
@@ -442,7 +442,7 @@ async function planToPrincipal(transactions) {
 		await updateSaldoContaCorrente(transaction.bank_id, transaction.value)
 
 		const params = { _id: transaction._id }
-		const transactionToReturn = await model.transactionModel.findByIdAndUpdate(
+		const transactionToReturn = await model.transaction.findByIdAndUpdate(
 			params,
 			transactionToUpdate,
 			{ new: true }
@@ -509,7 +509,7 @@ async function getFutureTransactionCredit() {
 		typeTransaction: 'planejamento',
 		value: { $gt: 0 },
 	}
-	const transactionCredit = await model.transactionModel.aggregate([
+	const transactionCredit = await model.transaction.aggregate([
 		{ $match: paramsCredit },
 		{
 			$group: {
@@ -534,7 +534,7 @@ async function getFutureTransactionDebit() {
 		typeTransaction: 'planejamento',
 		value: { $lte: 0 },
 	}
-	const transactionDebit = await model.transactionModel.aggregate([
+	const transactionDebit = await model.transaction.aggregate([
 		{ $match: paramsDebit },
 		{
 			$group: {
@@ -561,7 +561,7 @@ async function getCardTransactionDebit() {
 		value: { $lte: 0 },
 	}
 
-	const transactionGrouped = await model.transactionModel.aggregate([
+	const transactionGrouped = await model.transaction.aggregate([
 		{ $match: params },
 		{
 			$group: {
@@ -577,7 +577,7 @@ async function getCardTransactionDebit() {
 
 	for (let el of transactionGrouped) {
 		const fature_id = el._id.fature_id
-		const fature = await db.findOne(model.faturesModel, { _id: fature_id })
+		const fature = await db.findOne(model.fature, { _id: fature_id })
 
 		el._id.name = fature.name
 		delete el._id.fature_id
@@ -711,14 +711,14 @@ async function validadeTransaction(transactionToCreate) {
 
 async function existCategory(idCategory) {
 	const params = { _id: idCategory }
-	const categoryFind = await db.findOne(model.categoryModel, params)
+	const categoryFind = await db.findOne(model.category, params)
 	if (isEmpty(categoryFind)) return false
 	return true
 }
 
 async function existBank(idBank) {
 	const params = { _id: idBank }
-	const bankFind = await db.findOne(model.bankModel, params)
+	const bankFind = await db.findOne(model.bank, params)
 	if (isEmpty(bankFind)) return false
 	return true
 }
@@ -729,7 +729,7 @@ async function getFature(fatureName, bank_id) {
 		bank_id: bank_id,
 		userId: global.userId,
 	}
-	let fature = await db.findOne(model.faturesModel, fatureParams)
+	let fature = await db.findOne(model.fature, fatureParams)
 
 	if (!fature) {
 		fature = {
@@ -738,7 +738,7 @@ async function getFature(fatureName, bank_id) {
 			createDate: new Date(),
 			bank_id: bank_id,
 		}
-		fature = new model.faturesModel(fature)
+		fature = new model.fature(fature)
 		await db.save(fature)
 	}
 
@@ -747,9 +747,7 @@ async function getFature(fatureName, bank_id) {
 
 async function updateSaldoContaCorrente(idBank, valor) {
 	const params = { _id: idBank, userId: global.userId }
-	let bankFind = await db
-		.findOne(model.bankModel, params)
-		.select('systemBalance')
+	let bankFind = await db.findOne(model.bank, params).select('systemBalance')
 
 	const finalBalance = round(bankFind.systemBalance + valor, 2)
 	bankFind.systemBalance = finalBalance
@@ -760,13 +758,13 @@ async function updateSaldoContaCorrente(idBank, valor) {
 async function updateSaldoFatura(idFatura, valor) {
 	const fatureParams = { _id: idFatura, userId: global.userId }
 	let fatureFind = await db
-		.findOne(model.faturesModel, fatureParams)
+		.findOne(model.fature, fatureParams)
 		.select('fatureBalance')
 
 	const finalBalance = round(fatureFind.fatureBalance + valor, 2)
 	const fatureToUpdate = { fatureBalance: finalBalance }
 
-	await model.faturesModel.findOneAndUpdate(fatureParams, fatureToUpdate)
+	await model.fature.findOneAndUpdate(fatureParams, fatureToUpdate)
 }
 
 module.exports = {

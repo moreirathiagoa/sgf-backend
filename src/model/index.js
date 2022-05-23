@@ -1,13 +1,13 @@
-const transactionModel = require('./transaction')
-const categoryModel = require('./category')
-const faturesModel = require('./fatures')
-const bankModel = require('./bank')
-const userModel = require('./user')
+const transaction = require('./transactionModel')
+const category = require('./categoryModel')
+const fature = require('./fatureModel')
+const bank = require('./bankModel')
+const user = require('./userModel')
 
 module.exports = {
-	transactionModel,
-	categoryModel,
-	faturesModel,
-	bankModel,
-	userModel,
+	transaction,
+	category,
+	fature,
+	bank,
+	user,
 }
