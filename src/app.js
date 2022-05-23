@@ -16,5 +16,6 @@ app.use('/category', routes.categoryRouter)
 app.use('/bank', routes.bankRouter)
 app.use('/fature', routes.fatureRouter)
 app.use('/transaction', routes.transactionRouter)
+app.use('/balancesDashboard', routes.balancesDashboard)
 
 module.exports = app
