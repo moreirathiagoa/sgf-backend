@@ -11,6 +11,7 @@ async function getListBanks(typeTransaction) {
 
 		switch (typeTransaction) {
 			case 'contaCorrente':
+			case 'planejamento':
 				params.bankType = { $in: ['Conta Corrente', 'Conta Cartão'] }
 				break
 
@@ -18,15 +19,11 @@ async function getListBanks(typeTransaction) {
 				params.bankType = { $in: ['Cartão de Crédito'] }
 				break
 
-			case 'planejamento':
-				params.bankType = { $in: ['Conta Corrente', 'Conta Cartão'] }
-				break
-
 			default:
 				break
 		}
 
-		const bankFind = await db.find(model.bankModel, params).sort('name')
+		const bankFind = await db.find(model.bank, params).sort('name')
 		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Bancos não encontrados', [])
 
@@ -43,7 +40,7 @@ async function getListBanksDashboard() {
 			userId: global.userId,
 			bankType: { $in: ['Conta Corrente', 'Conta Cartão'] },
 		}
-		const bankFind = await db.find(model.bankModel, params).sort('name')
+		const bankFind = await db.find(model.bank, params).sort('name')
 		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Bancos não encontrados', [])
 
@@ -91,7 +88,7 @@ async function getListBanksDashboard() {
 async function getBank(idBank) {
 	try {
 		const params = { _id: idBank, userId: global.userId }
-		const bankFind = await db.findOne(model.bankModel, params)
+		const bankFind = await db.findOne(model.bank, params)
 		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Banco não encontrado')
 
@@ -104,18 +101,18 @@ async function getBank(idBank) {
 
 async function createBank(bankToCreate) {
 	try {
-		const validation = await validateBank(bankToCreate)
+		const validation = validateBank(bankToCreate)
 		if (validation) return utils.makeResponse(203, validation)
 
 		const params = { name: bankToCreate.name, userId: global.userId }
-		const bankFind = await db.findOne(model.bankModel, params)
+		const bankFind = await db.findOne(model.bank, params)
 		if (!isEmpty(bankFind))
 			return utils.makeResponse(203, 'Banco já cadastrado')
 
 		bankToCreate.userId = global.userId
 		bankToCreate.createDate = utils.actualDateToBataBase()
 
-		const bankToSave = new model.bankModel(bankToCreate)
+		const bankToSave = new model.bank(bankToCreate)
 		const response = await db.save(bankToSave)
 		return utils.makeResponse(201, 'Banco criado com sucesso', response)
 	} catch (error) {
@@ -127,14 +124,14 @@ async function createBank(bankToCreate) {
 async function updateBank(idBank, bankToUpdate) {
 	try {
 		const paramsName = { name: bankToUpdate.name, userId: global.userId }
-		const bankFindByName = await db.findOne(model.bankModel, paramsName)
+		const bankFindByName = await db.findOne(model.bank, paramsName)
 		if (!isEmpty(bankFindByName)) {
 			if (bankFindByName._id != idBank)
 				return utils.makeResponse(203, 'Banco já cadastrado')
 		}
 
 		const paramsId = { _id: idBank, userId: global.userId }
-		const bankFindById = await db.findOne(model.bankModel, paramsId)
+		const bankFindById = await db.findOne(model.bank, paramsId)
 
 		if (isEmpty(bankFindById)) {
 			return utils.makeResponse(203, 'Banco não encontrado')
@@ -144,7 +141,7 @@ async function updateBank(idBank, bankToUpdate) {
 
 		bankFindById.save()
 
-		const categoryReturn = await db.findOne(model.bankModel, paramsId)
+		const categoryReturn = await db.findOne(model.bank, paramsId)
 		return utils.makeResponse(
 			202,
 			'Banco atualizado com sucesso',
@@ -159,14 +156,14 @@ async function updateBank(idBank, bankToUpdate) {
 async function deleteBank(idBank) {
 	try {
 		const paramsBank = { _id: idBank, userId: global.userId }
-		const bankFind = await db.findOne(model.bankModel, paramsBank)
+		const bankFind = await db.findOne(model.bank, paramsBank)
 		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Banco não encontrado')
 
 		const paramsTransaction = { bank_id: idBank, userId: global.userId }
 
 		const transactionFind = await db.findOne(
-			model.transactionModel,
+			model.transaction,
 			paramsTransaction
 		)
 		if (!isEmpty(transactionFind))
@@ -175,7 +172,7 @@ async function deleteBank(idBank) {
 				'Banco possui transações atreladas e não pode ser removido.'
 			)
 
-		const categoryToDelete = new model.bankModel(bankFind)
+		const categoryToDelete = new model.bank(bankFind)
 		const response = await db.remove(categoryToDelete)
 		return utils.makeResponse(202, 'Banco removido com sucesso', response)
 	} catch (error) {

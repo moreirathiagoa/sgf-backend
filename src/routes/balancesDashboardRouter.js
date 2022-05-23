@@ -8,10 +8,10 @@ router.get('/getBalances', auth, async (req, res, next) => {
 		global.userId = res.locals.authData.userId
 
 		const dashboardDataPromise = [
-			await controller.bankController.getListBanksDashboard(),
-			await controller.categoryController.getListCategory(),
-			await controller.transactionController.transactionNotCompensatedCredit(),
-			await controller.transactionController.transactionNotCompensatedDebit(),
+			await controller.bank.getListBanksDashboard(),
+			await controller.category.getListCategory(),
+			await controller.transaction.transactionNotCompensatedCredit(),
+			await controller.transaction.transactionNotCompensatedDebit(),
 		]
 
 		const dashboardData = await Promise.all(dashboardDataPromise)
