@@ -41,7 +41,8 @@ async function createUser(userToCreate) {
 		if (!isEmpty(userFound))
 			return utils.makeResponse(203, 'Usuários já cadastrado')
 
-		userToCreate.userPassword = bcrypt.hashSync(userToCreate.userPassword, 10)
+		const salt = bcrypt.genSaltSync(15)
+		userToCreate.userPassword = bcrypt.hashSync(userToCreate.userPassword, salt)
 		userToCreate.createDate = utils.actualDateToBataBase()
 
 		const userToSave = new model.user(userToCreate)
@@ -73,7 +74,8 @@ async function updateUser(idUser, userToUpdate) {
 			return utils.makeResponse(203, 'Usuários não encontrado')
 		}
 
-		userToUpdate.userPassword = bcrypt.hashSync(userToUpdate.userPassword, 10)
+		const salt = bcrypt.genSaltSync(15)
+		userToUpdate.userPassword = bcrypt.hashSync(userToUpdate.userPassword, salt)
 
 		let userReturn = await model.user.findOneAndUpdate(params, userToUpdate, {
 			new: true,
