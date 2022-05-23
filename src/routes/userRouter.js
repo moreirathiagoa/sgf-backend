@@ -7,9 +7,9 @@ const auth = require('../middlewares/auth')
 router.get('/list', auth, async (req, res, next) => {
 	try {
 		const response = await controller.userController.getListUsers()
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -17,9 +17,9 @@ router.get('/:idUser', auth, async (req, res, next) => {
 	const { idUser } = req.params
 	try {
 		const response = await controller.userController.getUser(idUser)
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -32,9 +32,9 @@ router.post('/create', auth, async (req, res, next) => {
 			response = await controller.userController.createUser(req.body)
 		}
 
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -48,9 +48,9 @@ router.put('/update/:idUser', auth, async (req, res, next) => {
 		} else {
 			response = await controller.userController.updateUser(idUser, req.body)
 		}
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 

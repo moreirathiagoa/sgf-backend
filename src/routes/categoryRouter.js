@@ -10,9 +10,9 @@ router.get('/list', auth, async (req, res, next) => {
 		const response = await controller.categoryController.getListCategory(
 			req.body
 		)
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -21,9 +21,9 @@ router.get('/:idCategory', auth, async (req, res, next) => {
 	const { idCategory } = req.params
 	try {
 		const response = await controller.categoryController.getCategory(idCategory)
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -37,9 +37,9 @@ router.post('/create', auth, async (req, res, next) => {
 			response = await controller.categoryController.createCategory(req.body)
 		}
 
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -57,9 +57,9 @@ router.put('/update/:idCategory', auth, async (req, res, next) => {
 				req.body
 			)
 		}
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 
@@ -71,9 +71,9 @@ router.delete('/delete/:idCategory', auth, async (req, res, next) => {
 		const response = await controller.categoryController.deleteCategory(
 			idCategory
 		)
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 

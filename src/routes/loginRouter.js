@@ -11,9 +11,9 @@ router.post('/', async (req, res, next) => {
 		} else {
 			response = await controller.loginController.login(req.body)
 		}
-		res.status(response.code).send(response)
+		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).send(error)
+		res.status(500).json(error)
 	}
 })
 module.exports = router
