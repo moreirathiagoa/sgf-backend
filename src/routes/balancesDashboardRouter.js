@@ -3,15 +3,15 @@ const controller = require('../controllers')
 const router = express.Router()
 const auth = require('../middlewares/auth')
 
-router.get('/getBalances', auth, async (req, res, next) => {
+router.get('/get-balances', auth, async (req, res, next) => {
 	try {
 		global.userId = res.locals.authData.userId
 
 		const dashboardDataPromise = [
-			await controller.bank.getListBanksDashboard(),
-			await controller.category.getListCategory(),
-			await controller.transaction.transactionNotCompensatedCredit(),
-			await controller.transaction.transactionNotCompensatedDebit(),
+			controller.bank.getListBanksDashboard(),
+			controller.category.getListCategory(),
+			controller.transaction.transactionNotCompensatedCredit(),
+			controller.transaction.transactionNotCompensatedDebit(),
 		]
 
 		const dashboardData = await Promise.all(dashboardDataPromise)
