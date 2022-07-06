@@ -4,23 +4,6 @@ const controller = require('../controllers')
 const router = express.Router()
 const auth = require('../middlewares/auth')
 
-router.post('/list/:typeTransaction', auth, async (req, res, next) => {
-	global.userId = res.locals.authData.userId
-	const { typeTransaction } = req.params
-
-	const filters = get(req, 'body.filters', null)
-
-	try {
-		const response = await controller.transaction.getListTransaction(
-			typeTransaction,
-			filters
-		)
-		res.status(response.code).json(response)
-	} catch (error) {
-		res.status(500).json(error)
-	}
-})
-
 router.post('/create', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
@@ -80,18 +63,6 @@ router.delete('/delete/:idTransaction', auth, async (req, res, next) => {
 		)
 		res.status(response.code).json(response)
 	} catch (error) {
-		res.status(500).json(error)
-	}
-})
-
-router.get('/not-compensated-by-bank', auth, async (req, res, next) => {
-	global.userId = res.locals.authData.userId
-	try {
-		const response =
-			await controller.transaction.transactionNotCompensatedByBank()
-		res.status(response.code).json(response)
-	} catch (error) {
-		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
 		res.status(500).json(error)
 	}
 })
