@@ -1,7 +1,6 @@
 const home = require('./homeRouter')
 const category = require('./categoryRouter')
 const bank = require('./bankRouter')
-const fature = require('./fatureRouter')
 const transaction = require('./transactionRouter')
 const login = require('./loginRouter')
 const user = require('./userRouter')
@@ -16,7 +15,6 @@ module.exports = {
 	transaction,
 	login,
 	user,
-	fature,
 	balancesDashboard,
 	extractPage,
 	newTransaction,
