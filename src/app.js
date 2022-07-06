@@ -18,5 +18,6 @@ app.use('/fature', routes.fature)
 app.use('/transaction', routes.transaction)
 app.use('/balances-dashboard', routes.balancesDashboard)
 app.use('/extract-page', routes.extractPage)
+app.use('/new-transaction', routes.newTransaction)
 
 module.exports = app
