@@ -28,7 +28,6 @@ router.post(
 				categoryList: extractData[1].data,
 				transactionList: extractData[2].data,
 			}
-			console.log('response: ', response)
 
 			res.status(200).json(response)
 		} catch (error) {
