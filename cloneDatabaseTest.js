@@ -10,12 +10,13 @@ function runCommand(cmds, cb) {
 	if (!next) return cb()
 
 	exec(next, { cwd: __dirname }, (err, stdout, stderr) => {
-		console.log('Comando executado')
+		console.log('Iniciando comando')
 
 		if (err && !next.match(/\-s$/)) {
-			console.log(`O commando falhou - ${err.message}`)
+			console.log(`Falha na execução - ${err.message}`)
 			cb(err)
 		} else {
+			console.log(`Sucesso na execução`)
 			runCommand(cmds, cb)
 		}
 	})

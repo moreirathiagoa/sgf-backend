@@ -136,6 +136,10 @@ async function bankTransference(data) {
 					throw new Erro('Erro no cadastro da segunda transação.')
 				}
 			})
+			.catch((err) => {
+				console.log('err: ', err)
+				throw err
+			})
 		return utils.makeResponse(201, 'Transferência efetuada com sucesso', {})
 	} catch (error) {
 		return utils.makeResponse(
