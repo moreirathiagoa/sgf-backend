@@ -17,7 +17,6 @@ async function getListTransaction(typeTransaction, filters) {
 			.sort({ efectedDate: -1 })
 			.populate('bank_id', 'name')
 			.populate('category_id', 'name')
-			.populate('fature_id', 'name')
 
 		if (isEmpty(transactionFind))
 			return utils.makeResponse(203, 'Transação não encontradas', [])
@@ -75,9 +74,7 @@ function prepareFilters(filters) {
 async function getTransaction(idTransaction) {
 	try {
 		const params = { _id: idTransaction, userId: global.userId }
-		const transactionFind = await db
-			.findOne(model.transaction, params)
-			.populate('fature_id', 'name')
+		const transactionFind = await db.findOne(model.transaction, params)
 		if (isEmpty(transactionFind))
 			return utils.makeResponse(203, 'Transação não encontradas', [])
 
@@ -183,14 +180,6 @@ async function createTransaction(transactionToCreate) {
 		}
 		const bankFind = await db.findOne(model.bank, bankParams)
 
-		let fature
-		if (transactionToCreate.typeTransaction === 'cartaoCredito') {
-			fature = await getFature(transactionToCreate.fature, bankFind._id)
-			delete transactionToCreate.fature
-			transactionToCreate.fature_id = fature._id
-			transactionToCreate.isCompesed = false
-		}
-
 		if (transactionToCreate.typeTransaction === 'planejamento') {
 			transactionToCreate.isCompesed = false
 		}
@@ -209,20 +198,6 @@ async function createTransaction(transactionToCreate) {
 					const nextDate = utils.addMonth(transactionToCreate.efectedDate, 1)
 					transactionToCreate.efectedDate = utils.formatDateToBataBase(nextDate)
 				}
-
-				if (transactionToCreate.typeTransaction === 'cartaoCredito') {
-					let now = new Date(fature.name.replace('/', '-') + '-10')
-					now.setDate(now.getDate() + 30)
-
-					const mes = now.getMonth() + 1
-					const ano = now.getFullYear()
-					let mesFinal = '00' + mes
-					mesFinal = mesFinal.substr(mesFinal.length - 2)
-					let fatureName = ano + '/' + mesFinal
-
-					fature = await getFature(fatureName, bankFind._id)
-					transactionToCreate.fature_id = fature._id
-				}
 			}
 			const transactionToSave = new model.transaction(transactionToCreate)
 			const transactionSaved = await db.save(transactionToSave)
@@ -231,12 +206,7 @@ async function createTransaction(transactionToCreate) {
 				case 'contaCorrente':
 					await updateSaldoContaCorrente(bankFind._id, transactionSaved.value)
 					break
-				case 'cartaoCredito':
-					await updateSaldoFatura(
-						transactionSaved.fature_id,
-						transactionSaved.value
-					)
-					break
+
 				default:
 			}
 
@@ -260,10 +230,6 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 
 		const params = { _id: idTransaction, userId: global.userId }
 		const oldTransaction = await db.findOne(model.transaction, params)
-
-		if (transactionToUpdate.typeTransaction === 'cartaoCredito') {
-			transactionToUpdate.isCompesed = false
-		}
 
 		if (transactionToUpdate.typeTransaction === 'planejamento') {
 			transactionToUpdate.isCompesed = false
@@ -305,24 +271,7 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 				}
 				break
 			}
-			case 'cartaoCredito': {
-				if (
-					transactionReturn.fature_id.toString() !=
-					oldTransaction.fature_id.toString()
-				) {
-					await updateSaldoFatura(
-						transactionReturn.fature_id,
-						transactionReturn.value
-					)
-					await updateSaldoFatura(
-						oldTransaction.fature_id,
-						oldTransaction.value * -1
-					)
-				} else {
-					await updateSaldoFatura(transactionReturn.fature_id, saldoAdjust)
-				}
-				break
-			}
+
 			default:
 		}
 
@@ -352,9 +301,7 @@ async function deleteTransaction(idTransaction) {
 			case 'contaCorrente':
 				await updateSaldoContaCorrente(transactionToDelete.bank_id, saldoAdjust)
 				break
-			case 'cartaoCredito':
-				await updateSaldoFatura(transactionToDelete.fature_id, saldoAdjust)
-				break
+
 			default:
 		}
 
@@ -460,18 +407,13 @@ async function planToPrincipal(transactions) {
 async function futureTransactionBalance() {
 	const transactionCredit = await getFutureTransactionCredit()
 	const transactionDebit = await getFutureTransactionDebit()
-	const cardDebit = await getCardTransactionDebit()
 
-	if (
-		transactionDebit.length == 0 &&
-		transactionCredit.length == 0 &&
-		cardDebit.length == 0
-	) {
+	if (transactionDebit.length == 0 && transactionCredit.length == 0) {
 		return utils.makeResponse(203, 'Não existem saldos para retorno')
 	}
 
-	const minDate = getMinData(transactionDebit, transactionCredit, cardDebit)
-	const maxDate = getMaxData(transactionDebit, transactionCredit, cardDebit)
+	const minDate = getMinData(transactionDebit, transactionCredit)
+	const maxDate = getMaxData(transactionDebit, transactionCredit)
 
 	let indexDate = minDate
 	let responseToReturn = []
@@ -485,16 +427,13 @@ async function futureTransactionBalance() {
 		let finalCredit = transactionCredit.find((t) => {
 			return t._id.month == month && t._id.year == year
 		})
-		let finalCard = cardDebit.find((t) => {
-			return t._id.month == month && t._id.year == year
-		})
 
 		const response = {
 			month: month,
 			year: year,
 			debit: finalDebit ? finalDebit.debit : 0,
 			credit: finalCredit ? finalCredit.credit : 0,
-			card: finalCard ? finalCard.debit : 0,
+			card: 0,
 		}
 
 		responseToReturn.push(response)
@@ -557,67 +496,7 @@ async function getFutureTransactionDebit() {
 	return transactionDebit
 }
 
-async function getCardTransactionDebit() {
-	const params = {
-		userId: global.userId,
-		typeTransaction: 'cartaoCredito',
-		isCompesed: false,
-		value: { $lte: 0 },
-	}
-
-	const transactionGrouped = await model.transaction.aggregate([
-		{ $match: params },
-		{
-			$group: {
-				_id: {
-					fature_id: '$fature_id',
-				},
-				debit: { $sum: '$value' },
-			},
-		},
-	])
-
-	let transactionNamed = []
-
-	for (let el of transactionGrouped) {
-		const fature_id = el._id.fature_id
-		const fature = await db.findOne(model.fature, { _id: fature_id })
-
-		el._id.name = fature.name
-		delete el._id.fature_id
-
-		transactionNamed.push(el)
-	}
-
-	transactionNamed.sort(function (a, b) {
-		if (a._id.name > b._id.name) {
-			return 1
-		}
-		if (a._id.name < b._id.name) {
-			return -1
-		}
-		// a must be equal to b
-		return 0
-	})
-
-	const transactionToReturn = transactionNamed.map((fature) => {
-		const fatureName = fature._id.name
-		const year = fatureName.split('/')[0]
-		const month = fatureName.split('/')[1]
-
-		return {
-			_id: {
-				month: month,
-				year: year,
-			},
-			debit: fature.debit,
-		}
-	})
-
-	return transactionToReturn
-}
-
-function getMinData(transactionDebit, transactionCredit, cardDebit) {
+function getMinData(transactionDebit, transactionCredit) {
 	let minDate = new Date()
 	minDate.setDate('10')
 
@@ -638,11 +517,6 @@ function getMinData(transactionDebit, transactionCredit, cardDebit) {
 			transactionDebit[0]._id.year + '-' + transactionDebit[0]._id.month + '-10'
 		)
 	}
-	if (cardDebit.length > 0) {
-		minDateCard = new Date(
-			cardDebit[0]._id.year + '-' + cardDebit[0]._id.month + '-10'
-		)
-	}
 
 	if (minDateCredit < minDate) minDate = minDateCredit
 	if (minDateDebit < minDate) minDate = minDateDebit
@@ -651,7 +525,7 @@ function getMinData(transactionDebit, transactionCredit, cardDebit) {
 	return minDate
 }
 
-function getMaxData(transactionDebit, transactionCredit, cardDebit) {
+function getMaxData(transactionDebit, transactionCredit) {
 	let maxDate = new Date()
 	maxDate.setDate('10')
 
@@ -675,12 +549,6 @@ function getMaxData(transactionDebit, transactionCredit, cardDebit) {
 				'-' +
 				transactionDebit[tam]._id.month +
 				'-10'
-		)
-	}
-	if (cardDebit.length > 0) {
-		const tam = cardDebit.length - 1
-		maxDateCard = new Date(
-			cardDebit[tam]._id.year + '-' + cardDebit[tam]._id.month + '-10'
 		)
 	}
 
@@ -727,28 +595,6 @@ async function existBank(idBank) {
 	return true
 }
 
-async function getFature(fatureName, bank_id) {
-	const fatureParams = {
-		name: fatureName,
-		bank_id: bank_id,
-		userId: global.userId,
-	}
-	let fature = await db.findOne(model.fature, fatureParams)
-
-	if (!fature) {
-		fature = {
-			userId: global.userId,
-			name: fatureName,
-			createDate: new Date(),
-			bank_id: bank_id,
-		}
-		fature = new model.fature(fature)
-		await db.save(fature)
-	}
-
-	return fature
-}
-
 async function updateSaldoContaCorrente(idBank, valor) {
 	const params = { _id: idBank, userId: global.userId }
 	let bankFind = await db.findOne(model.bank, params).select('systemBalance')
@@ -757,18 +603,6 @@ async function updateSaldoContaCorrente(idBank, valor) {
 	bankFind.systemBalance = finalBalance
 
 	bankFind.save()
-}
-
-async function updateSaldoFatura(idFatura, valor) {
-	const fatureParams = { _id: idFatura, userId: global.userId }
-	let fatureFind = await db
-		.findOne(model.fature, fatureParams)
-		.select('fatureBalance')
-
-	const finalBalance = round(fatureFind.fatureBalance + valor, 2)
-	const fatureToUpdate = { fatureBalance: finalBalance }
-
-	await model.fature.findOneAndUpdate(fatureParams, fatureToUpdate)
 }
 
 module.exports = {
