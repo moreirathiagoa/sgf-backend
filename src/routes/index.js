@@ -7,6 +7,7 @@ const user = require('./userRouter')
 const balancesDashboard = require('./balancesDashboardRouter')
 const extractPage = require('./extractPageRouter')
 const newTransaction = require('./newTransactionRouter')
+const planning = require('./planningRouter')
 
 module.exports = {
 	home,
@@ -18,4 +19,5 @@ module.exports = {
 	balancesDashboard,
 	extractPage,
 	newTransaction,
+	planning,
 }

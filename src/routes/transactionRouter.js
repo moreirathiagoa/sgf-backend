@@ -67,17 +67,6 @@ router.delete('/delete/:idTransaction', auth, async (req, res, next) => {
 	}
 })
 
-router.get('/future-balance', auth, async (req, res, next) => {
-	global.userId = res.locals.authData.userId
-	try {
-		const response = await controller.transaction.futureTransactionBalance()
-		res.status(response.code).json(response)
-	} catch (error) {
-		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		res.status(500).json(error)
-	}
-})
-
 router.post('/planToPrincipal', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
 	try {
