@@ -14,10 +14,10 @@ app.use('/user', routes.user)
 app.use('/login', routes.login)
 app.use('/category', routes.category)
 app.use('/bank', routes.bank)
-app.use('/fature', routes.fature)
 app.use('/transaction', routes.transaction)
 app.use('/balances-dashboard', routes.balancesDashboard)
 app.use('/extract-page', routes.extractPage)
 app.use('/new-transaction', routes.newTransaction)
+app.use('/planing', routes.planning)
 
 module.exports = app

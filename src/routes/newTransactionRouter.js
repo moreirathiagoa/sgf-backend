@@ -23,17 +23,17 @@ router.get(
 				)
 			}
 
-			const dashboardData = await Promise.all(dashboardDataPromise)
+			const transactionData = await Promise.all(dashboardDataPromise)
 
-			validateResponses(dashboardData)
+			validateResponses(transactionData)
 
 			const response = {
-				banksList: dashboardData[0].data,
-				categoryList: dashboardData[1].data,
+				banksList: transactionData[0].data,
+				categoryList: transactionData[1].data,
 			}
 
 			if (idTransaction)
-				Object.assign(response, { transactionData: dashboardData[2].data })
+				Object.assign(response, { transactionData: transactionData[2].data })
 
 			res.status(200).json(response)
 		} catch (error) {
