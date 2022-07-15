@@ -31,13 +31,6 @@ jobs:
 
       - name: Terraform Init
         uses: hashicorp/terraform-github-actions/init@v0.4.0
-        with:
-          -var lambda_zip: bundle.zip
-          -var lambda_name: 'sgf-backend-test'
-          -var arn_role: '${{ secrets.IAM_ARN }}'
-          -var db_username: '${{ secrets.DB_USERNAME }}'
-          -var db_password: '${{ secrets.IAM_ARN }}'
-          -var key_token: '${{ secrets.KEY_TOKEN }}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TF_ACTION_WORKING_DIR: 'terraform'
@@ -54,3 +47,18 @@ jobs:
           TF_ACTION_WORKING_DIR: 'terraform'
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        with:
+          variables: |
+            lambda_zip = bundle.zip
+            lambda_name = "sgf-backend-test"
+            arn_role = "${{ secrets.IAM_ARN }}"
+            db_username = "${{ secrets.DB_USERNAME }}"
+            db_password = "${{ secrets.IAM_ARN }}"
+            key_token = "${{ secrets.KEY_TOKEN }}"
+        # with:
+        #   -var lambda_zip: bundle.zip
+        #   -var lambda_name: 'sgf-backend-test'
+        #   -var arn_role: '${{ secrets.IAM_ARN }}'
+        #   -var db_username: '${{ secrets.DB_USERNAME }}'
+        #   -var db_password: '${{ secrets.IAM_ARN }}'
+        #   -var key_token: '${{ secrets.KEY_TOKEN }}'
