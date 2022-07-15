@@ -32,13 +32,12 @@ jobs:
       - name: Terraform Init
         uses: hashicorp/terraform-github-actions/init@v0.4.0
         with:
-          variables: |
-            lambda_zip = bundle.zip
-            lambda_name = "sgf-backend-test"
-            arn_role = "${{ secrets.IAM_ARN }}"
-            db_username = "${{ secrets.DB_USERNAME }}"
-            db_password = "${{ secrets.IAM_ARN }}"
-            key_token = "${{ secrets.KEY_TOKEN }}"
+          lambda_zip: bundle.zip
+          lambda_name: 'sgf-backend-test'
+          arn_role: '${{ secrets.IAM_ARN }}'
+          db_username: '${{ secrets.DB_USERNAME }}'
+          db_password: '${{ secrets.IAM_ARN }}'
+          key_token: '${{ secrets.KEY_TOKEN }}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TF_ACTION_WORKING_DIR: 'terraform'
