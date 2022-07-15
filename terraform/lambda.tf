@@ -1,5 +1,6 @@
 resource "aws_lambda_function" "lambda_function" {
-	filename                       = var.lambda_name
+	source_code_hash               = filebase64sha256(var.lambda_zip)
+	filename                       = var.lambda_zip
   function_name                  = var.lambda_name
   role                           = var.arn_role
   handler                        = var.lambda_handler

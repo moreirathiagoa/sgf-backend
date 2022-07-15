@@ -3,6 +3,11 @@ variable "region" {
   default = "us-east-1" #fixo no momento
 }
 
+variable "lambda_zip" {
+  type    = string
+  default = "no_zip"
+}
+
 variable "lambda_name" {
   type    = string
   default = "value"
