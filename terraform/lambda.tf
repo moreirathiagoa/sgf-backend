@@ -7,8 +7,6 @@ resource "aws_lambda_function" "lambda_function" {
   timeout                        = var.lambda_timeout
   reserved_concurrent_executions = 50
 
-  architectures = ["arm64"] #arm é mais rápido e mais barato, só troquem para x86 caso haja necessidade 
-
   depends_on = [
     aws_cloudwatch_log_group.cloudwatch_log
   ]
