@@ -48,17 +48,17 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         with:
-          variables: |
-            lambda_zip = bundle.zip
-            lambda_name = "sgf-backend-test"
-            arn_role = "${{ secrets.IAM_ARN }}"
-            db_username = "${{ secrets.DB_USERNAME }}"
-            db_password = "${{ secrets.IAM_ARN }}"
-            key_token = "${{ secrets.KEY_TOKEN }}"
+          -var lambda_zip: bundle.zip
+          -var lambda_name: 'sgf-backend-test'
+          -var arn_role: '${{ secrets.IAM_ARN }}'
+          -var db_username: '${{ secrets.DB_USERNAME }}'
+          -var db_password: '${{ secrets.IAM_ARN }}'
+          -var key_token: '${{ secrets.KEY_TOKEN }}'
         # with:
-        #   -var lambda_zip: bundle.zip
-        #   -var lambda_name: 'sgf-backend-test'
-        #   -var arn_role: '${{ secrets.IAM_ARN }}'
-        #   -var db_username: '${{ secrets.DB_USERNAME }}'
-        #   -var db_password: '${{ secrets.IAM_ARN }}'
-        #   -var key_token: '${{ secrets.KEY_TOKEN }}'
+        #   variables: |
+        #     lambda_zip = bundle.zip
+        #     lambda_name = "sgf-backend-test"
+        #     arn_role = "${{ secrets.IAM_ARN }}"
+        #     db_username = "${{ secrets.DB_USERNAME }}"
+        #     db_password = "${{ secrets.IAM_ARN }}"
+        #     key_token = "${{ secrets.KEY_TOKEN }}"
