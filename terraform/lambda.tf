@@ -1,15 +1,7 @@
-data "archive_file" "lambda_terraform_test" {
-  type = "zip"
-
-  source_dir  = path.root
-  output_path = "${path.module}/terraform_test.zip"
-}
-
-
 resource "aws_lambda_function" "lambda_function" {
-  source_code_hash               = data.archive_file.lambda_terraform_test.output_base64sha256
+  source_code_hash               = filebase64sha256(var.lambda_zip)
+  filename                       = var.file_name
   function_name                  = var.lambda_name
-  filename                       = "terraform_test.zip"
   role                           = var.arn_role
   handler                        = var.lambda_handler
   runtime                        = var.lambda_runtime
