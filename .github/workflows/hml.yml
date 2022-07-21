@@ -29,13 +29,13 @@ jobs:
       - name: zip
         uses: montudor/action-zip@v0.1.0
         with:
-          args: zip -qq -r ./deploy/lambda.zip . -i main
+          args: zip -qq -r ./lambda.zip ./
 
       - name: upload
         uses: actions/upload-artifact@v2-preview
         with:
           name: lambda_zip
-          path: deploy/lambda.zip
+          path: lambda.zip
           key: lambda.zip
 
       - name: Terraform Init
