@@ -5,7 +5,7 @@ variable "region" {
 
 variable "lambda_zip" {
   type    = string
-  default = "no_zip"
+  default = "change_it"
 }
 
 variable "lambda_name" {
