@@ -1,7 +1,7 @@
 data "archive_file" "lambda_terraform_test" {
   type = "zip"
 
-  source_dir  = path.module
+  source_dir  = path.root
   output_path = "${path.module}/terraform_test.zip"
 }
 
