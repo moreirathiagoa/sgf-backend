@@ -49,16 +49,12 @@ jobs:
           TF_ACTION_WORKING_DIR: 'terraform'
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        with:
-          args: |
-            -var="lambda_name=sgf-backend-test"
-            -var="lambda_zip=bundle.zip"
-          # lambda_zip: bundle.zip
-          # lambda_name: 'sgf-backend-test'
-          # arn_role: '${{ secrets.IAM_ARN }}'
-          # db_username: '${{ secrets.DB_USERNAME }}'
-          # db_password: '${{ secrets.IAM_ARN }}'
-          # key_token: '${{ secrets.KEY_TOKEN }}'
+          TF_VAR_lambda_zip: bundle.zip
+          TF_VAR_lambda_name: 'sgf-backend-test'
+          TF_VAR_arn_role: '${{ secrets.IAM_ARN }}'
+          TF_VAR_db_username: '${{ secrets.DB_USERNAME }}'
+          TF_VAR_db_password: '${{ secrets.IAM_ARN }}'
+          TF_VAR_key_token: '${{ secrets.KEY_TOKEN }}'
         # with:
         #   variables: |
         #     lambda_zip = bundle.zip
