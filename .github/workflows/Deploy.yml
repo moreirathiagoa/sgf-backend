@@ -1,6 +1,8 @@
 name: Deploy
 on:
-  push:
+  pull_request:
+    types:
+      - closed
     branches:
       - release
       - master
@@ -37,10 +39,10 @@ jobs:
   deploy:
     name: Deploy Lambda (${{ github.ref_name }})
     runs-on: ubuntu-latest
-    if: contains(github.event.created.labels.*.name, 'deploy')
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'deploy')
     needs: build
     env:
-      LAMBDA_FUNCTION: ${{ github.ref_name == 'master' && 'sgf-backend' || 'sgf-backend-hml' }}
+      LAMBDA_FUNCTION: ${{ github.base_ref == 'master' && 'sgf-backend' || 'sgf-backend-hml' }}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
