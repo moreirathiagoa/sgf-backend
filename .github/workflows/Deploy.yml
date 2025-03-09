@@ -6,7 +6,7 @@ on:
       - closed
     branches:
       - release
-      - master
+      - main
 
 jobs:
   build:
@@ -43,7 +43,7 @@ jobs:
     if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'deploy')
     needs: build
     env:
-      LAMBDA_FUNCTION: ${{ github.base_ref == 'master' && 'sgf-backend' || 'sgf-backend-hml' }}
+      LAMBDA_FUNCTION: ${{ github.base_ref == 'main' && 'sgf-backend' || 'sgf-backend-hml' }}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
