@@ -10,8 +10,9 @@ on:
 
 jobs:
   build:
-    name: Build Lambda (${{ github.ref_name }})
+    name: Build and Deploy (${{ github.ref_name }})
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'deploy')
     strategy:
       matrix:
         node-version: [20.x]
@@ -30,25 +31,6 @@ jobs:
 
       - name: Create deployment package
         run: zip -qq -r bundle.zip ./config ./src node_modules package.json package-lock.json index.js
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: lambda-bundle
-          path: bundle.zip
-
-  deploy:
-    name: Deploy Lambda (${{ github.ref_name }})
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'deploy')
-    needs: build
-    env:
-      LAMBDA_FUNCTION: ${{ github.base_ref == 'main' && 'sgf-backend' || 'sgf-backend-hml' }}
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: lambda-bundle
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
