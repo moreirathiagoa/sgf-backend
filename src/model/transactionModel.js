@@ -10,6 +10,7 @@ const transaction = new Schema({
 	currentRecurrence: { type: Number },
 	finalRecurrence: { type: Number },
 	description: { type: String },
+	detail: { type: String },
 	typeTransaction: {
 		type: String,
 		enum: ['contaCorrente', 'cartaoCredito', 'planejamento'],
@@ -23,7 +24,7 @@ const transaction = new Schema({
 	category_id: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'Category',
-		required: true,
+		required: false,
 	},
 	fature_id: {
 		type: mongoose.Schema.Types.ObjectId,
