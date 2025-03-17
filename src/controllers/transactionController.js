@@ -2,6 +2,7 @@ const { round, isEmpty } = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
+const descriptionController = require('./descriptionController')
 
 async function getListTransaction(typeTransaction, filters) {
 	try {
@@ -29,7 +30,8 @@ async function getListTransaction(typeTransaction, filters) {
 }
 
 function prepareFilters(filters) {
-	const { year, month, onlyFuture, bank_id, category_id, description } = filters
+	const { year, month, onlyFuture, bank_id, category_id, description, detail } =
+		filters
 
 	let monthNumber = Number(month)
 	let yearNumber = Number(year)
@@ -68,6 +70,12 @@ function prepareFilters(filters) {
 		})
 	}
 
+	if (detail) {
+		Object.assign(response, {
+			detail: { $regex: detail, $options: 'i' },
+		})
+	}
+
 	return response
 }
 
@@ -86,7 +94,7 @@ async function getTransaction(idTransaction) {
 }
 
 async function bankTransference(data) {
-	const { originalBankId, finalBankId, categoryId, value } = data
+	const { originalBankId, finalBankId, value } = data
 
 	const paramsOrigin = { _id: originalBankId, userId: global.userId }
 	const originBankFind = await db.findOne(model.bank, paramsOrigin)
@@ -101,26 +109,26 @@ async function bankTransference(data) {
 	const debitTransaction = {
 		efectedDate: new Date(),
 		bank_id: originalBankId,
-		category_id: categoryId,
 		isSimples: false,
 		value: -1 * value,
 		isCompesed: true,
 		typeTransaction: 'contaCorrente',
-		description: `Para: ${finalBankFind.name}`,
+		description: 'Transferência Interna',
+		detail: `Para: ${finalBankFind.name}`,
 	}
 
 	const creditTransaction = {
 		efectedDate: new Date(),
 		bank_id: finalBankId,
-		category_id: categoryId,
 		isSimples: false,
 		value: value,
 		isCompesed: true,
 		typeTransaction: 'contaCorrente',
-		description: `De: ${originBankFind.name}`,
+		description: 'Transferência Interna',
+		detail: `De: ${originBankFind.name}`,
 	}
 	try {
-		const response = await createTransaction(debitTransaction)
+		await createTransaction(debitTransaction)
 			.then((res) => {
 				if (res.code == 201) {
 					return createTransaction(creditTransaction)
@@ -201,6 +209,9 @@ async function createTransaction(transactionToCreate) {
 			}
 			const transactionToSave = new model.transaction(transactionToCreate)
 			const transactionSaved = await db.save(transactionToSave)
+			await descriptionController.createDescription(
+				transactionToCreate.description
+			)
 
 			switch (transactionToCreate.typeTransaction) {
 				case 'contaCorrente':
@@ -250,6 +261,12 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 				new: true,
 			}
 		)
+
+		if (oldTransaction.description != transactionToUpdate.description) {
+			await descriptionController.createDescription(
+				transactionToUpdate.description
+			)
+		}
 
 		const saldoAdjust = transactionReturn.value - oldTransaction.value
 		switch (transactionReturn.typeTransaction) {
@@ -560,7 +577,7 @@ function getMaxData(transactionDebit, transactionCredit) {
 }
 
 async function validadeTransaction(transactionToCreate) {
-	let requested = ['category_id', 'bank_id', 'value']
+	let requested = ['bank_id', 'value', 'description']
 	const response = utils.validateRequestedElements(
 		transactionToCreate,
 		requested
@@ -571,21 +588,11 @@ async function validadeTransaction(transactionToCreate) {
 	if (!utils.isNumeric(transactionToCreate.value))
 		return 'Valor informado não é válido'
 
-	if (!(await existCategory(transactionToCreate.category_id)))
-		return 'Categoria não encontrada'
-
 	if (!(await existBank(transactionToCreate.bank_id)))
 		return 'Banco não encontrado'
 
 	if (transactionToCreate.finalRecurrence <= 0)
 		return 'Recorrência menor ou igual a zero. Deixe em branco em caso de única transação.'
-}
-
-async function existCategory(idCategory) {
-	const params = { _id: idCategory }
-	const categoryFind = await db.findOne(model.category, params)
-	if (isEmpty(categoryFind)) return false
-	return true
 }
 
 async function existBank(idBank) {

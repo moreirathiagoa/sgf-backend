@@ -15,6 +15,7 @@ router.get(
 			let dashboardDataPromise = [
 				controller.bank.getListBanks(transactionType),
 				controller.category.getListCategory(),
+				controller.description.getDescriptions(),
 			]
 
 			if (idTransaction) {
@@ -30,10 +31,12 @@ router.get(
 			const response = {
 				banksList: transactionData[0].data,
 				categoryList: transactionData[1].data,
+				lastDescriptions: transactionData[2],
 			}
 
-			if (idTransaction)
-				Object.assign(response, { transactionData: transactionData[2].data })
+			if (idTransaction) {
+				Object.assign(response, { transactionData: transactionData[3].data })
+			}
 
 			res.status(200).json(response)
 		} catch (error) {
