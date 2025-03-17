@@ -1,4 +1,4 @@
-const { isEmpty, get } = require('lodash')
+const { isEmpty } = require('lodash')
 const express = require('express')
 const controller = require('../controllers')
 const router = express.Router()
