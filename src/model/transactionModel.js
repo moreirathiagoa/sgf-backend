@@ -11,6 +11,7 @@ const transaction = new Schema({
 	finalRecurrence: { type: Number },
 	description: { type: String },
 	detail: { type: String },
+	bankName: { type: String },
 	typeTransaction: {
 		type: String,
 		enum: ['contaCorrente', 'cartaoCredito', 'planejamento'],

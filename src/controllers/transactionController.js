@@ -113,6 +113,7 @@ async function bankTransference(data) {
 	const debitTransaction = {
 		efectedDate: new Date(),
 		bank_id: originalBankId,
+		bankName: originBankFind.name,
 		isSimples: false,
 		value: -1 * value,
 		isCompesed: true,
@@ -124,6 +125,7 @@ async function bankTransference(data) {
 	const creditTransaction = {
 		efectedDate: new Date(),
 		bank_id: finalBankId,
+		bankName: finalBankFind.name,
 		isSimples: false,
 		value: value,
 		isCompesed: true,
@@ -191,6 +193,7 @@ async function createTransaction(transactionToCreate) {
 			userId: global.userId,
 		}
 		const bankFind = await db.findOne(model.bank, bankParams)
+		transactionToCreate.bankName = bankFind.name
 
 		if (transactionToCreate.typeTransaction === 'planejamento') {
 			transactionToCreate.isCompesed = false
@@ -257,6 +260,13 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 		if (isEmpty(oldTransaction)) {
 			return utils.makeResponse(203, 'Transação não encontrada')
 		}
+
+		const bankParams = {
+			_id: transactionToUpdate.bank_id,
+			userId: global.userId,
+		}
+		const bankFind = await db.findOne(model.bank, bankParams)
+		transactionToUpdate.bankName = bankFind.name
 
 		const transactionReturn = await model.transaction.findOneAndUpdate(
 			params,
