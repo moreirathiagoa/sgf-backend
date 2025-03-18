@@ -5,9 +5,15 @@ const model = require('../model')
 const transactionController = require('./transactionController')
 const logger = require('../../config/logger')
 
-async function getListBanks(typeTransaction) {
+async function getListBanks(typeTransaction, filters) {
 	try {
 		let params = { userId: global.userId }
+
+		if (filters) {
+			if (filters.isActive) {
+				params.isActive = filters.isActive
+			}
+		}
 
 		switch (typeTransaction) {
 			case 'contaCorrente':

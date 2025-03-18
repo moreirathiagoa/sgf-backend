@@ -65,8 +65,12 @@ function prepareFilters(filters) {
 	}
 
 	if (description) {
+		const sanitizedDescription = description
+			.replace('(', '\\(')
+			.replace(')', '\\)')
+
 		Object.assign(response, {
-			description: { $regex: description, $options: 'i' },
+			description: { $regex: sanitizedDescription, $options: 'i' },
 		})
 	}
 
