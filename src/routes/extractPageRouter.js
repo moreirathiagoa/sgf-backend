@@ -14,7 +14,7 @@ router.post(
 			const filters = get(req, 'body.filters', null)
 
 			const extractDataPromise = [
-				controller.bank.getListBanks(typeTransaction),
+				controller.bank.getListBanks(typeTransaction, { isActive: true }),
 				controller.category.getListCategory(),
 				controller.transaction.getListTransaction(typeTransaction, filters),
 			]
