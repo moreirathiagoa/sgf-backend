@@ -9,7 +9,6 @@ router.get('/get-balances', auth, async (req, res, next) => {
 
 		const dashboardDataPromise = [
 			controller.bank.getListBanksDashboard(),
-			controller.category.getListCategory(),
 			controller.transaction.transactionNotCompensatedCredit(),
 			controller.transaction.transactionNotCompensatedDebit(),
 		]
@@ -20,9 +19,8 @@ router.get('/get-balances', auth, async (req, res, next) => {
 
 		const response = {
 			banksList: dashboardData[0].data,
-			categoryList: dashboardData[1].data,
-			balanceNotCompensatedCredit: dashboardData[2].data,
-			balanceNotCompensatedDebit: dashboardData[3].data,
+			balanceNotCompensatedCredit: dashboardData[1].data,
+			balanceNotCompensatedDebit: dashboardData[2].data,
 		}
 
 		res.status(200).json(response)

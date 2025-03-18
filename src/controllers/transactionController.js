@@ -17,7 +17,6 @@ async function getListTransaction(typeTransaction, filters) {
 			.find(model.transaction, params)
 			.sort({ efectedDate: -1 })
 			.populate('bank_id', 'name')
-			.populate('category_id', 'name')
 
 		if (isEmpty(transactionFind))
 			return utils.makeResponse(203, 'Transação não encontradas', [])
@@ -30,8 +29,7 @@ async function getListTransaction(typeTransaction, filters) {
 }
 
 function prepareFilters(filters) {
-	const { year, month, onlyFuture, bank_id, category_id, description, detail } =
-		filters
+	const { year, month, onlyFuture, bank_id, description, detail } = filters
 
 	let monthNumber = Number(month)
 	let yearNumber = Number(year)
@@ -58,10 +56,6 @@ function prepareFilters(filters) {
 
 	if (bank_id !== 'Selecione' && bank_id) {
 		Object.assign(response, { bank_id: bank_id })
-	}
-
-	if (category_id !== 'Selecione' && category_id) {
-		Object.assign(response, { category_id: category_id })
 	}
 
 	if (description) {
@@ -308,7 +302,7 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 
 		return utils.makeResponse(
 			202,
-			'Categoria atualizada com sucesso',
+			'Transação atualizada com sucesso',
 			transactionReturn
 		)
 	} catch (error) {

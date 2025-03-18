@@ -1,5 +1,4 @@
 const home = require('./homeRouter')
-const category = require('./categoryRouter')
 const bank = require('./bankRouter')
 const transaction = require('./transactionRouter')
 const login = require('./loginRouter')
@@ -11,7 +10,6 @@ const planning = require('./planningRouter')
 
 module.exports = {
 	home,
-	category,
 	bank,
 	transaction,
 	login,
