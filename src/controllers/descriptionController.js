@@ -3,10 +3,10 @@ const utils = require('../utils')
 const db = require('../database')
 const model = require('../model')
 
-const MAX_WIN_ITENS = 10
-const MAX_NEW_ITENS = 5
+const MAX_WIN_ITENS = 15
 const MAX_COUNT_PER_ITEM = 5
 const MAX_TOTAL_COUNT = MAX_WIN_ITENS * MAX_COUNT_PER_ITEM
+const MAX_NEW_ITENS = 5
 
 async function getDescriptions() {
 	const winnerDescriptions = await db
@@ -27,7 +27,7 @@ async function getDescriptions() {
 	winnerDescriptions.forEach((d) => res.add(d.name))
 	newestDescriptions.forEach((d) => res.add(d.name))
 
-	return [...res]
+	return [...res].sort((a, b) => a.localeCompare(b))
 }
 
 async function createDescription(descriptionName) {
