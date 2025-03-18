@@ -15,7 +15,6 @@ router.post(
 
 			const extractDataPromise = [
 				controller.bank.getListBanks(typeTransaction, { isActive: true }),
-				controller.category.getListCategory(),
 				controller.transaction.getListTransaction(typeTransaction, filters),
 			]
 
@@ -25,8 +24,7 @@ router.post(
 
 			const response = {
 				banksList: extractData[0].data,
-				categoryList: extractData[1].data,
-				transactionList: extractData[2].data,
+				transactionList: extractData[1].data,
 			}
 
 			res.status(200).json(response)

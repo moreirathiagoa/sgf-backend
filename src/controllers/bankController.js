@@ -147,11 +147,11 @@ async function updateBank(idBank, bankToUpdate) {
 
 		bankFindById.save()
 
-		const categoryReturn = await db.findOne(model.bank, paramsId)
+		const bankToReturn = await db.findOne(model.bank, paramsId)
 		return utils.makeResponse(
 			202,
 			'Banco atualizado com sucesso',
-			categoryReturn
+			bankToReturn
 		)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
@@ -178,8 +178,8 @@ async function deleteBank(idBank) {
 				'Banco possui transações atreladas e não pode ser removido.'
 			)
 
-		const categoryToDelete = new model.bank(bankFind)
-		const response = await db.remove(categoryToDelete)
+		const bankToDelete = new model.bank(bankFind)
+		const response = await db.remove(bankToDelete)
 		return utils.makeResponse(202, 'Banco removido com sucesso', response)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
