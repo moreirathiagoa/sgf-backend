@@ -22,10 +22,6 @@ const transaction = new Schema({
 		ref: 'Bank',
 		required: true,
 	},
-	fature_id: {
-		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Fature',
-	},
 })
 
 const transactionModel = mongoose.model('Transaction', transaction)
