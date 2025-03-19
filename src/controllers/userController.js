@@ -43,7 +43,7 @@ async function createUser(userToCreate) {
 
 		const salt = bcrypt.genSaltSync(15)
 		userToCreate.userPassword = bcrypt.hashSync(userToCreate.userPassword, salt)
-		userToCreate.createDate = utils.actualDateToBataBase()
+		userToCreate.createdAt = utils.actualDateToBataBase()
 
 		const userToSave = new model.user(userToCreate)
 		let response = await db.save(userToSave)

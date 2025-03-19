@@ -4,11 +4,11 @@ const controller = require('../controllers')
 const router = express.Router()
 const auth = require('../middlewares/auth')
 
-router.get('/list/:typeTransaction', auth, async (req, res, next) => {
+router.get('/list/:transactionType', auth, async (req, res, next) => {
 	global.userId = res.locals.authData.userId
-	const { typeTransaction } = req.params
+	const { transactionType } = req.params
 	try {
-		const response = await controller.bank.getListBanks(typeTransaction)
+		const response = await controller.bank.getListBanks(transactionType)
 		res.status(response.code).json(response)
 	} catch (error) {
 		res.status(500).json(error)

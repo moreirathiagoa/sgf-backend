@@ -1,8 +1,9 @@
 require('dotenv').config()
-const ENV = process.env.NODE_ENV || 'dev'
+const ENV = process.env.NODE_ENV || 'prd'
 const PORT = process.env.PORT || 4000
 const APPLICATION = 'SGF'
 
+console.log('ENV: ', ENV);
 const base = {
 	APPLICATION,
 	ENV,

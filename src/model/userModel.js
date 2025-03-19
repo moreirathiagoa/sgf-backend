@@ -5,7 +5,7 @@ const user = new Schema({
 	userName: { type: String, required: true },
 	userEmail: { type: String, required: true },
 	userPassword: { type: String, required: true },
-	createDate: { type: Date, required: true },
+	createdAt: { type: Date, required: true },
 	isActive: { type: Boolean, required: true, default: true },
 	loginList: [{ type: Date }],
 })
