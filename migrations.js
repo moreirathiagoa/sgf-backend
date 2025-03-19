@@ -4,29 +4,25 @@ const model = require('./src/model')
 
 async function main() {
 	const transactionFind = await db
-		.find(model.transaction, {
-			typeTransaction: { $ne: 'planejamento' },
-			efectedDate: { $lt: new Date('2025-03-01').toISOString() },
-		})
+		.find(model.transaction, {})
 		.sort({ efectedDate: -1 })
-		.populate('category_id', 'name')
-		.populate('bank_id', 'name')
 
 	// console.log('transactionFind: ', transactionFind)
 	// return
 	const toSave = transactionFind.map((t) => {
 		const res = {
 			...t._doc,
-			bank_id: t.bank_id._id,
-			category_id: t?.category_id?._id,
-			detail: t.description,
-			description: t?.category_id?.name,
-			bankName: t.bank_id.name,
+			createdAt: t.createDate,
+			effectedAt: t.efectedDate,
+			isCompensated: t.isCompesed,
+			transactionType: t.typeTransaction,
+			bankId: t.bank_id,
 		}
 		return res
 	})
 
 	for (const t of toSave) {
+		console.log('>>>> t: ', t)
 		const params = { _id: t._id }
 		const res = await model.transaction.findOneAndUpdate(params, t, {
 			new: true,
