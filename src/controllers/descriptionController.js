@@ -63,7 +63,7 @@ async function createDescription(descriptionName) {
 		if (totalCount >= MAX_TOTAL_COUNT) {
 			const oldestDescription = descriptions.sort(
 				(a, b) =>
-					new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()
+					new Date(a.lastUpdate).getTime() - new Date(b.lastUpdate).getTime()
 			)[0]
 
 			await model.description.findOneAndUpdate(
