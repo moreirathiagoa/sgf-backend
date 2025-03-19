@@ -1,11 +1,11 @@
 const mongoose = require('mongoose')
-const Schema = mongoose.Schema
+const { Schema } = mongoose
 
-const bank = new Schema({
+const bankSchema = new Schema({
 	userId: { type: String, required: true },
 	name: { type: String, required: true },
 	isActive: { type: Boolean, required: true, default: true },
-	createDate: { type: String, required: true },
+	createdAt: { type: Date, required: true },
 	bankType: {
 		type: String,
 		enum: ['Conta Corrente', 'Conta Cartão', 'Cartão de Crédito', 'Poupança'],
@@ -15,6 +15,6 @@ const bank = new Schema({
 	manualBalance: { type: Number, required: true, default: 0 },
 })
 
-const bankModel = mongoose.model('Bank', bank)
+const Bank = mongoose.model('Bank', bankSchema)
 
-module.exports = bankModel
+module.exports = Bank

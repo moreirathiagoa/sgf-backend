@@ -5,7 +5,7 @@ const model = require('../model')
 const transactionController = require('./transactionController')
 const logger = require('../../config/logger')
 
-async function getListBanks(typeTransaction, filters) {
+async function getListBanks(transactionType, filters) {
 	try {
 		let params = { userId: global.userId }
 
@@ -15,7 +15,7 @@ async function getListBanks(typeTransaction, filters) {
 			}
 		}
 
-		switch (typeTransaction) {
+		switch (transactionType) {
 			case 'contaCorrente':
 			case 'planejamento':
 				params.bankType = { $in: ['Conta Corrente', 'Conta Cartão'] }
@@ -58,7 +58,7 @@ async function getListBanksDashboard() {
 		bankFind.forEach((bank) => {
 			const result = transactionNotCompensatedByBank.data.filter(
 				(saldoBank) => {
-					return saldoBank.bank_id.toString() === bank._id.toString()
+					return saldoBank.bankId.toString() === bank._id.toString()
 				}
 			)
 
@@ -116,7 +116,7 @@ async function createBank(bankToCreate) {
 			return utils.makeResponse(203, 'Banco já cadastrado')
 
 		bankToCreate.userId = global.userId
-		bankToCreate.createDate = utils.actualDateToBataBase()
+		bankToCreate.createdAt = utils.actualDateToBataBase()
 
 		const bankToSave = new model.bank(bankToCreate)
 		const response = await db.save(bankToSave)
@@ -147,11 +147,11 @@ async function updateBank(idBank, bankToUpdate) {
 
 		bankFindById.save()
 
-		const categoryReturn = await db.findOne(model.bank, paramsId)
+		const bankToReturn = await db.findOne(model.bank, paramsId)
 		return utils.makeResponse(
 			202,
 			'Banco atualizado com sucesso',
-			categoryReturn
+			bankToReturn
 		)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
@@ -166,7 +166,7 @@ async function deleteBank(idBank) {
 		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Banco não encontrado')
 
-		const paramsTransaction = { bank_id: idBank, userId: global.userId }
+		const paramsTransaction = { bankId: idBank, userId: global.userId }
 
 		const transactionFind = await db.findOne(
 			model.transaction,
@@ -178,8 +178,8 @@ async function deleteBank(idBank) {
 				'Banco possui transações atreladas e não pode ser removido.'
 			)
 
-		const categoryToDelete = new model.bank(bankFind)
-		const response = await db.remove(categoryToDelete)
+		const bankToDelete = new model.bank(bankFind)
+		const response = await db.remove(bankToDelete)
 		return utils.makeResponse(202, 'Banco removido com sucesso', response)
 	} catch (error) {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)

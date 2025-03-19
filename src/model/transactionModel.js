@@ -1,37 +1,45 @@
 const mongoose = require('mongoose')
-const Schema = mongoose.Schema
+const { Schema } = mongoose
 
-const transaction = new Schema({
+const transactionSchema = new Schema({
 	userId: { type: String, required: true },
 	value: { type: Number, required: true },
-	createDate: { type: String, required: true },
-	efectedDate: { type: String, required: true },
-	isCompesed: { type: Boolean, required: true },
+	createdAt: { type: Date, required: true },
+	effectedAt: { type: Date, required: true },
+	isCompensated: { type: Boolean, required: true },
+
+	createDate: { type: String, required: false },
+	efectedDate: { type: String, required: false },
+	isCompesed: { type: Boolean, required: false },
+
 	currentRecurrence: { type: Number },
 	finalRecurrence: { type: Number },
 	description: { type: String },
 	detail: { type: String },
-	typeTransaction: {
+	bankName: { type: String },
+	transactionType: {
 		type: String,
 		enum: ['contaCorrente', 'cartaoCredito', 'planejamento'],
 		required: true,
 	},
-	bank_id: {
-		type: mongoose.Schema.Types.ObjectId,
+	bankId: {
+		type: Schema.Types.ObjectId,
 		ref: 'Bank',
 		required: true,
 	},
-	category_id: {
-		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Category',
+
+	typeTransaction: {
+		type: String,
+		enum: ['contaCorrente', 'cartaoCredito', 'planejamento'],
 		required: false,
 	},
-	fature_id: {
+	bank_id: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Fature',
+		ref: 'Bank',
+		required: false,
 	},
 })
 
-const transactionModel = mongoose.model('Transaction', transaction)
+const Transaction = mongoose.model('Transaction', transactionSchema)
 
-module.exports = transactionModel
+module.exports = Transaction
