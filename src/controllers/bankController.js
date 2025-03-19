@@ -5,7 +5,7 @@ const model = require('../model')
 const transactionController = require('./transactionController')
 const logger = require('../../config/logger')
 
-async function getListBanks(typeTransaction, filters) {
+async function getListBanks(transactionType, filters) {
 	try {
 		let params = { userId: global.userId }
 
@@ -15,7 +15,7 @@ async function getListBanks(typeTransaction, filters) {
 			}
 		}
 
-		switch (typeTransaction) {
+		switch (transactionType) {
 			case 'contaCorrente':
 			case 'planejamento':
 				params.bankType = { $in: ['Conta Corrente', 'Conta Cartão'] }
@@ -58,7 +58,7 @@ async function getListBanksDashboard() {
 		bankFind.forEach((bank) => {
 			const result = transactionNotCompensatedByBank.data.filter(
 				(saldoBank) => {
-					return saldoBank.bank_id.toString() === bank._id.toString()
+					return saldoBank.bankId.toString() === bank._id.toString()
 				}
 			)
 
@@ -116,7 +116,7 @@ async function createBank(bankToCreate) {
 			return utils.makeResponse(203, 'Banco já cadastrado')
 
 		bankToCreate.userId = global.userId
-		bankToCreate.createDate = utils.actualDateToBataBase()
+		bankToCreate.createdAt = utils.actualDateToBataBase()
 
 		const bankToSave = new model.bank(bankToCreate)
 		const response = await db.save(bankToSave)
@@ -166,7 +166,7 @@ async function deleteBank(idBank) {
 		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Banco não encontrado')
 
-		const paramsTransaction = { bank_id: idBank, userId: global.userId }
+		const paramsTransaction = { bankId: idBank, userId: global.userId }
 
 		const transactionFind = await db.findOne(
 			model.transaction,

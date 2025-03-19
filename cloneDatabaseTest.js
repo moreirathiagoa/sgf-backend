@@ -14,6 +14,7 @@ const DB_HML_AUTHENTICATION = `admin`
 const commands = {
 	backupPrd: `mongodump -h ${DB_PRD_HOST}:${DB_PRD_PORT} --ssl -u ${DB_USERNAME} -p ${DB_PASSWORD} --authenticationDatabase ${DB_PRD_AUTHENTICATION} -d sgf`,
 	restoreHml: `mongorestore -h ${DB_HML_HOST}:${DB_HML_PORT} --ssl -u ${DB_USERNAME} -p ${DB_PASSWORD} --authenticationDatabase ${DB_HML_AUTHENTICATION} -d test dump/sgf --drop`,
+	restorePrd: `mongorestore -h ${DB_HML_HOST}:${DB_HML_PORT} --ssl -u ${DB_USERNAME} -p ${DB_PASSWORD} --authenticationDatabase ${DB_HML_AUTHENTICATION} -d sgf dump/sgf --drop`,
 }
 
 main()
@@ -25,6 +26,9 @@ async function main() {
 
 		console.log('Iniciando restore em HOMOLOGAÇÃO')
 		await runCommand(commands.restoreHml)
+
+		//console.log('Iniciando restore em PRODUÇÃO')
+		//await runCommand(commands.restorePrd)
 	} catch (error) {
 		console.error('Erro durante o processo:', error)
 	}

@@ -5,17 +5,17 @@ const router = express.Router()
 const auth = require('../middlewares/auth')
 
 router.post(
-	'/get-extract-data/:typeTransaction',
+	'/get-extract-data/:transactionType',
 	auth,
 	async (req, res, next) => {
 		try {
 			global.userId = res.locals.authData.userId
-			const { typeTransaction } = req.params
+			const { transactionType } = req.params
 			const filters = get(req, 'body.filters', null)
 
 			const extractDataPromise = [
-				controller.bank.getListBanks(typeTransaction, { isActive: true }),
-				controller.transaction.getListTransaction(typeTransaction, filters),
+				controller.bank.getListBanks(transactionType, { isActive: true }),
+				controller.transaction.getListTransaction(transactionType, filters),
 			]
 
 			const extractData = await Promise.all(extractDataPromise)

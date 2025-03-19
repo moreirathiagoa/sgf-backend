@@ -42,7 +42,7 @@ async function createDescription(descriptionName) {
 		const descriptionToSave = new model.description({
 			userId: global.userId,
 			name: descriptionName,
-			createDate: utils.actualDateToBataBase(),
+			createdAt: utils.actualDateToBataBase(),
 			lastUpdate: utils.actualDateToBataBase(),
 			count: 0,
 			isActive: true,

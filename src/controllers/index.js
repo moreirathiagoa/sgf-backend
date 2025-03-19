@@ -1,5 +1,4 @@
 const bank = require('./bankController')
-const fature = require('./fatureController')
 const transaction = require('./transactionController')
 const description = require('./descriptionController')
 const login = require('./loginController')
@@ -11,5 +10,4 @@ module.exports = {
 	description,
 	login,
 	user,
-	fature,
 }
