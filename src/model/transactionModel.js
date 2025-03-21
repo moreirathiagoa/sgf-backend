@@ -7,11 +7,6 @@ const transactionSchema = new Schema({
 	createdAt: { type: Date, required: true },
 	effectedAt: { type: Date, required: true },
 	isCompensated: { type: Boolean, required: true },
-
-	createDate: { type: String, required: false },
-	efectedDate: { type: String, required: false },
-	isCompesed: { type: Boolean, required: false },
-
 	currentRecurrence: { type: Number },
 	finalRecurrence: { type: Number },
 	description: { type: String },
@@ -26,17 +21,6 @@ const transactionSchema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Bank',
 		required: true,
-	},
-
-	typeTransaction: {
-		type: String,
-		enum: ['contaCorrente', 'cartaoCredito', 'planejamento'],
-		required: false,
-	},
-	bank_id: {
-		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Bank',
-		required: false,
 	},
 })
 
