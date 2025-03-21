@@ -107,7 +107,8 @@ async function bankTransference(data) {
 	const debitTransaction = {
 		effectedAt: new Date(),
 		bankId: originalBankId,
-		bankName: originBankFind.name,
+		//TODO: Quando adicionar a ordenação de banco, remover o replace
+		bankName: originBankFind.name.replace(/^[\w\d]+\. /, ''),
 		isSimples: false,
 		value: -1 * value,
 		isCompensated: true,
@@ -119,7 +120,8 @@ async function bankTransference(data) {
 	const creditTransaction = {
 		effectedAt: new Date(),
 		bankId: finalBankId,
-		bankName: finalBankFind.name,
+		//TODO: Quando adicionar a ordenação de banco, remover o replace
+		bankName: finalBankFind.name.replace(/^[\w\d]+\. /, ''),
 		isSimples: false,
 		value: value,
 		isCompensated: true,
@@ -187,7 +189,8 @@ async function createTransaction(transactionToCreate) {
 			userId: global.userId,
 		}
 		const bankFind = await db.findOne(model.bank, bankParams)
-		transactionToCreate.bankName = bankFind.name
+		//TODO: Quando adicionar a ordenação de banco, remover o replace
+		transactionToCreate.bankName = bankFind.name.replace(/^[\w\d]+\. /, '')
 
 		if (transactionToCreate.transactionType === 'planejamento') {
 			transactionToCreate.isCompensated = false
@@ -260,7 +263,8 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 			userId: global.userId,
 		}
 		const bankFind = await db.findOne(model.bank, bankParams)
-		transactionToUpdate.bankName = bankFind.name
+		//TODO: Quando adicionar a ordenação de banco, remover o replace
+		transactionToUpdate.bankName = bankFind.name.replace(/^[\w\d]+\. /, '')
 
 		const transactionReturn = await model.transaction.findOneAndUpdate(
 			params,

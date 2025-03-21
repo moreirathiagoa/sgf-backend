@@ -5,48 +5,51 @@ const model = require('./src/model')
 async function main() {
 	let params = {}
 	//params = { _id: '67d9efd8ed8ee85e71b634a5' }
+	//params = { bankName: { $exists: false } }
 
 	const transactionFind = await db
 		.find(model.transaction, { ...params })
-		.sort({ efectedDate: -1 })
+		.populate('bankId')
+		.sort({ effectedAt: 1 })
 
 	const toSave = transactionFind.map((t) => {
+		const bankName =
+			new Date(t._doc.effectedAt).getTime() >
+			new Date('2025-01-01T03:00:00.000Z').getTime()
+				? t._doc.bankId.name.replace(/^[\w\d]+\. /, '')
+				: new Date(t._doc.effectedAt).getTime() >
+				  new Date('2021-02-01T03:00:00.000Z').getTime()
+				? `${t._doc.bankId.name.replace(/^[\w\d]+\. /, '')} *`
+				: 'Desconhecido'
+
 		const res = {
 			...t._doc,
+			bankName: bankName,
+			bankId: t._doc.bankId._id,
 		}
-		delete res.createDate
-		delete res.efectedDate
-		delete res.isCompesed
-		delete res.typeTransaction
-		delete res.bank_id
+
 		delete res.category_id
-		delete res.fature_id
 
 		return res
 	})
 
 	for (const t of toSave) {
 		console.log('>>>> t: ', t)
-
 		const updateData = { ...t }
 		const unsetFields = {}
-
 		Object.keys(model.transaction.schema.paths).forEach((key) => {
 			if (!(key in t)) {
 				unsetFields[key] = ''
 			}
 		})
-
 		const updateQuery = {
 			$set: updateData,
 			...(Object.keys(unsetFields).length > 0 ? { $unset: unsetFields } : {}),
 		}
-
 		const params = { _id: t._id }
 		const res = await model.transaction.findOneAndUpdate(params, updateQuery, {
 			new: true,
 		})
-
 		console.log('>>>> r: ', res)
 	}
 
