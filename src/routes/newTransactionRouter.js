@@ -30,7 +30,7 @@ router.get(
 
 			const response = {
 				banksList: transactionData[0].data,
-				lastDescriptions: transactionData[1],
+				lastDescriptions: transactionData[1].data,
 			}
 
 			if (transactionId) {

@@ -23,11 +23,13 @@ exports.getDescriptions = async (userId) => {
 		.sort({ lastUpdate: -1 })
 		.limit(MAX_NEW_ITENS)
 
-	const res = new Set()
-	winnerDescriptions.forEach((d) => res.add(d.name))
-	newestDescriptions.forEach((d) => res.add(d.name))
+	const descriptions = new Set()
+	winnerDescriptions.forEach((d) => descriptions.add(d.name))
+	newestDescriptions.forEach((d) => descriptions.add(d.name))
 
-	return [...res].sort((a, b) => a.localeCompare(b))
+	const response = [...descriptions].sort((a, b) => a.localeCompare(b))
+
+	return utils.makeResponse(200, 'Últimas descrições', response)
 }
 
 exports.createDescription = async (userId, descriptionName) => {
@@ -80,9 +82,11 @@ exports.createDescription = async (userId, descriptionName) => {
 			contUpdate = { $inc: { count: 1 } }
 		}
 
-		await descriptionModel.findOneAndUpdate(
+		const response = await descriptionModel.findOneAndUpdate(
 			{ name: descriptionName },
 			{ ...contUpdate, lastUpdate: utils.actualDateToBataBase() }
 		)
+
+		return utils.makeResponse(201, 'Descrição cadastrada com sucesso!', response)
 	}
 }
