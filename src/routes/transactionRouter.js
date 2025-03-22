@@ -20,10 +20,10 @@ router.post('/create', auth, async (req, res, next) => {
 	}
 })
 
-router.put('/update/:idTransaction', auth, async (req, res, next) => {
+router.put('/update/:transactionId', auth, async (req, res, next) => {
 	try {
 		const userId = res.locals.authData.userId
-		const { idTransaction } = req.params
+		const { transactionId } = req.params
 
 		let response
 		if (isEmpty(req.body)) {
@@ -31,7 +31,7 @@ router.put('/update/:idTransaction', auth, async (req, res, next) => {
 		} else {
 			response = await transactionController.updateTransaction(
 				userId,
-				idTransaction,
+				transactionId,
 				req.body
 			)
 		}
@@ -57,13 +57,13 @@ router.post('/bank-transfer', auth, async (req, res, next) => {
 	}
 })
 
-router.delete('/delete/:idTransaction', auth, async (req, res, next) => {
+router.delete('/delete/:transactionId', auth, async (req, res, next) => {
 	try {
 		const userId = res.locals.authData.userId
-		const { idTransaction } = req.params
+		const { transactionId } = req.params
 		const response = await transactionController.deleteTransaction(
 			userId,
-			idTransaction
+			transactionId
 		)
 		res.status(response.code).json(response)
 	} catch (error) {
@@ -87,13 +87,13 @@ router.post('/planToPrincipal', auth, async (req, res, next) => {
 	}
 })
 
-router.get('/:idTransaction', auth, async (req, res, next) => {
+router.get('/:transactionId', auth, async (req, res, next) => {
 	try {
 		const userId = res.locals.authData.userId
-		const { idTransaction } = req.params
+		const { transactionId } = req.params
 		const response = await transactionController.getTransaction(
 			userId,
-			idTransaction
+			transactionId
 		)
 		res.status(response.code).json(response)
 	} catch (error) {

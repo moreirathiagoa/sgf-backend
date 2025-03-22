@@ -15,11 +15,11 @@ router.get('/list/:transactionType', auth, async (req, res, next) => {
 	}
 })
 
-router.get('/:idBank', auth, async (req, res, next) => {
+router.get('/:bankId', auth, async (req, res, next) => {
 	try {
 		const userId = res.locals.authData.userId
-		const { idBank } = req.params
-		const response = await bankController.getBank(userId, idBank)
+		const { bankId } = req.params
+		const response = await bankController.getBank(userId, bankId)
 		res.status(response.code).json(response)
 	} catch (error) {
 		res.status(500).json(error)
@@ -43,16 +43,16 @@ router.post('/create', auth, async (req, res, next) => {
 	}
 })
 
-router.put('/update/:idBank', auth, async (req, res, next) => {
+router.put('/update/:bankId', auth, async (req, res, next) => {
 	try {
 		const userId = res.locals.authData.userId
-		const { idBank } = req.params
+		const { bankId } = req.params
 
 		let response
 		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
-			response = await bankController.updateBank(userId, idBank, req.body)
+			response = await bankController.updateBank(userId, bankId, req.body)
 		}
 		res.status(response.code).json(response)
 	} catch (error) {
@@ -60,11 +60,11 @@ router.put('/update/:idBank', auth, async (req, res, next) => {
 	}
 })
 
-router.delete('/delete/:idBank', auth, async (req, res, next) => {
+router.delete('/delete/:bankId', auth, async (req, res, next) => {
 	try {
 		const userId = res.locals.authData.userId
-		const { idBank } = req.params
-		const response = await bankController.deleteBank(userId, idBank)
+		const { bankId } = req.params
+		const response = await bankController.deleteBank(userId, bankId)
 
 		res.status(response.code).json(response)
 	} catch (error) {
