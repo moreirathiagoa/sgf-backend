@@ -1,14 +1,14 @@
 const utils = require('../utils')
 const db = require('../database')
-const model = require('../model')
 const jwt = require('jsonwebtoken')
 const properties = require('../properties')
 const bcrypt = require('bcryptjs')
+const userModel = require('../model/userModel')
 
 async function login(user) {
 	try {
 		const params = { userName: user.userName.toLowerCase() }
-		let userFound = await db.findOne(model.user, params)
+		let userFound = await db.findOne(userModel, params)
 
 		const accessGranted = await bcrypt.compareSync(
 			user.userPassword,
