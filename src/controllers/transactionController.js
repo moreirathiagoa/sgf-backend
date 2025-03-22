@@ -2,8 +2,8 @@ const { round, isEmpty } = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const descriptionController = require('./descriptionController')
+const bankController = require('./bankController')
 const transactionModel = require('../model/transactionModel')
-const bankModel = require('../model/bankModel')
 
 exports.getListTransaction = async (userId, transactionType, filters) => {
 	try {
@@ -46,13 +46,19 @@ exports.getTransaction = async (userId, transactionId) => {
 exports.bankTransference = async (userId, data) => {
 	const { originalBankId, finalBankId, value } = data
 
-	const paramsOrigin = { _id: originalBankId, userId: userId }
-	const originBankFind = await db.findOne(bankModel, paramsOrigin)
+	const { data: originBankFind } = await bankController.getBank(
+		userId,
+		originalBankId
+	)
+
 	if (isEmpty(originBankFind))
 		return utils.makeResponse(203, 'Banco de origem não encontrado')
 
-	const paramsFinal = { _id: finalBankId, userId: userId }
-	const finalBankFind = await db.findOne(bankModel, paramsFinal)
+	const { data: finalBankFind } = await bankController.getBank(
+		userId,
+		finalBankId
+	)
+
 	if (isEmpty(finalBankFind))
 		return utils.makeResponse(203, 'Banco destino não encontrado')
 
@@ -111,7 +117,7 @@ exports.bankTransference = async (userId, data) => {
 
 exports.createTransaction = async (userId, transactionToCreate) => {
 	try {
-		const validation = await validadeTransaction(transactionToCreate)
+		const validation = await validadeTransaction(userId, transactionToCreate)
 		if (validation) return utils.makeResponse(203, validation)
 
 		transactionToCreate.effectedAt = utils.formatDateToBataBase(
@@ -136,11 +142,11 @@ exports.createTransaction = async (userId, transactionToCreate) => {
 			}
 		}
 
-		const bankParams = {
-			_id: transactionToCreate.bankId,
-			userId: userId,
-		}
-		const bankFind = await db.findOne(bankModel, bankParams)
+		const { data: bankFind } = await bankController.getBank(
+			userId,
+			transactionToCreate.bankId
+		)
+
 		//TODO: Quando adicionar a ordenação de banco, remover o replace
 		transactionToCreate.bankName = bankFind.name.replace(/^[\w\d]+\. /, '')
 
@@ -203,7 +209,7 @@ exports.updateTransaction = async (
 	transactionToUpdate
 ) => {
 	try {
-		const validation = await validadeTransaction(transactionToUpdate)
+		const validation = await validadeTransaction(userId, transactionToUpdate)
 		if (validation) return utils.makeResponse(203, validation)
 
 		const params = { _id: transactionId, userId: userId }
@@ -221,11 +227,11 @@ exports.updateTransaction = async (
 			return utils.makeResponse(203, 'Transação não encontrada')
 		}
 
-		const bankParams = {
-			_id: transactionToUpdate.bankId,
-			userId: userId,
-		}
-		const bankFind = await db.findOne(bankModel, bankParams)
+		const { data: bankFind } = await bankController.getBank(
+			userId,
+			transactionToUpdate.bankId
+		)
+
 		//TODO: Quando adicionar a ordenação de banco, remover o replace
 		transactionToUpdate.bankName = bankFind.name.replace(/^[\w\d]+\. /, '')
 
@@ -611,7 +617,7 @@ function getMaxData(transactionDebit, transactionCredit) {
 	return maxDate
 }
 
-async function validadeTransaction(transactionToCreate) {
+async function validadeTransaction(userId, transactionToCreate) {
 	let requested = ['bankId', 'value', 'description']
 	const response = utils.validateRequestedElements(
 		transactionToCreate,
@@ -623,25 +629,24 @@ async function validadeTransaction(transactionToCreate) {
 	if (!utils.isNumeric(transactionToCreate.value))
 		return 'Valor informado não é válido'
 
-	if (!(await existBank(transactionToCreate.bankId)))
+	if (!(await existBank(userId, transactionToCreate.bankId)))
 		return 'Banco não encontrado'
 
 	if (transactionToCreate.finalRecurrence <= 0)
 		return 'Recorrência menor ou igual a zero. Deixe em branco em caso de única transação.'
 }
 
-async function existBank(bankId) {
-	const params = { _id: bankId }
-	const bankFind = await db.findOne(bankModel, params)
+async function existBank(userId, bankId) {
+	const { data: bankFind } = await bankController.getBank(userId, bankId)
 	if (isEmpty(bankFind)) return false
 	return true
 }
 
 async function updateSaldoContaCorrente(userId, bankId, valor) {
-	const params = { _id: bankId, userId: userId }
-	let bankFind = await db.findOne(bankModel, params).select('systemBalance')
+	const { data: bankFind } = await bankController.getBank(userId, bankId)
 
 	const finalBalance = round(bankFind.systemBalance + valor, 2)
 	bankFind.systemBalance = finalBalance
-	bankFind.save()
+
+	await bankController.updateBank(userId, bankId, bankFind)
 }

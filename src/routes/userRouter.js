@@ -16,7 +16,7 @@ router.get('/list', auth, async (req, res, next) => {
 router.get('/:userId', auth, async (req, res, next) => {
 	const { userId } = req.params
 	try {
-		const response = await userController.getUser(userId)
+		const response = await userController.getUserById(userId)
 		res.status(response.code).json(response)
 	} catch (error) {
 		res.status(500).json(error)

@@ -16,7 +16,21 @@ exports.getListUsers = async () => {
 	}
 }
 
-exports.getUser = async (userId) => {
+exports.getUserByUserName = async (userName) => {
+	try {
+		const params = { userName: userName.toLowerCase() }
+		const userFound = await db.findOne(userModel, params)
+
+		if (isEmpty(userFound))
+			return utils.makeResponse(203, 'Usuários não encontrado')
+
+		return utils.makeResponse(200, 'Usuários encontrado', userFound)
+	} catch (error) {
+		throw error
+	}
+}
+
+exports.getUserById = async (userId) => {
 	try {
 		const params = { _id: userId }
 		const userFound = await db
