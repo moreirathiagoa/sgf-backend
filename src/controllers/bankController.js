@@ -2,7 +2,6 @@ const { isEmpty, round } = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
 const transactionController = require('./transactionController')
-const logger = require('../../config/logger')
 const bankModel = require('../model/bankModel')
 const transactionModel = require('../model/transactionModel')
 
