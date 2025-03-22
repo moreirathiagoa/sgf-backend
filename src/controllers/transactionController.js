@@ -1,12 +1,13 @@
 const { round, isEmpty } = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
-const model = require('../model')
 const descriptionController = require('./descriptionController')
+const transactionModel = require('../model/transactionModel')
+const bankModel = require('../model/bankModel')
 
-async function getListTransaction(transactionType, filters) {
+exports.getListTransaction = async (userId, transactionType, filters) => {
 	try {
-		const params = { transactionType: transactionType, userId: global.userId }
+		const params = { transactionType: transactionType, userId: userId }
 		if (filters) {
 			const factoredFilters = prepareFilters(filters)
 
@@ -14,7 +15,7 @@ async function getListTransaction(transactionType, filters) {
 		}
 
 		const transactionFind = await db
-			.find(model.transaction, params)
+			.find(transactionModel, params)
 			.sort({ effectedAt: -1 })
 			.populate('bankId', 'name')
 
@@ -27,6 +28,430 @@ async function getListTransaction(transactionType, filters) {
 		throw error
 	}
 }
+
+exports.getTransaction = async (userId, idTransaction) => {
+	try {
+		const params = { _id: idTransaction, userId: userId }
+		const transactionFind = await db.findOne(transactionModel, params)
+		if (isEmpty(transactionFind))
+			return utils.makeResponse(203, 'Transação não encontradas', [])
+
+		return utils.makeResponse(200, 'Transação encontrada', transactionFind)
+	} catch (error) {
+		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
+		throw error
+	}
+}
+
+exports.bankTransference = async (userId, data) => {
+	const { originalBankId, finalBankId, value } = data
+
+	const paramsOrigin = { _id: originalBankId, userId: userId }
+	const originBankFind = await db.findOne(bankModel, paramsOrigin)
+	if (isEmpty(originBankFind))
+		return utils.makeResponse(203, 'Banco de origem não encontrado')
+
+	const paramsFinal = { _id: finalBankId, userId: userId }
+	const finalBankFind = await db.findOne(bankModel, paramsFinal)
+	if (isEmpty(finalBankFind))
+		return utils.makeResponse(203, 'Banco destino não encontrado')
+
+	const debitTransaction = {
+		effectedAt: new Date(),
+		bankId: originalBankId,
+		//TODO: Quando adicionar a ordenação de banco, remover o replace
+		bankName: originBankFind.name.replace(/^[\w\d]+\. /, ''),
+		isSimples: false,
+		value: -1 * value,
+		isCompensated: true,
+		transactionType: 'contaCorrente',
+		description: 'Transferência Interna',
+		detail: `Para: ${finalBankFind.name}`,
+	}
+
+	const creditTransaction = {
+		effectedAt: new Date(),
+		bankId: finalBankId,
+		//TODO: Quando adicionar a ordenação de banco, remover o replace
+		bankName: finalBankFind.name.replace(/^[\w\d]+\. /, ''),
+		isSimples: false,
+		value: value,
+		isCompensated: true,
+		transactionType: 'contaCorrente',
+		description: 'Transferência Interna',
+		detail: `De: ${originBankFind.name}`,
+	}
+	try {
+		await createTransaction(userId, debitTransaction)
+			.then((res) => {
+				if (res.code == 201) {
+					return createTransaction(userId, creditTransaction)
+				} else {
+					throw new Erro('Erro no cadastro da primeira transação.')
+				}
+			})
+			.then((res) => {
+				if (res.code != 201) {
+					throw new Erro('Erro no cadastro da segunda transação.')
+				}
+			})
+			.catch((err) => {
+				console.log('err: ', err)
+				throw err
+			})
+		return utils.makeResponse(201, 'Transferência efetuada com sucesso', {})
+	} catch (error) {
+		return utils.makeResponse(
+			203,
+			'A transferência não pode ser efetuada. Verifique no extrato se uma das transações foi efetuada.',
+			{}
+		)
+	}
+}
+
+exports.createTransaction = async (userId, transactionToCreate) => {
+	try {
+		const validation = await validadeTransaction(transactionToCreate)
+		if (validation) return utils.makeResponse(203, validation)
+
+		transactionToCreate.effectedAt = utils.formatDateToBataBase(
+			transactionToCreate.effectedAt
+		)
+
+		transactionToCreate.userId = userId
+		transactionToCreate.createdAt = utils.actualDateToBataBase()
+
+		let totalTransaction = 1
+		if (transactionToCreate.finalRecurrence) {
+			totalTransaction = transactionToCreate.finalRecurrence
+
+			if (transactionToCreate.isSimples) {
+				delete transactionToCreate.finalRecurrence
+			} else {
+				if (transactionToCreate.finalRecurrence == 1) {
+					delete transactionToCreate.finalRecurrence
+				} else {
+					transactionToCreate.currentRecurrence = 1
+				}
+			}
+		}
+
+		const bankParams = {
+			_id: transactionToCreate.bankId,
+			userId: userId,
+		}
+		const bankFind = await db.findOne(bankModel, bankParams)
+		//TODO: Quando adicionar a ordenação de banco, remover o replace
+		transactionToCreate.bankName = bankFind.name.replace(/^[\w\d]+\. /, '')
+
+		if (transactionToCreate.transactionType === 'planejamento') {
+			transactionToCreate.isCompensated = false
+		}
+
+		let response = []
+		for (let i = 0; i < totalTransaction; i++) {
+			if (i > 0) {
+				if (!transactionToCreate.isSimples) {
+					transactionToCreate.currentRecurrence++
+				}
+
+				if (
+					transactionToCreate.transactionType === 'contaCorrente' ||
+					transactionToCreate.transactionType === 'planejamento'
+				) {
+					const nextDate = utils.addMonth(transactionToCreate.effectedAt, 1)
+					transactionToCreate.effectedAt = utils.formatDateToBataBase(nextDate)
+				}
+			}
+			const transactionToSave = new transactionModel(transactionToCreate)
+			const transactionSaved = await db.save(transactionToSave)
+
+			//TODO: implementar transaction para rollback quando erro ao atualizar saldo
+			await descriptionController.createDescription(
+				userId,
+				transactionToCreate.description
+			)
+
+			switch (transactionToCreate.transactionType) {
+				case 'contaCorrente':
+					await updateSaldoContaCorrente(
+						userId,
+						bankFind._id,
+						transactionSaved.value
+					)
+					break
+
+				default:
+			}
+
+			response.push(transactionSaved)
+		}
+
+		if (response.length == 0)
+			return utils.makeResponse(203, 'A transação não pode ser salva')
+
+		return utils.makeResponse(201, 'Transação criada com sucesso', response)
+	} catch (error) {
+		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
+		throw error
+	}
+}
+
+exports.updateTransaction = async (
+	userId,
+	idTransaction,
+	transactionToUpdate
+) => {
+	try {
+		const validation = await validadeTransaction(transactionToUpdate)
+		if (validation) return utils.makeResponse(203, validation)
+
+		const params = { _id: idTransaction, userId: userId }
+		const oldTransaction = await db.findOne(transactionModel, params)
+
+		if (transactionToUpdate.transactionType === 'planejamento') {
+			transactionToUpdate.isCompensated = false
+		}
+
+		transactionToUpdate.effectedAt = utils.formatDateToBataBase(
+			transactionToUpdate.effectedAt
+		)
+
+		if (isEmpty(oldTransaction)) {
+			return utils.makeResponse(203, 'Transação não encontrada')
+		}
+
+		const bankParams = {
+			_id: transactionToUpdate.bankId,
+			userId: userId,
+		}
+		const bankFind = await db.findOne(bankModel, bankParams)
+		//TODO: Quando adicionar a ordenação de banco, remover o replace
+		transactionToUpdate.bankName = bankFind.name.replace(/^[\w\d]+\. /, '')
+
+		const transactionReturn = await transactionModel.findOneAndUpdate(
+			params,
+			transactionToUpdate,
+			{
+				new: true,
+			}
+		)
+
+		if (oldTransaction.description != transactionToUpdate.description) {
+			await descriptionController.createDescription(
+				userId,
+				transactionToUpdate.description
+			)
+		}
+
+		const saldoAdjust = transactionReturn.value - oldTransaction.value
+		switch (transactionReturn.transactionType) {
+			case 'contaCorrente': {
+				if (
+					transactionReturn.bankId.toString() !=
+					oldTransaction.bankId.toString()
+				) {
+					await updateSaldoContaCorrente(
+						userId,
+						transactionReturn.bankId,
+						transactionReturn.value
+					)
+					await updateSaldoContaCorrente(
+						userId,
+						oldTransaction.bankId,
+						oldTransaction.value * -1
+					)
+				} else {
+					await updateSaldoContaCorrente(
+						userId,
+						transactionReturn.bankId,
+						saldoAdjust
+					)
+				}
+				break
+			}
+
+			default:
+		}
+
+		return utils.makeResponse(
+			202,
+			'Transação atualizada com sucesso',
+			transactionReturn
+		)
+	} catch (error) {
+		throw error
+	}
+}
+
+exports.deleteTransaction = async (userId, idTransaction) => {
+	try {
+		const params = { _id: idTransaction, userId: userId }
+		const transactionFind = await db.findOne(transactionModel, params)
+		if (isEmpty(transactionFind))
+			return utils.makeResponse(203, 'Transação não encontrada')
+
+		const transactionToDelete = new transactionModel(transactionFind)
+		const response = await db.remove(transactionToDelete)
+
+		const saldoAdjust = -1 * transactionToDelete.value
+
+		switch (transactionToDelete.transactionType) {
+			case 'contaCorrente':
+				await updateSaldoContaCorrente(
+					userId,
+					transactionToDelete.bankId,
+					saldoAdjust
+				)
+				break
+
+			default:
+		}
+
+		return utils.makeResponse(202, 'Transação removida com sucesso', response)
+	} catch (error) {
+		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
+		throw error
+	}
+}
+
+exports.transactionNotCompensatedByBank = async (userId) => {
+	const params = {
+		userId: userId,
+		transactionType: 'contaCorrente',
+		isCompensated: false,
+	}
+	let response = await transactionModel.aggregate([
+		{ $match: params },
+		{
+			$group: {
+				_id: { bankId: '$bankId' },
+				saldoNotCompesated: { $sum: '$value' },
+			},
+		},
+	])
+
+	let responseToSend = []
+	response.forEach((el) => {
+		el.bankId = el._id.bankId
+		delete el._id
+		responseToSend.push(el)
+	})
+
+	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
+}
+
+exports.transactionNotCompensatedDebit = async (userId) => {
+	const params = {
+		userId: userId,
+		isCompensated: false,
+		transactionType: 'contaCorrente',
+		value: { $lte: 0 },
+	}
+	let response = await transactionModel.aggregate([
+		{ $match: params },
+		{ $group: { _id: null, saldoNotCompesated: { $sum: '$value' } } },
+	])
+
+	let responseToSend
+	if (response.length === 0) {
+		responseToSend = 0
+	} else {
+		responseToSend = response[0].saldoNotCompesated
+	}
+
+	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
+}
+
+exports.transactionNotCompensatedCredit = async (userId) => {
+	const params = {
+		userId: userId,
+		isCompensated: false,
+		transactionType: 'contaCorrente',
+		value: { $gt: 0 },
+	}
+	let response = await transactionModel.aggregate([
+		{ $match: params },
+		{ $group: { _id: null, saldoNotCompesated: { $sum: '$value' } } },
+	])
+	let responseToSend
+	if (response.length === 0) {
+		responseToSend = 0
+	} else {
+		responseToSend = response[0].saldoNotCompesated
+	}
+
+	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
+}
+
+exports.planToPrincipal = async (userId, transactions) => {
+	const transactionToUpdate = {
+		isCompensated: false,
+		transactionType: 'contaCorrente',
+	}
+
+	let response = []
+
+	for (let transaction of transactions) {
+		await updateSaldoContaCorrente(
+			userId,
+			transaction.bankId,
+			transaction.value
+		)
+
+		const params = { _id: transaction._id }
+		const transactionToReturn = await transactionModel.findByIdAndUpdate(
+			params,
+			transactionToUpdate,
+			{ new: true }
+		)
+		response.push(transactionToReturn)
+	}
+
+	return utils.makeResponse(201, 'Transação atualizada com sucesso', response)
+}
+
+exports.futureTransactionBalance = async (userId) => {
+	const transactionCredit = await getFutureTransactionCredit(userId)
+	const transactionDebit = await getFutureTransactionDebit(userId)
+
+	if (transactionDebit.length == 0 && transactionCredit.length == 0) {
+		return utils.makeResponse(203, 'Não existem saldos para retorno')
+	}
+
+	const minDate = getMinData(transactionDebit, transactionCredit)
+	const maxDate = getMaxData(transactionDebit, transactionCredit)
+
+	let indexDate = minDate
+	let responseToReturn = []
+	while (indexDate <= maxDate) {
+		const month = indexDate.getMonth() + 1
+		const year = indexDate.getFullYear()
+
+		let finalDebit = transactionDebit.find((t) => {
+			return t._id.month == month && t._id.year == year
+		})
+		let finalCredit = transactionCredit.find((t) => {
+			return t._id.month == month && t._id.year == year
+		})
+
+		const response = {
+			month: month,
+			year: year,
+			debit: finalDebit ? finalDebit.debit : 0,
+			credit: finalCredit ? finalCredit.credit : 0,
+			card: 0,
+		}
+
+		responseToReturn.push(response)
+
+		indexDate.setDate(indexDate.getDate() + 30)
+	}
+
+	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToReturn)
+}
+
+/* FUNÇÕES DE APOIO */
 
 function prepareFilters(filters) {
 	const { year, month, onlyFuture, bankId, description, detail } = filters
@@ -77,411 +502,13 @@ function prepareFilters(filters) {
 	return response
 }
 
-async function getTransaction(idTransaction) {
-	try {
-		const params = { _id: idTransaction, userId: global.userId }
-		const transactionFind = await db.findOne(model.transaction, params)
-		if (isEmpty(transactionFind))
-			return utils.makeResponse(203, 'Transação não encontradas', [])
-
-		return utils.makeResponse(200, 'Transação encontrada', transactionFind)
-	} catch (error) {
-		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		throw error
-	}
-}
-
-async function bankTransference(data) {
-	const { originalBankId, finalBankId, value } = data
-
-	const paramsOrigin = { _id: originalBankId, userId: global.userId }
-	const originBankFind = await db.findOne(model.bank, paramsOrigin)
-	if (isEmpty(originBankFind))
-		return utils.makeResponse(203, 'Banco de origem não encontrado')
-
-	const paramsFinal = { _id: finalBankId, userId: global.userId }
-	const finalBankFind = await db.findOne(model.bank, paramsFinal)
-	if (isEmpty(finalBankFind))
-		return utils.makeResponse(203, 'Banco destino não encontrado')
-
-	const debitTransaction = {
-		effectedAt: new Date(),
-		bankId: originalBankId,
-		//TODO: Quando adicionar a ordenação de banco, remover o replace
-		bankName: originBankFind.name.replace(/^[\w\d]+\. /, ''),
-		isSimples: false,
-		value: -1 * value,
-		isCompensated: true,
-		transactionType: 'contaCorrente',
-		description: 'Transferência Interna',
-		detail: `Para: ${finalBankFind.name}`,
-	}
-
-	const creditTransaction = {
-		effectedAt: new Date(),
-		bankId: finalBankId,
-		//TODO: Quando adicionar a ordenação de banco, remover o replace
-		bankName: finalBankFind.name.replace(/^[\w\d]+\. /, ''),
-		isSimples: false,
-		value: value,
-		isCompensated: true,
-		transactionType: 'contaCorrente',
-		description: 'Transferência Interna',
-		detail: `De: ${originBankFind.name}`,
-	}
-	try {
-		await createTransaction(debitTransaction)
-			.then((res) => {
-				if (res.code == 201) {
-					return createTransaction(creditTransaction)
-				} else {
-					throw new Erro('Erro no cadastro da primeira transação.')
-				}
-			})
-			.then((res) => {
-				if (res.code != 201) {
-					throw new Erro('Erro no cadastro da segunda transação.')
-				}
-			})
-			.catch((err) => {
-				console.log('err: ', err)
-				throw err
-			})
-		return utils.makeResponse(201, 'Transferência efetuada com sucesso', {})
-	} catch (error) {
-		return utils.makeResponse(
-			203,
-			'A transferência não pode ser efetuada. Verifique no extrato se uma das transações foi efetuada.',
-			{}
-		)
-	}
-}
-
-async function createTransaction(transactionToCreate) {
-	try {
-		const validation = await validadeTransaction(transactionToCreate)
-		if (validation) return utils.makeResponse(203, validation)
-
-		transactionToCreate.effectedAt = utils.formatDateToBataBase(
-			transactionToCreate.effectedAt
-		)
-
-		transactionToCreate.userId = global.userId
-		transactionToCreate.createdAt = utils.actualDateToBataBase()
-
-		let totalTransaction = 1
-		if (transactionToCreate.finalRecurrence) {
-			totalTransaction = transactionToCreate.finalRecurrence
-
-			if (transactionToCreate.isSimples) {
-				delete transactionToCreate.finalRecurrence
-			} else {
-				if (transactionToCreate.finalRecurrence == 1) {
-					delete transactionToCreate.finalRecurrence
-				} else {
-					transactionToCreate.currentRecurrence = 1
-				}
-			}
-		}
-
-		const bankParams = {
-			_id: transactionToCreate.bankId,
-			userId: global.userId,
-		}
-		const bankFind = await db.findOne(model.bank, bankParams)
-		//TODO: Quando adicionar a ordenação de banco, remover o replace
-		transactionToCreate.bankName = bankFind.name.replace(/^[\w\d]+\. /, '')
-
-		if (transactionToCreate.transactionType === 'planejamento') {
-			transactionToCreate.isCompensated = false
-		}
-
-		let response = []
-		for (let i = 0; i < totalTransaction; i++) {
-			if (i > 0) {
-				if (!transactionToCreate.isSimples) {
-					transactionToCreate.currentRecurrence++
-				}
-
-				if (
-					transactionToCreate.transactionType === 'contaCorrente' ||
-					transactionToCreate.transactionType === 'planejamento'
-				) {
-					const nextDate = utils.addMonth(transactionToCreate.effectedAt, 1)
-					transactionToCreate.effectedAt = utils.formatDateToBataBase(nextDate)
-				}
-			}
-			const transactionToSave = new model.transaction(transactionToCreate)
-			const transactionSaved = await db.save(transactionToSave)
-			await descriptionController.createDescription(
-				transactionToCreate.description
-			)
-
-			switch (transactionToCreate.transactionType) {
-				case 'contaCorrente':
-					await updateSaldoContaCorrente(bankFind._id, transactionSaved.value)
-					break
-
-				default:
-			}
-
-			response.push(transactionSaved)
-		}
-
-		if (response.length == 0)
-			return utils.makeResponse(203, 'A transação não pode ser salva')
-
-		return utils.makeResponse(201, 'Transação criada com sucesso', response)
-	} catch (error) {
-		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		throw error
-	}
-}
-
-async function updateTransaction(idTransaction, transactionToUpdate) {
-	try {
-		const validation = await validadeTransaction(transactionToUpdate)
-		if (validation) return utils.makeResponse(203, validation)
-
-		const params = { _id: idTransaction, userId: global.userId }
-		const oldTransaction = await db.findOne(model.transaction, params)
-
-		if (transactionToUpdate.transactionType === 'planejamento') {
-			transactionToUpdate.isCompensated = false
-		}
-
-		transactionToUpdate.effectedAt = utils.formatDateToBataBase(
-			transactionToUpdate.effectedAt
-		)
-
-		if (isEmpty(oldTransaction)) {
-			return utils.makeResponse(203, 'Transação não encontrada')
-		}
-
-		const bankParams = {
-			_id: transactionToUpdate.bankId,
-			userId: global.userId,
-		}
-		const bankFind = await db.findOne(model.bank, bankParams)
-		//TODO: Quando adicionar a ordenação de banco, remover o replace
-		transactionToUpdate.bankName = bankFind.name.replace(/^[\w\d]+\. /, '')
-
-		const transactionReturn = await model.transaction.findOneAndUpdate(
-			params,
-			transactionToUpdate,
-			{
-				new: true,
-			}
-		)
-
-		if (oldTransaction.description != transactionToUpdate.description) {
-			await descriptionController.createDescription(
-				transactionToUpdate.description
-			)
-		}
-
-		const saldoAdjust = transactionReturn.value - oldTransaction.value
-		switch (transactionReturn.transactionType) {
-			case 'contaCorrente': {
-				if (
-					transactionReturn.bankId.toString() !=
-					oldTransaction.bankId.toString()
-				) {
-					await updateSaldoContaCorrente(
-						transactionReturn.bankId,
-						transactionReturn.value
-					)
-					await updateSaldoContaCorrente(
-						oldTransaction.bankId,
-						oldTransaction.value * -1
-					)
-				} else {
-					await updateSaldoContaCorrente(transactionReturn.bankId, saldoAdjust)
-				}
-				break
-			}
-
-			default:
-		}
-
-		return utils.makeResponse(
-			202,
-			'Transação atualizada com sucesso',
-			transactionReturn
-		)
-	} catch (error) {
-		throw error
-	}
-}
-
-async function deleteTransaction(idTransaction) {
-	try {
-		const params = { _id: idTransaction, userId: global.userId }
-		const transactionFind = await db.findOne(model.transaction, params)
-		if (isEmpty(transactionFind))
-			return utils.makeResponse(203, 'Transação não encontrada')
-
-		const transactionToDelete = new model.transaction(transactionFind)
-		const response = await db.remove(transactionToDelete)
-
-		const saldoAdjust = -1 * transactionToDelete.value
-
-		switch (transactionToDelete.transactionType) {
-			case 'contaCorrente':
-				await updateSaldoContaCorrente(transactionToDelete.bankId, saldoAdjust)
-				break
-
-			default:
-		}
-
-		return utils.makeResponse(202, 'Transação removida com sucesso', response)
-	} catch (error) {
-		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
-		throw error
-	}
-}
-
-async function transactionNotCompensatedByBank() {
-	const params = {
-		userId: global.userId,
-		transactionType: 'contaCorrente',
-		isCompensated: false,
-	}
-	let response = await model.transaction.aggregate([
-		{ $match: params },
-		{
-			$group: {
-				_id: { bankId: '$bankId' },
-				saldoNotCompesated: { $sum: '$value' },
-			},
-		},
-	])
-
-	let responseToSend = []
-	response.forEach((el) => {
-		el.bankId = el._id.bankId
-		delete el._id
-		responseToSend.push(el)
-	})
-
-	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
-}
-
-async function transactionNotCompensatedDebit() {
-	const params = {
-		userId: global.userId,
-		isCompensated: false,
-		transactionType: 'contaCorrente',
-		value: { $lte: 0 },
-	}
-	let response = await model.transaction.aggregate([
-		{ $match: params },
-		{ $group: { _id: null, saldoNotCompesated: { $sum: '$value' } } },
-	])
-
-	let responseToSend
-	if (response.length === 0) {
-		responseToSend = 0
-	} else {
-		responseToSend = response[0].saldoNotCompesated
-	}
-
-	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
-}
-
-async function transactionNotCompensatedCredit() {
-	const params = {
-		userId: global.userId,
-		isCompensated: false,
-		transactionType: 'contaCorrente',
-		value: { $gt: 0 },
-	}
-	let response = await model.transaction.aggregate([
-		{ $match: params },
-		{ $group: { _id: null, saldoNotCompesated: { $sum: '$value' } } },
-	])
-	let responseToSend
-	if (response.length === 0) {
-		responseToSend = 0
-	} else {
-		responseToSend = response[0].saldoNotCompesated
-	}
-
-	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
-}
-
-async function planToPrincipal(transactions) {
-	const transactionToUpdate = {
-		isCompensated: false,
-		transactionType: 'contaCorrente',
-	}
-
-	let response = []
-
-	for (let transaction of transactions) {
-		await updateSaldoContaCorrente(transaction.bankId, transaction.value)
-
-		const params = { _id: transaction._id }
-		const transactionToReturn = await model.transaction.findByIdAndUpdate(
-			params,
-			transactionToUpdate,
-			{ new: true }
-		)
-		response.push(transactionToReturn)
-	}
-
-	return utils.makeResponse(201, 'Transação atualizada com sucesso', response)
-}
-
-async function futureTransactionBalance() {
-	const transactionCredit = await getFutureTransactionCredit()
-	const transactionDebit = await getFutureTransactionDebit()
-
-	if (transactionDebit.length == 0 && transactionCredit.length == 0) {
-		return utils.makeResponse(203, 'Não existem saldos para retorno')
-	}
-
-	const minDate = getMinData(transactionDebit, transactionCredit)
-	const maxDate = getMaxData(transactionDebit, transactionCredit)
-
-	let indexDate = minDate
-	let responseToReturn = []
-	while (indexDate <= maxDate) {
-		const month = indexDate.getMonth() + 1
-		const year = indexDate.getFullYear()
-
-		let finalDebit = transactionDebit.find((t) => {
-			return t._id.month == month && t._id.year == year
-		})
-		let finalCredit = transactionCredit.find((t) => {
-			return t._id.month == month && t._id.year == year
-		})
-
-		const response = {
-			month: month,
-			year: year,
-			debit: finalDebit ? finalDebit.debit : 0,
-			credit: finalCredit ? finalCredit.credit : 0,
-			card: 0,
-		}
-
-		responseToReturn.push(response)
-
-		indexDate.setDate(indexDate.getDate() + 30)
-	}
-
-	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToReturn)
-}
-
-/* FUNÇÕES DE APOIO */
-
-async function getFutureTransactionCredit() {
+async function getFutureTransactionCredit(userId) {
 	const paramsCredit = {
-		userId: global.userId,
+		userId: userId,
 		transactionType: 'planejamento',
 		value: { $gt: 0 },
 	}
-	const transactionCredit = await model.transaction.aggregate([
+	const transactionCredit = await transactionModel.aggregate([
 		{ $match: paramsCredit },
 		{
 			$group: {
@@ -498,13 +525,13 @@ async function getFutureTransactionCredit() {
 	return transactionCredit
 }
 
-async function getFutureTransactionDebit() {
+async function getFutureTransactionDebit(userId) {
 	const paramsDebit = {
-		userId: global.userId,
+		userId: userId,
 		transactionType: 'planejamento',
 		value: { $lte: 0 },
 	}
-	const transactionDebit = await model.transaction.aggregate([
+	const transactionDebit = await transactionModel.aggregate([
 		{ $match: paramsDebit },
 		{
 			$group: {
@@ -605,31 +632,16 @@ async function validadeTransaction(transactionToCreate) {
 
 async function existBank(idBank) {
 	const params = { _id: idBank }
-	const bankFind = await db.findOne(model.bank, params)
+	const bankFind = await db.findOne(bankModel, params)
 	if (isEmpty(bankFind)) return false
 	return true
 }
 
-async function updateSaldoContaCorrente(idBank, valor) {
-	const params = { _id: idBank, userId: global.userId }
-	let bankFind = await db.findOne(model.bank, params).select('systemBalance')
+async function updateSaldoContaCorrente(userId, idBank, valor) {
+	const params = { _id: idBank, userId: userId }
+	let bankFind = await db.findOne(bankModel, params).select('systemBalance')
 
 	const finalBalance = round(bankFind.systemBalance + valor, 2)
 	bankFind.systemBalance = finalBalance
-
 	bankFind.save()
-}
-
-module.exports = {
-	getListTransaction,
-	getTransaction,
-	bankTransference,
-	createTransaction,
-	updateTransaction,
-	deleteTransaction,
-	transactionNotCompensatedByBank,
-	transactionNotCompensatedDebit,
-	transactionNotCompensatedCredit,
-	planToPrincipal,
-	futureTransactionBalance,
 }

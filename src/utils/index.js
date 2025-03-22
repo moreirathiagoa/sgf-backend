@@ -1,65 +1,48 @@
 const moment = require('moment/min/moment-with-locales')
 
-function actualDateToUser() {
+exports.actualDateToUser = () => {
 	moment.locale('pt-br')
 	const now = moment()
-
-	const dateToUser = now.format('DD/MM/YYYY')
-	return dateToUser
+	return now.format('DD/MM/YYYY')
 }
 
-function actualDateTimeToUser() {
+exports.actualDateTimeToUser = () => {
 	moment.locale('pt-br')
 	const now = moment()
-
-	const dateTimeToUser = now.format('DD/MM/YYYY HH:MM')
-	return dateTimeToUser
+	return now.format('DD/MM/YYYY HH:MM')
 }
 
-function actualDateToBataBase() {
+exports.actualDateToBataBase = () => {
 	moment.locale('pt-br')
 	const now = moment()
-
-	const dateToDataBase = now.format()
-	return dateToDataBase
+	return now.format()
 }
 
-function formatDateToSelectBox(dateInformed) {
+exports.formatDateToSelectBox = (dateInformed) => {
 	moment.locale('pt-br')
-	const dateMoment = moment(dateInformed, 'DD/MM/YYYY')
-
-	return dateMoment
+	return moment(dateInformed, 'DD/MM/YYYY')
 }
 
-function formatDateToUser(dateInformed) {
+exports.formatDateToUser = (dateInformed) => {
 	moment.locale('pt-br')
-	const dateToMoment = moment(dateInformed)
-
-	const dateToUser = dateToMoment.format('DD/MM/YYYY')
-	return dateToUser
+	return moment(dateInformed).format('DD/MM/YYYY')
 }
 
-function formatDateTimeToUser(dateInformed) {
+exports.formatDateTimeToUser = (dateInformed) => {
 	moment.locale('pt-br')
-	const dateToMoment = moment(dateInformed)
-
-	const dateTimeToUser = dateToMoment.format('DD/MM/YYYY HH:MM')
-	return dateTimeToUser
+	return moment(dateInformed).format('DD/MM/YYYY HH:MM')
 }
 
-function formatDateToBataBase(dateInformed) {
+exports.formatDateToBataBase = (dateInformed) => {
 	moment.locale('pt-br')
-	const dateToMoment = moment(dateInformed)
-
-	const dateToDataBase = dateToMoment.format()
-	return dateToDataBase
+	return moment(dateInformed).format()
 }
 
-function addMonth(date, qtd) {
+exports.addMonth = (date, qtd) => {
 	return moment(date).add(qtd, 'month')
 }
 
-function validateRequestedElements(object, requested) {
+exports.validateRequestedElements = (object, requested) => {
 	let emptyAtributes = []
 	requested.forEach((element) => {
 		if (!object.hasOwnProperty(element)) {
@@ -69,7 +52,7 @@ function validateRequestedElements(object, requested) {
 	return emptyAtributes.join(', ')
 }
 
-function makeResponse(code, message, data) {
+exports.makeResponse = (code, message, data) => {
 	return {
 		code: code,
 		message: message,
@@ -77,20 +60,6 @@ function makeResponse(code, message, data) {
 	}
 }
 
-function isNumeric(n) {
+exports.isNumeric = (n) => {
 	return !isNaN(parseFloat(n)) && isFinite(n)
-}
-
-module.exports = {
-	validateRequestedElements,
-	isNumeric,
-	makeResponse,
-	actualDateToUser,
-	actualDateTimeToUser,
-	actualDateToBataBase,
-	formatDateToUser,
-	formatDateTimeToUser,
-	formatDateToBataBase,
-	formatDateToSelectBox,
-	addMonth,
 }

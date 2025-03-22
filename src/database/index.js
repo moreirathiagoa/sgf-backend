@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const logger = require('../../config/logger')
 mongoose.Promise = global.Promise
 
-function start(URI = properties.uriDataBase) {
+exports.start = (URI = properties.uriDataBase) => {
 	return mongoose
 		.connect(URI, {
 			useNewUrlParser: true,
@@ -24,7 +24,7 @@ function start(URI = properties.uriDataBase) {
  * @param {Model} model Modelo para ser persistido no Banco de dados
  * @author {Thiago Moreira}
  */
-function save(model) {
+exports.save = (model) => {
 	try {
 		return model.save()
 	} catch (error) {
@@ -35,7 +35,7 @@ function save(model) {
 	}
 }
 
-function find(model, parameter) {
+exports.find = (model, parameter) => {
 	try {
 		return model.find(parameter)
 	} catch (error) {
@@ -46,7 +46,7 @@ function find(model, parameter) {
 	}
 }
 
-function findOne(model, parameter) {
+exports.findOne = (model, parameter) => {
 	try {
 		return model.findOne(parameter)
 	} catch (error) {
@@ -57,7 +57,7 @@ function findOne(model, parameter) {
 	}
 }
 
-async function remove(model) {
+exports.remove = async (model) => {
 	try {
 		return model.remove()
 	} catch (error) {
@@ -66,12 +66,4 @@ async function remove(model) {
 			data: error,
 		})
 	}
-}
-
-module.exports = {
-	start,
-	save,
-	find,
-	findOne,
-	remove,
 }
