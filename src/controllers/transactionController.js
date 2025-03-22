@@ -29,9 +29,9 @@ exports.getListTransaction = async (userId, transactionType, filters) => {
 	}
 }
 
-exports.getTransaction = async (userId, idTransaction) => {
+exports.getTransaction = async (userId, transactionId) => {
 	try {
-		const params = { _id: idTransaction, userId: userId }
+		const params = { _id: transactionId, userId: userId }
 		const transactionFind = await db.findOne(transactionModel, params)
 		if (isEmpty(transactionFind))
 			return utils.makeResponse(203, 'Transação não encontradas', [])
@@ -199,14 +199,14 @@ exports.createTransaction = async (userId, transactionToCreate) => {
 
 exports.updateTransaction = async (
 	userId,
-	idTransaction,
+	transactionId,
 	transactionToUpdate
 ) => {
 	try {
 		const validation = await validadeTransaction(transactionToUpdate)
 		if (validation) return utils.makeResponse(203, validation)
 
-		const params = { _id: idTransaction, userId: userId }
+		const params = { _id: transactionId, userId: userId }
 		const oldTransaction = await db.findOne(transactionModel, params)
 
 		if (transactionToUpdate.transactionType === 'planejamento') {
@@ -284,9 +284,9 @@ exports.updateTransaction = async (
 	}
 }
 
-exports.deleteTransaction = async (userId, idTransaction) => {
+exports.deleteTransaction = async (userId, transactionId) => {
 	try {
-		const params = { _id: idTransaction, userId: userId }
+		const params = { _id: transactionId, userId: userId }
 		const transactionFind = await db.findOne(transactionModel, params)
 		if (isEmpty(transactionFind))
 			return utils.makeResponse(203, 'Transação não encontrada')
@@ -326,7 +326,7 @@ exports.transactionNotCompensatedByBank = async (userId) => {
 		{
 			$group: {
 				_id: { bankId: '$bankId' },
-				saldoNotCompesated: { $sum: '$value' },
+				saldoNotCompensated: { $sum: '$value' },
 			},
 		},
 	])
@@ -350,14 +350,14 @@ exports.transactionNotCompensatedDebit = async (userId) => {
 	}
 	let response = await transactionModel.aggregate([
 		{ $match: params },
-		{ $group: { _id: null, saldoNotCompesated: { $sum: '$value' } } },
+		{ $group: { _id: null, saldoNotCompensated: { $sum: '$value' } } },
 	])
 
 	let responseToSend
 	if (response.length === 0) {
 		responseToSend = 0
 	} else {
-		responseToSend = response[0].saldoNotCompesated
+		responseToSend = response[0].saldoNotCompensated
 	}
 
 	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
@@ -372,13 +372,13 @@ exports.transactionNotCompensatedCredit = async (userId) => {
 	}
 	let response = await transactionModel.aggregate([
 		{ $match: params },
-		{ $group: { _id: null, saldoNotCompesated: { $sum: '$value' } } },
+		{ $group: { _id: null, saldoNotCompensated: { $sum: '$value' } } },
 	])
 	let responseToSend
 	if (response.length === 0) {
 		responseToSend = 0
 	} else {
-		responseToSend = response[0].saldoNotCompesated
+		responseToSend = response[0].saldoNotCompensated
 	}
 
 	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
@@ -630,15 +630,15 @@ async function validadeTransaction(transactionToCreate) {
 		return 'Recorrência menor ou igual a zero. Deixe em branco em caso de única transação.'
 }
 
-async function existBank(idBank) {
-	const params = { _id: idBank }
+async function existBank(bankId) {
+	const params = { _id: bankId }
 	const bankFind = await db.findOne(bankModel, params)
 	if (isEmpty(bankFind)) return false
 	return true
 }
 
-async function updateSaldoContaCorrente(userId, idBank, valor) {
-	const params = { _id: idBank, userId: userId }
+async function updateSaldoContaCorrente(userId, bankId, valor) {
+	const params = { _id: bankId, userId: userId }
 	let bankFind = await db.findOne(bankModel, params).select('systemBalance')
 
 	const finalBalance = round(bankFind.systemBalance + valor, 2)

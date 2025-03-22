@@ -6,22 +6,22 @@ const transactionController = require('../controllers/transactionController')
 const descriptionController = require('../controllers/descriptionController')
 
 router.get(
-	'/load/:transactionType/:idTransaction?',
+	'/load/:transactionType/:transactionId?',
 	auth,
 	async (req, res, next) => {
 		try {
 			const userId = res.locals.authData.userId
 
-			const { transactionType, idTransaction } = req.params
+			const { transactionType, transactionId } = req.params
 
 			const dashboardDataPromise = [
 				bankController.getListBanks(userId, transactionType),
 				descriptionController.getDescriptions(userId),
 			]
 
-			if (idTransaction) {
+			if (transactionId) {
 				dashboardDataPromise.push(
-					transactionController.getTransaction(userId, idTransaction)
+					transactionController.getTransaction(userId, transactionId)
 				)
 			}
 
@@ -33,7 +33,7 @@ router.get(
 				lastDescriptions: transactionData[1],
 			}
 
-			if (idTransaction) {
+			if (transactionId) {
 				Object.assign(response, { transactionData: transactionData[2].data })
 			}
 

@@ -64,7 +64,7 @@ exports.getListBanksDashboard = async (userId) =>{
 
 			let saldoNotCompensated
 			if (result.length > 0) {
-				saldoNotCompensated = result[0].saldoNotCompesated
+				saldoNotCompensated = result[0].saldoNotCompensated
 			} else {
 				saldoNotCompensated = 0
 			}
@@ -91,9 +91,9 @@ exports.getListBanksDashboard = async (userId) =>{
 	}
 }
 
-exports.getBank = async (userId, idBank) => {
+exports.getBank = async (userId, bankId) => {
 	try {
-		const params = { _id: idBank, userId: userId }
+		const params = { _id: bankId, userId: userId }
 		const bankFind = await db.findOne(bankModel, params)
 		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Banco não encontrado')
@@ -128,16 +128,16 @@ exports.createBank = async (userId, bankToCreate) => {
 }
 
 //TODO ao atualizar o banco, renomear todos bankName das transações futuras (não compensadas na conta corrente ou planejamento)
-exports.updateBank = async (userId, idBank, bankToUpdate) => {
+exports.updateBank = async (userId, bankId, bankToUpdate) => {
 	try {
 		const paramsName = { name: bankToUpdate.name, userId: userId }
 		const bankFindByName = await db.findOne(bankModel, paramsName)
 		if (!isEmpty(bankFindByName)) {
-			if (bankFindByName._id != idBank)
+			if (bankFindByName._id != bankId)
 				return utils.makeResponse(203, 'Banco já cadastrado')
 		}
 
-		const paramsId = { _id: idBank, userId: userId }
+		const paramsId = { _id: bankId, userId: userId }
 		const bankFindById = await db.findOne(bankModel, paramsId)
 
 		if (isEmpty(bankFindById)) {
@@ -156,14 +156,14 @@ exports.updateBank = async (userId, idBank, bankToUpdate) => {
 	}
 }
 
-exports.deleteBank = async (userId, idBank) =>{
+exports.deleteBank = async (userId, bankId) =>{
 	try {
-		const paramsBank = { _id: idBank, userId: userId }
+		const paramsBank = { _id: bankId, userId: userId }
 		const bankFind = await db.findOne(bankModel, paramsBank)
 		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Banco não encontrado')
 
-		const paramsTransaction = { bankId: idBank, userId: userId }
+		const paramsTransaction = { bankId: bankId, userId: userId }
 
 		const transactionFind = await db.findOne(
 			transactionModel,
