@@ -4,7 +4,7 @@ const db = require('../database')
 const bcrypt = require('bcryptjs')
 const userModel = require('../model/userModel')
 
-async function getListUsers() {
+exports.getListUsers = async () => {
 	try {
 		const userFound = await db.find(userModel).select('userName isActive')
 		if (isEmpty(userFound))
@@ -16,7 +16,7 @@ async function getListUsers() {
 	}
 }
 
-async function getUser(idUser) {
+exports.getUser = async (idUser) => {
 	try {
 		const params = { _id: idUser }
 		const userFound = await db
@@ -31,7 +31,7 @@ async function getUser(idUser) {
 	}
 }
 
-async function createUser(userToCreate) {
+exports.createUser = async (userToCreate) => {
 	try {
 		const validation = validateUser(userToCreate)
 		if (validation) return utils.makeResponse(203, validation)
@@ -55,7 +55,7 @@ async function createUser(userToCreate) {
 	}
 }
 
-async function updateUser(idUser, userToUpdate) {
+exports.updateUser = async (idUser, userToUpdate) => {
 	try {
 		const validation = validateUser(userToUpdate)
 		if (validation) return utils.makeResponse(203, validation)
@@ -101,11 +101,4 @@ function validateUser(userToCreate) {
 
 	if (userToCreate.userName.length < 3)
 		return 'O nome de usuário não pode ter menos de 3 caracteres'
-}
-
-module.exports = {
-	getListUsers,
-	getUser,
-	createUser,
-	updateUser,
 }

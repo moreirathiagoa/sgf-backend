@@ -5,7 +5,7 @@ const descriptionController = require('./descriptionController')
 const transactionModel = require('../model/transactionModel')
 const bankModel = require('../model/bankModel')
 
-async function getListTransaction(userId, transactionType, filters) {
+exports.getListTransaction = async (userId, transactionType, filters) => {
 	try {
 		const params = { transactionType: transactionType, userId: userId }
 		if (filters) {
@@ -78,7 +78,7 @@ function prepareFilters(filters) {
 	return response
 }
 
-async function getTransaction(userId, idTransaction) {
+exports.getTransaction = async (userId, idTransaction) => {
 	try {
 		const params = { _id: idTransaction, userId: userId }
 		const transactionFind = await db.findOne(transactionModel, params)
@@ -92,7 +92,7 @@ async function getTransaction(userId, idTransaction) {
 	}
 }
 
-async function bankTransference(userId, data) {
+exports.bankTransference = async (userId, data) => {
 	const { originalBankId, finalBankId, value } = data
 
 	const paramsOrigin = { _id: originalBankId, userId: userId }
@@ -158,7 +158,7 @@ async function bankTransference(userId, data) {
 	}
 }
 
-async function createTransaction(userId, transactionToCreate) {
+exports.createTransaction = async (userId, transactionToCreate) => {
 	try {
 		const validation = await validadeTransaction(transactionToCreate)
 		if (validation) return utils.makeResponse(203, validation)
@@ -246,7 +246,11 @@ async function createTransaction(userId, transactionToCreate) {
 	}
 }
 
-async function updateTransaction(userId, idTransaction, transactionToUpdate) {
+exports.updateTransaction = async (
+	userId,
+	idTransaction,
+	transactionToUpdate
+) => {
 	try {
 		const validation = await validadeTransaction(transactionToUpdate)
 		if (validation) return utils.makeResponse(203, validation)
@@ -329,7 +333,7 @@ async function updateTransaction(userId, idTransaction, transactionToUpdate) {
 	}
 }
 
-async function deleteTransaction(userId, idTransaction) {
+exports.deleteTransaction = async (userId, idTransaction) => {
 	try {
 		const params = { _id: idTransaction, userId: userId }
 		const transactionFind = await db.findOne(transactionModel, params)
@@ -360,7 +364,7 @@ async function deleteTransaction(userId, idTransaction) {
 	}
 }
 
-async function transactionNotCompensatedByBank(userId) {
+exports.transactionNotCompensatedByBank = async (userId) => {
 	const params = {
 		userId: userId,
 		transactionType: 'contaCorrente',
@@ -386,7 +390,7 @@ async function transactionNotCompensatedByBank(userId) {
 	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
 }
 
-async function transactionNotCompensatedDebit(userId) {
+exports.transactionNotCompensatedDebit = async (userId) => {
 	const params = {
 		userId: userId,
 		isCompensated: false,
@@ -408,7 +412,7 @@ async function transactionNotCompensatedDebit(userId) {
 	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
 }
 
-async function transactionNotCompensatedCredit(userId) {
+exports.transactionNotCompensatedCredit = async (userId) => {
 	const params = {
 		userId: userId,
 		isCompensated: false,
@@ -429,7 +433,7 @@ async function transactionNotCompensatedCredit(userId) {
 	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
 }
 
-async function planToPrincipal(userId, transactions) {
+exports.planToPrincipal = async (userId, transactions) => {
 	const transactionToUpdate = {
 		isCompensated: false,
 		transactionType: 'contaCorrente',
@@ -456,7 +460,7 @@ async function planToPrincipal(userId, transactions) {
 	return utils.makeResponse(201, 'Transação atualizada com sucesso', response)
 }
 
-async function futureTransactionBalance(userId) {
+exports.futureTransactionBalance = async (userId) => {
 	const transactionCredit = await getFutureTransactionCredit(userId)
 	const transactionDebit = await getFutureTransactionDebit(userId)
 
@@ -641,18 +645,4 @@ async function updateSaldoContaCorrente(userId, idBank, valor) {
 	bankFind.systemBalance = finalBalance
 
 	bankFind.save()
-}
-
-module.exports = {
-	getListTransaction,
-	getTransaction,
-	bankTransference,
-	createTransaction,
-	updateTransaction,
-	deleteTransaction,
-	transactionNotCompensatedByBank,
-	transactionNotCompensatedDebit,
-	transactionNotCompensatedCredit,
-	planToPrincipal,
-	futureTransactionBalance,
 }

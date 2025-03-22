@@ -6,7 +6,7 @@ const logger = require('../../config/logger')
 const bankModel = require('../model/bankModel')
 const transactionModel = require('../model/transactionModel')
 
-async function getListBanks(userId, transactionType, filters) {
+exports.getListBanks = async (userId, transactionType, filters) => {
 	try {
 		let params = { userId: userId }
 
@@ -41,7 +41,7 @@ async function getListBanks(userId, transactionType, filters) {
 	}
 }
 
-async function getListBanksDashboard(userId) {
+exports.getListBanksDashboard = async (userId) =>{
 	try {
 		let params = {
 			userId: userId,
@@ -92,7 +92,7 @@ async function getListBanksDashboard(userId) {
 	}
 }
 
-async function getBank(userId, idBank) {
+exports.getBank = async (userId, idBank) => {
 	try {
 		const params = { _id: idBank, userId: userId }
 		const bankFind = await db.findOne(bankModel, params)
@@ -106,7 +106,7 @@ async function getBank(userId, idBank) {
 	}
 }
 
-async function createBank(userId, bankToCreate) {
+exports.createBank = async (userId, bankToCreate) => {
 	try {
 		const validation = validateBank(bankToCreate)
 		if (validation) return utils.makeResponse(203, validation)
@@ -129,7 +129,7 @@ async function createBank(userId, bankToCreate) {
 }
 
 //TODO ao atualizar o banco, renomear todos bankName das transações futuras (não compensadas na conta corrente ou planejamento)
-async function updateBank(userId, idBank, bankToUpdate) {
+exports.updateBank = async (userId, idBank, bankToUpdate) => {
 	try {
 		const paramsName = { name: bankToUpdate.name, userId: userId }
 		const bankFindByName = await db.findOne(bankModel, paramsName)
@@ -157,7 +157,7 @@ async function updateBank(userId, idBank, bankToUpdate) {
 	}
 }
 
-async function deleteBank(userId, idBank) {
+exports.deleteBank = async (userId, idBank) =>{
 	try {
 		const paramsBank = { _id: idBank, userId: userId }
 		const bankFind = await db.findOne(bankModel, paramsBank)
@@ -198,13 +198,4 @@ function validateBank(bankToCreate) {
 
 	if (!arr.includes(bankToCreate.bankType))
 		return 'O tipo de banco não foi informado corretamente'
-}
-
-module.exports = {
-	getListBanks,
-	getBank,
-	createBank,
-	updateBank,
-	deleteBank,
-	getListBanksDashboard,
 }

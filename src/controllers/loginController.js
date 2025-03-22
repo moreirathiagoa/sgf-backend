@@ -5,7 +5,7 @@ const properties = require('../properties')
 const bcrypt = require('bcryptjs')
 const userModel = require('../model/userModel')
 
-async function login(user) {
+exports.login = async (user) => {
 	try {
 		const params = { userName: user.userName.toLowerCase() }
 		let userFound = await db.findOne(userModel, params)
@@ -46,8 +46,4 @@ async function login(user) {
 	} catch (error) {
 		throw error
 	}
-}
-
-module.exports = {
-	login,
 }

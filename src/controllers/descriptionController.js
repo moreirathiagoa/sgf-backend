@@ -8,7 +8,7 @@ const MAX_COUNT_PER_ITEM = 5
 const MAX_TOTAL_COUNT = MAX_WIN_ITENS * MAX_COUNT_PER_ITEM
 const MAX_NEW_ITENS = 5
 
-async function getDescriptions(userId) {
+exports.getDescriptions = async (userId) => {
 	const winnerDescriptions = await db
 		.find(descriptionModel, {
 			userId: userId,
@@ -30,7 +30,7 @@ async function getDescriptions(userId) {
 	return [...res].sort((a, b) => a.localeCompare(b))
 }
 
-async function createDescription(userId, descriptionName) {
+exports.createDescription = async (userId, descriptionName) => {
 	if (!descriptionName) return
 
 	const currentDescription = await db.findOne(descriptionModel, {
@@ -85,9 +85,4 @@ async function createDescription(userId, descriptionName) {
 			{ ...contUpdate, lastUpdate: utils.actualDateToBataBase() }
 		)
 	}
-}
-
-module.exports = {
-	getDescriptions,
-	createDescription,
 }
