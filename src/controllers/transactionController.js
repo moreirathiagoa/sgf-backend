@@ -4,9 +4,9 @@ const db = require('../database')
 const model = require('../model')
 const descriptionController = require('./descriptionController')
 
-async function getListTransaction(transactionType, filters) {
+async function getListTransaction(userId, transactionType, filters) {
 	try {
-		const params = { transactionType: transactionType, userId: global.userId }
+		const params = { transactionType: transactionType, userId: userId }
 		if (filters) {
 			const factoredFilters = prepareFilters(filters)
 
@@ -77,9 +77,9 @@ function prepareFilters(filters) {
 	return response
 }
 
-async function getTransaction(idTransaction) {
+async function getTransaction(userId, idTransaction) {
 	try {
-		const params = { _id: idTransaction, userId: global.userId }
+		const params = { _id: idTransaction, userId: userId }
 		const transactionFind = await db.findOne(model.transaction, params)
 		if (isEmpty(transactionFind))
 			return utils.makeResponse(203, 'Transação não encontradas', [])
@@ -91,15 +91,15 @@ async function getTransaction(idTransaction) {
 	}
 }
 
-async function bankTransference(data) {
+async function bankTransference(userId, data) {
 	const { originalBankId, finalBankId, value } = data
 
-	const paramsOrigin = { _id: originalBankId, userId: global.userId }
+	const paramsOrigin = { _id: originalBankId, userId: userId }
 	const originBankFind = await db.findOne(model.bank, paramsOrigin)
 	if (isEmpty(originBankFind))
 		return utils.makeResponse(203, 'Banco de origem não encontrado')
 
-	const paramsFinal = { _id: finalBankId, userId: global.userId }
+	const paramsFinal = { _id: finalBankId, userId: userId }
 	const finalBankFind = await db.findOne(model.bank, paramsFinal)
 	if (isEmpty(finalBankFind))
 		return utils.makeResponse(203, 'Banco destino não encontrado')
@@ -130,10 +130,10 @@ async function bankTransference(data) {
 		detail: `De: ${originBankFind.name}`,
 	}
 	try {
-		await createTransaction(debitTransaction)
+		await createTransaction(userId, debitTransaction)
 			.then((res) => {
 				if (res.code == 201) {
-					return createTransaction(creditTransaction)
+					return createTransaction(userId, creditTransaction)
 				} else {
 					throw new Erro('Erro no cadastro da primeira transação.')
 				}
@@ -157,7 +157,7 @@ async function bankTransference(data) {
 	}
 }
 
-async function createTransaction(transactionToCreate) {
+async function createTransaction(userId, transactionToCreate) {
 	try {
 		const validation = await validadeTransaction(transactionToCreate)
 		if (validation) return utils.makeResponse(203, validation)
@@ -166,7 +166,7 @@ async function createTransaction(transactionToCreate) {
 			transactionToCreate.effectedAt
 		)
 
-		transactionToCreate.userId = global.userId
+		transactionToCreate.userId = userId
 		transactionToCreate.createdAt = utils.actualDateToBataBase()
 
 		let totalTransaction = 1
@@ -186,7 +186,7 @@ async function createTransaction(transactionToCreate) {
 
 		const bankParams = {
 			_id: transactionToCreate.bankId,
-			userId: global.userId,
+			userId: userId,
 		}
 		const bankFind = await db.findOne(model.bank, bankParams)
 		//TODO: Quando adicionar a ordenação de banco, remover o replace
@@ -213,13 +213,20 @@ async function createTransaction(transactionToCreate) {
 			}
 			const transactionToSave = new model.transaction(transactionToCreate)
 			const transactionSaved = await db.save(transactionToSave)
+
+			//TODO: implementar transaction para rollback quando erro ao atualizar saldo
 			await descriptionController.createDescription(
+				userId,
 				transactionToCreate.description
 			)
 
 			switch (transactionToCreate.transactionType) {
 				case 'contaCorrente':
-					await updateSaldoContaCorrente(bankFind._id, transactionSaved.value)
+					await updateSaldoContaCorrente(
+						userId,
+						bankFind._id,
+						transactionSaved.value
+					)
 					break
 
 				default:
@@ -238,12 +245,12 @@ async function createTransaction(transactionToCreate) {
 	}
 }
 
-async function updateTransaction(idTransaction, transactionToUpdate) {
+async function updateTransaction(userId, idTransaction, transactionToUpdate) {
 	try {
 		const validation = await validadeTransaction(transactionToUpdate)
 		if (validation) return utils.makeResponse(203, validation)
 
-		const params = { _id: idTransaction, userId: global.userId }
+		const params = { _id: idTransaction, userId: userId }
 		const oldTransaction = await db.findOne(model.transaction, params)
 
 		if (transactionToUpdate.transactionType === 'planejamento') {
@@ -260,7 +267,7 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 
 		const bankParams = {
 			_id: transactionToUpdate.bankId,
-			userId: global.userId,
+			userId: userId,
 		}
 		const bankFind = await db.findOne(model.bank, bankParams)
 		//TODO: Quando adicionar a ordenação de banco, remover o replace
@@ -276,6 +283,7 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 
 		if (oldTransaction.description != transactionToUpdate.description) {
 			await descriptionController.createDescription(
+				userId,
 				transactionToUpdate.description
 			)
 		}
@@ -288,15 +296,21 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 					oldTransaction.bankId.toString()
 				) {
 					await updateSaldoContaCorrente(
+						userId,
 						transactionReturn.bankId,
 						transactionReturn.value
 					)
 					await updateSaldoContaCorrente(
+						userId,
 						oldTransaction.bankId,
 						oldTransaction.value * -1
 					)
 				} else {
-					await updateSaldoContaCorrente(transactionReturn.bankId, saldoAdjust)
+					await updateSaldoContaCorrente(
+						userId,
+						transactionReturn.bankId,
+						saldoAdjust
+					)
 				}
 				break
 			}
@@ -314,9 +328,9 @@ async function updateTransaction(idTransaction, transactionToUpdate) {
 	}
 }
 
-async function deleteTransaction(idTransaction) {
+async function deleteTransaction(userId, idTransaction) {
 	try {
-		const params = { _id: idTransaction, userId: global.userId }
+		const params = { _id: idTransaction, userId: userId }
 		const transactionFind = await db.findOne(model.transaction, params)
 		if (isEmpty(transactionFind))
 			return utils.makeResponse(203, 'Transação não encontrada')
@@ -328,7 +342,11 @@ async function deleteTransaction(idTransaction) {
 
 		switch (transactionToDelete.transactionType) {
 			case 'contaCorrente':
-				await updateSaldoContaCorrente(transactionToDelete.bankId, saldoAdjust)
+				await updateSaldoContaCorrente(
+					userId,
+					transactionToDelete.bankId,
+					saldoAdjust
+				)
 				break
 
 			default:
@@ -341,9 +359,9 @@ async function deleteTransaction(idTransaction) {
 	}
 }
 
-async function transactionNotCompensatedByBank() {
+async function transactionNotCompensatedByBank(userId) {
 	const params = {
-		userId: global.userId,
+		userId: userId,
 		transactionType: 'contaCorrente',
 		isCompensated: false,
 	}
@@ -367,9 +385,9 @@ async function transactionNotCompensatedByBank() {
 	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
 }
 
-async function transactionNotCompensatedDebit() {
+async function transactionNotCompensatedDebit(userId) {
 	const params = {
-		userId: global.userId,
+		userId: userId,
 		isCompensated: false,
 		transactionType: 'contaCorrente',
 		value: { $lte: 0 },
@@ -389,9 +407,9 @@ async function transactionNotCompensatedDebit() {
 	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
 }
 
-async function transactionNotCompensatedCredit() {
+async function transactionNotCompensatedCredit(userId) {
 	const params = {
-		userId: global.userId,
+		userId: userId,
 		isCompensated: false,
 		transactionType: 'contaCorrente',
 		value: { $gt: 0 },
@@ -410,7 +428,7 @@ async function transactionNotCompensatedCredit() {
 	return utils.makeResponse(200, 'Saldo obtido com sucesso', responseToSend)
 }
 
-async function planToPrincipal(transactions) {
+async function planToPrincipal(userId, transactions) {
 	const transactionToUpdate = {
 		isCompensated: false,
 		transactionType: 'contaCorrente',
@@ -419,7 +437,11 @@ async function planToPrincipal(transactions) {
 	let response = []
 
 	for (let transaction of transactions) {
-		await updateSaldoContaCorrente(transaction.bankId, transaction.value)
+		await updateSaldoContaCorrente(
+			userId,
+			transaction.bankId,
+			transaction.value
+		)
 
 		const params = { _id: transaction._id }
 		const transactionToReturn = await model.transaction.findByIdAndUpdate(
@@ -433,9 +455,9 @@ async function planToPrincipal(transactions) {
 	return utils.makeResponse(201, 'Transação atualizada com sucesso', response)
 }
 
-async function futureTransactionBalance() {
-	const transactionCredit = await getFutureTransactionCredit()
-	const transactionDebit = await getFutureTransactionDebit()
+async function futureTransactionBalance(userId) {
+	const transactionCredit = await getFutureTransactionCredit(userId)
+	const transactionDebit = await getFutureTransactionDebit(userId)
 
 	if (transactionDebit.length == 0 && transactionCredit.length == 0) {
 		return utils.makeResponse(203, 'Não existem saldos para retorno')
@@ -475,9 +497,9 @@ async function futureTransactionBalance() {
 
 /* FUNÇÕES DE APOIO */
 
-async function getFutureTransactionCredit() {
+async function getFutureTransactionCredit(userId) {
 	const paramsCredit = {
-		userId: global.userId,
+		userId: userId,
 		transactionType: 'planejamento',
 		value: { $gt: 0 },
 	}
@@ -498,9 +520,9 @@ async function getFutureTransactionCredit() {
 	return transactionCredit
 }
 
-async function getFutureTransactionDebit() {
+async function getFutureTransactionDebit(userId) {
 	const paramsDebit = {
-		userId: global.userId,
+		userId: userId,
 		transactionType: 'planejamento',
 		value: { $lte: 0 },
 	}
@@ -610,8 +632,8 @@ async function existBank(idBank) {
 	return true
 }
 
-async function updateSaldoContaCorrente(idBank, valor) {
-	const params = { _id: idBank, userId: global.userId }
+async function updateSaldoContaCorrente(userId, idBank, valor) {
+	const params = { _id: idBank, userId: userId }
 	let bankFind = await db.findOne(model.bank, params).select('systemBalance')
 
 	const finalBalance = round(bankFind.systemBalance + valor, 2)

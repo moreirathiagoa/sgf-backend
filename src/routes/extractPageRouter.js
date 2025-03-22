@@ -9,17 +9,22 @@ router.post(
 	auth,
 	async (req, res, next) => {
 		try {
-			global.userId = res.locals.authData.userId
+			const userId = res.locals.authData.userId
 			const { transactionType } = req.params
 			const filters = get(req, 'body.filters', null)
 
 			const extractDataPromise = [
-				controller.bank.getListBanks(transactionType, { isActive: true }),
-				controller.transaction.getListTransaction(transactionType, filters),
+				controller.bank.getListBanks(userId, transactionType, {
+					isActive: true,
+				}),
+				controller.transaction.getListTransaction(
+					userId,
+					transactionType,
+					filters
+				),
 			]
 
 			const extractData = await Promise.all(extractDataPromise)
-
 			validateResponses(extractData)
 
 			const response = {

@@ -8,23 +8,22 @@ router.get(
 	auth,
 	async (req, res, next) => {
 		try {
-			global.userId = res.locals.authData.userId
+			const userId = res.locals.authData.userId
 
 			const { transactionType, idTransaction } = req.params
 
-			let dashboardDataPromise = [
-				controller.bank.getListBanks(transactionType),
-				controller.description.getDescriptions(),
+			const dashboardDataPromise = [
+				controller.bank.getListBanks(userId, transactionType),
+				controller.description.getDescriptions(userId),
 			]
 
 			if (idTransaction) {
 				dashboardDataPromise.push(
-					controller.transaction.getTransaction(idTransaction)
+					controller.transaction.getTransaction(userId, idTransaction)
 				)
 			}
 
 			const transactionData = await Promise.all(dashboardDataPromise)
-
 			validateResponses(transactionData)
 
 			const response = {

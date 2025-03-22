@@ -5,11 +5,11 @@ const auth = require('../middlewares/auth')
 
 router.get('/get-planing-balance', auth, async (req, res, next) => {
 	try {
-		global.userId = res.locals.authData.userId
+		const userId = res.locals.authData.userId
 
 		const dashboardDataPromise = [
-			controller.bank.getListBanksDashboard(),
-			controller.transaction.futureTransactionBalance(),
+			controller.bank.getListBanksDashboard(userId),
+			controller.transaction.futureTransactionBalance(userId),
 		]
 
 		const planningData = await Promise.all(dashboardDataPromise)

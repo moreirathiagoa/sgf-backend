@@ -5,16 +5,15 @@ const auth = require('../middlewares/auth')
 
 router.get('/get-balances', auth, async (req, res, next) => {
 	try {
-		global.userId = res.locals.authData.userId
+		const userId = res.locals.authData.userId
 
 		const dashboardDataPromise = [
-			controller.bank.getListBanksDashboard(),
-			controller.transaction.transactionNotCompensatedCredit(),
-			controller.transaction.transactionNotCompensatedDebit(),
+			controller.bank.getListBanksDashboard(userId),
+			controller.transaction.transactionNotCompensatedCredit(userId),
+			controller.transaction.transactionNotCompensatedDebit(userId),
 		]
 
 		const dashboardData = await Promise.all(dashboardDataPromise)
-
 		validateResponses(dashboardData)
 
 		const response = {

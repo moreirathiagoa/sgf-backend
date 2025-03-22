@@ -8,17 +8,17 @@ const MAX_COUNT_PER_ITEM = 5
 const MAX_TOTAL_COUNT = MAX_WIN_ITENS * MAX_COUNT_PER_ITEM
 const MAX_NEW_ITENS = 5
 
-async function getDescriptions() {
+async function getDescriptions(userId) {
 	const winnerDescriptions = await db
 		.find(model.description, {
-			userId: global.userId,
+			userId: userId,
 		})
 		.sort({ count: -1, lastUpdate: -1 })
 		.limit(MAX_WIN_ITENS)
 
 	const newestDescriptions = await db
 		.find(model.description, {
-			userId: global.userId,
+			userId: userId,
 		})
 		.sort({ lastUpdate: -1 })
 		.limit(MAX_NEW_ITENS)
@@ -30,17 +30,17 @@ async function getDescriptions() {
 	return [...res].sort((a, b) => a.localeCompare(b))
 }
 
-async function createDescription(descriptionName) {
+async function createDescription(userId, descriptionName) {
 	if (!descriptionName) return
 
 	const currentDescription = await db.findOne(model.description, {
-		userId: global.userId,
+		userId: userId,
 		name: descriptionName,
 	})
 
 	if (isEmpty(currentDescription)) {
 		const descriptionToSave = new model.description({
-			userId: global.userId,
+			userId: userId,
 			name: descriptionName,
 			createdAt: utils.actualDateToBataBase(),
 			lastUpdate: utils.actualDateToBataBase(),
@@ -52,7 +52,7 @@ async function createDescription(descriptionName) {
 	} else {
 		const descriptions = await db
 			.find(model.description, {
-				userId: global.userId,
+				userId: userId,
 				count: { $gt: 0 },
 			})
 			.sort({ count: -1 })
