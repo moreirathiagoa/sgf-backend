@@ -16,9 +16,23 @@ exports.getListUsers = async () => {
 	}
 }
 
-exports.getUser = async (idUser) => {
+exports.getUserByUserName = async (userName) => {
 	try {
-		const params = { _id: idUser }
+		const params = { userName: userName.toLowerCase() }
+		const userFound = await db.findOne(userModel, params)
+
+		if (isEmpty(userFound))
+			return utils.makeResponse(203, 'Usuários não encontrado')
+
+		return utils.makeResponse(200, 'Usuários encontrado', userFound)
+	} catch (error) {
+		throw error
+	}
+}
+
+exports.getUserById = async (userId) => {
+	try {
+		const params = { _id: userId }
 		const userFound = await db
 			.findOne(userModel, params)
 			.select('userName isActive')
@@ -55,7 +69,7 @@ exports.createUser = async (userToCreate) => {
 	}
 }
 
-exports.updateUser = async (idUser, userToUpdate) => {
+exports.updateUser = async (userId, userToUpdate) => {
 	try {
 		const validation = validateUser(userToUpdate)
 		if (validation) return utils.makeResponse(203, validation)
@@ -63,11 +77,11 @@ exports.updateUser = async (idUser, userToUpdate) => {
 		let param = { userName: userToUpdate.userName }
 		let userFound = await db.findOne(userModel, param)
 		if (!isEmpty(userFound)) {
-			if (userFound._id != idUser)
+			if (userFound._id != userId)
 				return utils.makeResponse(203, 'Usuários já cadastrado')
 		}
 
-		params = { _id: idUser }
+		params = { _id: userId }
 		userFound = await db.findOne(userModel, params)
 
 		if (isEmpty(userFound)) {

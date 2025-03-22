@@ -1,14 +1,17 @@
 const utils = require('../utils')
-const db = require('../database')
 const jwt = require('jsonwebtoken')
 const properties = require('../properties')
 const bcrypt = require('bcryptjs')
-const userModel = require('../model/userModel')
+const usarController = require('./userController')
 
 exports.login = async (user) => {
 	try {
-		const params = { userName: user.userName.toLowerCase() }
-		let userFound = await db.findOne(userModel, params)
+		let { data: userFound, code } = await usarController.getUserByUserName(
+			user.userName
+		)
+
+		if (!code === 200)
+			return utils.makeResponse(401, 'Usuário ou senha inválida')
 
 		const accessGranted = await bcrypt.compareSync(
 			user.userPassword,

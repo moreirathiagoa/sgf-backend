@@ -3,7 +3,6 @@ const utils = require('../utils')
 const db = require('../database')
 const transactionController = require('./transactionController')
 const bankModel = require('../model/bankModel')
-const transactionModel = require('../model/transactionModel')
 
 exports.getListBanks = async (userId, transactionType, filters) => {
 	try {
@@ -40,7 +39,7 @@ exports.getListBanks = async (userId, transactionType, filters) => {
 	}
 }
 
-exports.getListBanksDashboard = async (userId) =>{
+exports.getListBanksDashboard = async (userId) => {
 	try {
 		let params = {
 			userId: userId,
@@ -133,7 +132,7 @@ exports.updateBank = async (userId, bankId, bankToUpdate) => {
 		const paramsName = { name: bankToUpdate.name, userId: userId }
 		const bankFindByName = await db.findOne(bankModel, paramsName)
 		if (!isEmpty(bankFindByName)) {
-			if (bankFindByName._id != bankId)
+			if (bankFindByName._id.toString() != bankId.toString())
 				return utils.makeResponse(203, 'Banco já cadastrado')
 		}
 
@@ -145,7 +144,6 @@ exports.updateBank = async (userId, bankId, bankToUpdate) => {
 		}
 
 		Object.assign(bankFindById, bankToUpdate)
-
 		bankFindById.save()
 
 		const bankToReturn = await db.findOne(bankModel, paramsId)
@@ -156,20 +154,14 @@ exports.updateBank = async (userId, bankId, bankToUpdate) => {
 	}
 }
 
-exports.deleteBank = async (userId, bankId) =>{
+exports.deleteBank = async (userId, bankId) => {
 	try {
 		const paramsBank = { _id: bankId, userId: userId }
 		const bankFind = await db.findOne(bankModel, paramsBank)
 		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Banco não encontrado')
 
-		const paramsTransaction = { bankId: bankId, userId: userId }
-
-		const transactionFind = await db.findOne(
-			transactionModel,
-			paramsTransaction
-		)
-		if (!isEmpty(transactionFind))
+		if (bankFind.systemBalance !== 0 || bankFind.manualBalance !== 0)
 			return utils.makeResponse(
 				203,
 				'Banco possui transações atreladas e não pode ser removido.'
