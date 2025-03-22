@@ -13,10 +13,10 @@ router.get('/list', auth, async (req, res, next) => {
 	}
 })
 
-router.get('/:idUser', auth, async (req, res, next) => {
-	const { idUser } = req.params
+router.get('/:userId', auth, async (req, res, next) => {
+	const { userId } = req.params
 	try {
-		const response = await userController.getUser(idUser)
+		const response = await userController.getUser(userId)
 		res.status(response.code).json(response)
 	} catch (error) {
 		res.status(500).json(error)
@@ -38,15 +38,15 @@ router.post('/create', auth, async (req, res, next) => {
 	}
 })
 
-router.put('/update/:idUser', auth, async (req, res, next) => {
-	const { idUser } = req.params
+router.put('/update/:userId', auth, async (req, res, next) => {
+	const { userId } = req.params
 
 	try {
 		let response
 		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
-			response = await userController.updateUser(idUser, req.body)
+			response = await userController.updateUser(userId, req.body)
 		}
 		res.status(response.code).json(response)
 	} catch (error) {
