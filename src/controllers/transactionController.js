@@ -29,55 +29,6 @@ exports.getListTransaction = async (userId, transactionType, filters) => {
 	}
 }
 
-function prepareFilters(filters) {
-	const { year, month, onlyFuture, bankId, description, detail } = filters
-
-	let monthNumber = Number(month)
-	let yearNumber = Number(year)
-	const min = `${yearNumber}-${monthNumber}-01 00:00:00Z`
-	if (monthNumber >= 12) {
-		monthNumber = 0
-		yearNumber++
-	}
-	const max = `${yearNumber}-${monthNumber + 1}-01 00:00:00Z`
-
-	const minimalDate = new Date(min)
-	const maximalDate = new Date(max)
-
-	const response = {
-		effectedAt: {
-			$gte: minimalDate.toISOString(),
-			$lt: maximalDate.toISOString(),
-		},
-	}
-
-	if (onlyFuture) {
-		Object.assign(response, { isCompensated: false })
-	}
-
-	if (bankId !== 'Selecione' && bankId) {
-		Object.assign(response, { bankId: bankId })
-	}
-
-	if (description) {
-		const sanitizedDescription = description
-			.replace('(', '\\(')
-			.replace(')', '\\)')
-
-		Object.assign(response, {
-			description: { $regex: sanitizedDescription, $options: 'i' },
-		})
-	}
-
-	if (detail) {
-		Object.assign(response, {
-			detail: { $regex: detail, $options: 'i' },
-		})
-	}
-
-	return response
-}
-
 exports.getTransaction = async (userId, idTransaction) => {
 	try {
 		const params = { _id: idTransaction, userId: userId }
@@ -502,6 +453,55 @@ exports.futureTransactionBalance = async (userId) => {
 
 /* FUNÇÕES DE APOIO */
 
+function prepareFilters(filters) {
+	const { year, month, onlyFuture, bankId, description, detail } = filters
+
+	let monthNumber = Number(month)
+	let yearNumber = Number(year)
+	const min = `${yearNumber}-${monthNumber}-01 00:00:00Z`
+	if (monthNumber >= 12) {
+		monthNumber = 0
+		yearNumber++
+	}
+	const max = `${yearNumber}-${monthNumber + 1}-01 00:00:00Z`
+
+	const minimalDate = new Date(min)
+	const maximalDate = new Date(max)
+
+	const response = {
+		effectedAt: {
+			$gte: minimalDate.toISOString(),
+			$lt: maximalDate.toISOString(),
+		},
+	}
+
+	if (onlyFuture) {
+		Object.assign(response, { isCompensated: false })
+	}
+
+	if (bankId !== 'Selecione' && bankId) {
+		Object.assign(response, { bankId: bankId })
+	}
+
+	if (description) {
+		const sanitizedDescription = description
+			.replace('(', '\\(')
+			.replace(')', '\\)')
+
+		Object.assign(response, {
+			description: { $regex: sanitizedDescription, $options: 'i' },
+		})
+	}
+
+	if (detail) {
+		Object.assign(response, {
+			detail: { $regex: detail, $options: 'i' },
+		})
+	}
+
+	return response
+}
+
 async function getFutureTransactionCredit(userId) {
 	const paramsCredit = {
 		userId: userId,
@@ -643,6 +643,5 @@ async function updateSaldoContaCorrente(userId, idBank, valor) {
 
 	const finalBalance = round(bankFind.systemBalance + valor, 2)
 	bankFind.systemBalance = finalBalance
-
 	bankFind.save()
 }
