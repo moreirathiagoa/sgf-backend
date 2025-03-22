@@ -1,30 +1,31 @@
 const express = require('express')
-const controller = require('../controllers')
 const router = express.Router()
 const auth = require('../middlewares/auth')
+const bankController = require('../controllers/bankController')
+const transactionController = require('../controllers/transactionController')
+const descriptionController = require('../controllers/descriptionController')
 
 router.get(
 	'/load/:transactionType/:idTransaction?',
 	auth,
 	async (req, res, next) => {
 		try {
-			global.userId = res.locals.authData.userId
+			const userId = res.locals.authData.userId
 
 			const { transactionType, idTransaction } = req.params
 
-			let dashboardDataPromise = [
-				controller.bank.getListBanks(transactionType),
-				controller.description.getDescriptions(),
+			const dashboardDataPromise = [
+				bankController.getListBanks(userId, transactionType),
+				descriptionController.getDescriptions(userId),
 			]
 
 			if (idTransaction) {
 				dashboardDataPromise.push(
-					controller.transaction.getTransaction(idTransaction)
+					transactionController.getTransaction(userId, idTransaction)
 				)
 			}
 
 			const transactionData = await Promise.all(dashboardDataPromise)
-
 			validateResponses(transactionData)
 
 			const response = {

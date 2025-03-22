@@ -1,12 +1,12 @@
 const { isEmpty } = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
-const model = require('../model')
 const bcrypt = require('bcryptjs')
+const userModel = require('../model/userModel')
 
-async function getListUsers() {
+exports.getListUsers = async () => {
 	try {
-		const userFound = await db.find(model.user).select('userName isActive')
+		const userFound = await db.find(userModel).select('userName isActive')
 		if (isEmpty(userFound))
 			return utils.makeResponse(203, 'Usuários não encontrados', [])
 
@@ -16,11 +16,11 @@ async function getListUsers() {
 	}
 }
 
-async function getUser(idUser) {
+exports.getUser = async (idUser) => {
 	try {
 		const params = { _id: idUser }
 		const userFound = await db
-			.findOne(model.user, params)
+			.findOne(userModel, params)
 			.select('userName isActive')
 		if (isEmpty(userFound))
 			return utils.makeResponse(203, 'Usuários não encontrado')
@@ -31,13 +31,13 @@ async function getUser(idUser) {
 	}
 }
 
-async function createUser(userToCreate) {
+exports.createUser = async (userToCreate) => {
 	try {
 		const validation = validateUser(userToCreate)
 		if (validation) return utils.makeResponse(203, validation)
 
 		const params = { userName: userToCreate.userName }
-		const userFound = await db.findOne(model.user, params)
+		const userFound = await db.findOne(userModel, params)
 		if (!isEmpty(userFound))
 			return utils.makeResponse(203, 'Usuários já cadastrado')
 
@@ -45,7 +45,7 @@ async function createUser(userToCreate) {
 		userToCreate.userPassword = bcrypt.hashSync(userToCreate.userPassword, salt)
 		userToCreate.createdAt = utils.actualDateToBataBase()
 
-		const userToSave = new model.user(userToCreate)
+		const userToSave = new userModel(userToCreate)
 		let response = await db.save(userToSave)
 		response = response.toObject()
 		delete response.userPassword
@@ -55,20 +55,20 @@ async function createUser(userToCreate) {
 	}
 }
 
-async function updateUser(idUser, userToUpdate) {
+exports.updateUser = async (idUser, userToUpdate) => {
 	try {
 		const validation = validateUser(userToUpdate)
 		if (validation) return utils.makeResponse(203, validation)
 
 		let param = { userName: userToUpdate.userName }
-		let userFound = await db.findOne(model.user, param)
+		let userFound = await db.findOne(userModel, param)
 		if (!isEmpty(userFound)) {
 			if (userFound._id != idUser)
 				return utils.makeResponse(203, 'Usuários já cadastrado')
 		}
 
 		params = { _id: idUser }
-		userFound = await db.findOne(model.user, params)
+		userFound = await db.findOne(userModel, params)
 
 		if (isEmpty(userFound)) {
 			return utils.makeResponse(203, 'Usuários não encontrado')
@@ -77,7 +77,7 @@ async function updateUser(idUser, userToUpdate) {
 		const salt = bcrypt.genSaltSync(15)
 		userToUpdate.userPassword = bcrypt.hashSync(userToUpdate.userPassword, salt)
 
-		let userReturn = await model.user.findOneAndUpdate(params, userToUpdate, {
+		let userReturn = await userModel.findOneAndUpdate(params, userToUpdate, {
 			new: true,
 		})
 
@@ -101,11 +101,4 @@ function validateUser(userToCreate) {
 
 	if (userToCreate.userName.length < 3)
 		return 'O nome de usuário não pode ter menos de 3 caracteres'
-}
-
-module.exports = {
-	getListUsers,
-	getUser,
-	createUser,
-	updateUser,
 }

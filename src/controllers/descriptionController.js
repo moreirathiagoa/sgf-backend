@@ -1,24 +1,24 @@
 const { isEmpty } = require('lodash')
 const utils = require('../utils')
 const db = require('../database')
-const model = require('../model')
+const descriptionModel = require('../model/descriptionsModel')
 
 const MAX_WIN_ITENS = 15
 const MAX_COUNT_PER_ITEM = 5
 const MAX_TOTAL_COUNT = MAX_WIN_ITENS * MAX_COUNT_PER_ITEM
 const MAX_NEW_ITENS = 5
 
-async function getDescriptions() {
+exports.getDescriptions = async (userId) => {
 	const winnerDescriptions = await db
-		.find(model.description, {
-			userId: global.userId,
+		.find(descriptionModel, {
+			userId: userId,
 		})
 		.sort({ count: -1, lastUpdate: -1 })
 		.limit(MAX_WIN_ITENS)
 
 	const newestDescriptions = await db
-		.find(model.description, {
-			userId: global.userId,
+		.find(descriptionModel, {
+			userId: userId,
 		})
 		.sort({ lastUpdate: -1 })
 		.limit(MAX_NEW_ITENS)
@@ -30,17 +30,17 @@ async function getDescriptions() {
 	return [...res].sort((a, b) => a.localeCompare(b))
 }
 
-async function createDescription(descriptionName) {
+exports.createDescription = async (userId, descriptionName) => {
 	if (!descriptionName) return
 
-	const currentDescription = await db.findOne(model.description, {
-		userId: global.userId,
+	const currentDescription = await db.findOne(descriptionModel, {
+		userId: userId,
 		name: descriptionName,
 	})
 
 	if (isEmpty(currentDescription)) {
-		const descriptionToSave = new model.description({
-			userId: global.userId,
+		const descriptionToSave = new descriptionModel({
+			userId: userId,
 			name: descriptionName,
 			createdAt: utils.actualDateToBataBase(),
 			lastUpdate: utils.actualDateToBataBase(),
@@ -51,8 +51,8 @@ async function createDescription(descriptionName) {
 		await db.save(descriptionToSave)
 	} else {
 		const descriptions = await db
-			.find(model.description, {
-				userId: global.userId,
+			.find(descriptionModel, {
+				userId: userId,
 				count: { $gt: 0 },
 			})
 			.sort({ count: -1 })
@@ -66,7 +66,7 @@ async function createDescription(descriptionName) {
 					new Date(a.lastUpdate).getTime() - new Date(b.lastUpdate).getTime()
 			)[0]
 
-			await model.description.findOneAndUpdate(
+			await descriptionModel.findOneAndUpdate(
 				{ name: oldestDescription.name },
 				{ $inc: { count: -1 }, lastUpdate: utils.actualDateToBataBase() }
 			)
@@ -80,14 +80,9 @@ async function createDescription(descriptionName) {
 			contUpdate = { $inc: { count: 1 } }
 		}
 
-		await model.description.findOneAndUpdate(
+		await descriptionModel.findOneAndUpdate(
 			{ name: descriptionName },
 			{ ...contUpdate, lastUpdate: utils.actualDateToBataBase() }
 		)
 	}
-}
-
-module.exports = {
-	getDescriptions,
-	createDescription,
 }

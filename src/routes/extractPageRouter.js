@@ -1,25 +1,31 @@
 const { get } = require('lodash')
 const express = require('express')
-const controller = require('../controllers')
 const router = express.Router()
 const auth = require('../middlewares/auth')
+const bankController = require('../controllers/bankController')
+const transactionController = require('../controllers/transactionController')
 
 router.post(
 	'/get-extract-data/:transactionType',
 	auth,
 	async (req, res, next) => {
 		try {
-			global.userId = res.locals.authData.userId
+			const userId = res.locals.authData.userId
 			const { transactionType } = req.params
 			const filters = get(req, 'body.filters', null)
 
 			const extractDataPromise = [
-				controller.bank.getListBanks(transactionType, { isActive: true }),
-				controller.transaction.getListTransaction(transactionType, filters),
+				bankController.getListBanks(userId, transactionType, {
+					isActive: true,
+				}),
+				transactionController.getListTransaction(
+					userId,
+					transactionType,
+					filters
+				),
 			]
 
 			const extractData = await Promise.all(extractDataPromise)
-
 			validateResponses(extractData)
 
 			const response = {
