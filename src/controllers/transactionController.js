@@ -181,16 +181,12 @@ exports.createTransaction = async (userId, transactionToCreate) => {
 				transactionToCreate.description
 			)
 
-			switch (transactionToCreate.transactionType) {
-				case 'contaCorrente':
-					await updateSaldoContaCorrente(
-						userId,
-						bankFind._id,
-						transactionSaved.value
-					)
-					break
-
-				default:
+			if (transactionToCreate.transactionType === 'contaCorrente') {
+				await updateSaldoContaCorrente(
+					userId,
+					bankFind._id,
+					transactionSaved.value
+				)
 			}
 
 			response.push(transactionSaved)
@@ -206,89 +202,101 @@ exports.createTransaction = async (userId, transactionToCreate) => {
 	}
 }
 
-exports.updateTransaction = async (
-	userId,
-	transactionId,
-	transactionToUpdate
-) => {
+exports.updateTransaction = async (userId, transactionId, newTransaction) => {
 	try {
-		const validation = await validateTransactionOnUpdate(transactionToUpdate)
+		const validation = await validateTransactionOnUpdate(newTransaction)
 		if (validation) return utils.makeResponse(203, validation)
 
 		const params = { _id: transactionId, userId: userId }
 		const oldTransaction = await db.findOne(transactionModel, params)
 
-		if (transactionToUpdate.transactionType === 'planejamento') {
-			transactionToUpdate.isCompensated = false
-		}
-
-		transactionToUpdate.effectedAt = utils.formatDateToBataBase(
-			transactionToUpdate.effectedAt
-		)
-
 		if (isEmpty(oldTransaction)) {
 			return utils.makeResponse(203, 'Transação não encontrada')
 		}
 
-		const { data: bankFind } = await bankController.getBank(
-			userId,
-			transactionToUpdate.bankId
-		)
+		const bankFind = await bankController.getBank(userId, newTransaction.bankId)
 
-		if (bankFind) {
-			//TODO: Quando adicionar a ordenação de banco, remover o replace
-			transactionToUpdate.bankName = bankFind.name.replace(/^[\w\d]+\. /, '')
+		if (bankFind.code !== 200 || !bankFind?.data?.isActive) {
+			if (newTransaction.isCompensated !== oldTransaction.isCompensated) {
+				return utils.makeResponse(
+					203,
+					'Não é possível ajustar status de compensação de banco inativo ou excluído'
+				)
+			}
+
+			if (newTransaction.value !== oldTransaction.value) {
+				return utils.makeResponse(
+					203,
+					'Não é possível ajustar o valor de banco inativo ou excluído'
+				)
+			}
+
+			if (
+				newTransaction.bankId.toString() !== oldTransaction.bankId.toString()
+			) {
+				return utils.makeResponse(
+					203,
+					'Não é possível ajustar o banco quando estiver inativo ou excluído'
+				)
+			}
 		}
 
-		const transactionReturn = await transactionModel.findOneAndUpdate(
+		if (bankFind.code === 200 && bankFind.data.isActive) {
+			//TODO: Quando adicionar a ordenação de banco, remover o replace
+			newTransaction.bankName = bankFind.name.replace(/^[\w\d]+\. /, '')
+		}
+
+		if (newTransaction.transactionType === 'planejamento') {
+			newTransaction.isCompensated = false
+		}
+
+		newTransaction.effectedAt = utils.formatDateToBataBase(
+			newTransaction.effectedAt
+		)
+
+		const finalTransaction = await transactionModel.findOneAndUpdate(
 			params,
-			transactionToUpdate,
+			newTransaction,
 			{
 				new: true,
 			}
 		)
 
-		if (oldTransaction.description != transactionToUpdate.description) {
+		if (oldTransaction.description != newTransaction.description) {
 			await descriptionController.createDescription(
 				userId,
-				transactionToUpdate.description
+				newTransaction.description
 			)
 		}
 
-		const saldoAdjust = transactionReturn.value - oldTransaction.value
-		switch (transactionReturn.transactionType) {
-			case 'contaCorrente': {
-				if (
-					transactionReturn.bankId.toString() !=
-					oldTransaction.bankId.toString()
-				) {
-					await updateSaldoContaCorrente(
-						userId,
-						transactionReturn.bankId,
-						transactionReturn.value
-					)
-					await updateSaldoContaCorrente(
-						userId,
-						oldTransaction.bankId,
-						oldTransaction.value * -1
-					)
-				} else {
-					await updateSaldoContaCorrente(
-						userId,
-						transactionReturn.bankId,
-						saldoAdjust
-					)
-				}
-				break
+		if (finalTransaction.transactionType === 'contaCorrente') {
+			if (
+				finalTransaction.bankId.toString() != oldTransaction.bankId.toString()
+			) {
+				await updateSaldoContaCorrente(
+					userId,
+					finalTransaction.bankId,
+					finalTransaction.value
+				)
+				await updateSaldoContaCorrente(
+					userId,
+					oldTransaction.bankId,
+					oldTransaction.value * -1
+				)
+			} else {
+				const saldoAdjust = finalTransaction.value - oldTransaction.value
+				await updateSaldoContaCorrente(
+					userId,
+					finalTransaction.bankId,
+					saldoAdjust
+				)
 			}
-
-			default:
 		}
 
 		return utils.makeResponse(
 			202,
 			'Transação atualizada com sucesso',
-			transactionReturn
+			finalTransaction
 		)
 	} catch (error) {
 		throw error
