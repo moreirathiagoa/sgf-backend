@@ -334,7 +334,22 @@ exports.deleteTransaction = async (userId, transactionId) => {
 	}
 }
 
-exports.transactionNotCompensatedByBank = async (userId) => {
+exports.getNotCompensatedTransactionCount = async (userId, bankId) => {
+	const params = { userId: userId, bankId: bankId, isCompensated: false }
+	const transactionsCount = await db.find(transactionModel, params).count()
+	console.log('transactionFind: ', transactionsCount)
+
+	return utils.makeResponse(
+		200,
+		'Busca de transações não compensadas por banco efetuada com sucesso',
+		{
+			totalTransactionsNotCompensated: transactionsCount,
+			hasNotCompensated: transactionsCount > 0,
+		}
+	)
+}
+
+exports.getUncompensatedTransactionsGroupedByBank = async (userId) => {
 	const params = {
 		userId: userId,
 		transactionType: 'contaCorrente',
