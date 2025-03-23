@@ -243,7 +243,7 @@ exports.updateTransaction = async (userId, transactionId, newTransaction) => {
 
 		if (bankFind.code === 200 && bankFind.data.isActive) {
 			//TODO: Quando adicionar a ordenação de banco, remover o replace
-			newTransaction.bankName = bankFind.name.replace(/^[\w\d]+\. /, '')
+			newTransaction.bankName = bankFind.data.name.replace(/^[\w\d]+\. /, '')
 		}
 
 		if (newTransaction.transactionType === 'planejamento') {
