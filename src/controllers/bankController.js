@@ -49,17 +49,17 @@ exports.getListBanksDashboard = async (userId) => {
 		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Bancos não encontrados', [])
 
-		const transactionNotCompensatedByBank =
-			await transactionController.transactionNotCompensatedByBank(userId)
+		const transactionGroupedByBank =
+			await transactionController.getUncompensatedTransactionsGroupedByBank(
+				userId
+			)
 
 		let banksToReturn = []
 
 		bankFind.forEach((bank) => {
-			const result = transactionNotCompensatedByBank.data.filter(
-				(saldoBank) => {
-					return saldoBank.bankId.toString() === bank._id.toString()
-				}
-			)
+			const result = transactionGroupedByBank.data.filter((saldoBank) => {
+				return saldoBank.bankId.toString() === bank._id.toString()
+			})
 
 			let saldoNotCompensated
 			if (result.length > 0) {
@@ -143,6 +143,10 @@ exports.updateBank = async (userId, bankId, bankToUpdate) => {
 			return utils.makeResponse(203, 'Banco não encontrado')
 		}
 
+		const exclusionStatus = await getExclusionStatus(bankFindById)
+		if (exclusionStatus && !bankToUpdate.isActive)
+			return utils.makeResponse(203, exclusionStatus)
+
 		Object.assign(bankFindById, bankToUpdate)
 		bankFindById.save()
 
@@ -161,11 +165,8 @@ exports.deleteBank = async (userId, bankId) => {
 		if (isEmpty(bankFind))
 			return utils.makeResponse(203, 'Banco não encontrado')
 
-		if (bankFind.systemBalance !== 0 || bankFind.manualBalance !== 0)
-			return utils.makeResponse(
-				203,
-				'Banco possui transações atreladas e não pode ser removido.'
-			)
+		const exclusionStatus = await getExclusionStatus(bankFind)
+		if (exclusionStatus) return utils.makeResponse(203, exclusionStatus)
 
 		const bankToDelete = new bankModel(bankFind)
 		const response = await db.remove(bankToDelete)
@@ -174,6 +175,21 @@ exports.deleteBank = async (userId, bankId) => {
 		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
 		throw error
 	}
+}
+
+async function getExclusionStatus(bankFind) {
+	console.log('bankFind: ', bankFind)
+	const notCompensatedTransactionStatus =
+		await transactionController.getNotCompensatedTransactionCount(
+			bankFind.userId,
+			bankFind._id
+		)
+
+	if (bankFind.systemBalance !== 0 || bankFind.manualBalance !== 0)
+		return 'O banco possui saldo, não é possível excluí-lo'
+
+	if (notCompensatedTransactionStatus.data.hasNotCompensated)
+		return 'O banco possui transações não compensadas, não é possível excluí-lo'
 }
 
 function validateBank(bankToCreate) {
