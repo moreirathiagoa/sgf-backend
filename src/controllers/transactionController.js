@@ -117,7 +117,10 @@ exports.bankTransference = async (userId, data) => {
 
 exports.createTransaction = async (userId, transactionToCreate) => {
 	try {
-		const validation = await validadeTransaction(userId, transactionToCreate)
+		const validation = await validadeTransactionOnCreate(
+			userId,
+			transactionToCreate
+		)
 		if (validation) return utils.makeResponse(203, validation)
 
 		transactionToCreate.effectedAt = utils.formatDateToBataBase(
@@ -209,7 +212,7 @@ exports.updateTransaction = async (
 	transactionToUpdate
 ) => {
 	try {
-		const validation = await validadeTransaction(userId, transactionToUpdate)
+		const validation = await validateTransactionOnUpdate(transactionToUpdate)
 		if (validation) return utils.makeResponse(203, validation)
 
 		const params = { _id: transactionId, userId: userId }
@@ -232,8 +235,10 @@ exports.updateTransaction = async (
 			transactionToUpdate.bankId
 		)
 
-		//TODO: Quando adicionar a ordenação de banco, remover o replace
-		transactionToUpdate.bankName = bankFind.name.replace(/^[\w\d]+\. /, '')
+		if (bankFind) {
+			//TODO: Quando adicionar a ordenação de banco, remover o replace
+			transactionToUpdate.bankName = bankFind.name.replace(/^[\w\d]+\. /, '')
+		}
 
 		const transactionReturn = await transactionModel.findOneAndUpdate(
 			params,
@@ -617,23 +622,27 @@ function getMaxData(transactionDebit, transactionCredit) {
 	return maxDate
 }
 
-async function validadeTransaction(userId, transactionToCreate) {
+function validateTransactionOnUpdate(transactionToUpdate) {
 	let requested = ['bankId', 'value', 'description']
 	const response = utils.validateRequestedElements(
-		transactionToCreate,
+		transactionToUpdate,
 		requested
 	)
 	if (response)
 		return 'Os atributo(s) a seguir não foi(ram) informados: ' + response
 
-	if (!utils.isNumeric(transactionToCreate.value))
+	if (!utils.isNumeric(transactionToUpdate.value))
 		return 'Valor informado não é válido'
+
+	if (transactionToUpdate.finalRecurrence <= 0)
+		return 'Recorrência menor ou igual a zero. Deixe em branco em caso de única transação.'
+}
+
+async function validadeTransactionOnCreate(userId, transactionToCreate) {
+	validateTransactionOnUpdate(transactionToCreate)
 
 	if (!(await existBank(userId, transactionToCreate.bankId)))
 		return 'Banco não encontrado'
-
-	if (transactionToCreate.finalRecurrence <= 0)
-		return 'Recorrência menor ou igual a zero. Deixe em branco em caso de única transação.'
 }
 
 async function existBank(userId, bankId) {
@@ -645,8 +654,12 @@ async function existBank(userId, bankId) {
 async function updateSaldoContaCorrente(userId, bankId, valor) {
 	const { data: bankFind } = await bankController.getBank(userId, bankId)
 
-	const finalBalance = round(bankFind.systemBalance + valor, 2)
-	bankFind.systemBalance = finalBalance
+	if (bankFind) {
+		const finalBalance = round(bankFind.systemBalance + valor, 2)
+		bankFind.systemBalance = finalBalance
 
-	await bankController.updateBank(userId, bankId, bankFind)
+		await bankController.updateBank(userId, bankId, bankFind)
+	} else {
+		logger.warn('ATENÇÃO!! Banco não encontrado ao atualizar o saldo!')
+	}
 }
