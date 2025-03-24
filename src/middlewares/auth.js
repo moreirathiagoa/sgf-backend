@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 const utils = require('../utils')
-const properties = require('../properties')
+const { KEY_TOKEN } = require('../properties')
 
 const auth = (req, res, next) => {
 	const router = req.route.path
@@ -12,9 +12,7 @@ const auth = (req, res, next) => {
 		return
 	}
 
-	const keyToken = properties.keyToken
-
-	jwt.verify(tokenHeader, keyToken, (err, decoded) => {
+	jwt.verify(tokenHeader, KEY_TOKEN, (err, decoded) => {
 		if (err) {
 			logger.error({ router }, 'Token Inválido')
 			res.status(401).send(utils.makeResponse(401, 'token inválido'))

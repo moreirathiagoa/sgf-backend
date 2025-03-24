@@ -1,6 +1,6 @@
 const utils = require('../utils')
 const jwt = require('jsonwebtoken')
-const properties = require('../properties')
+const { KEY_TOKEN } = require('../properties')
 const bcrypt = require('bcryptjs')
 const usarController = require('./userController')
 
@@ -36,9 +36,8 @@ exports.login = async (user) => {
 
 		const tokenExpiration = user.remember ? '30d' : '30m'
 
-		const keyToken = properties.keyToken
 		const option = { expiresIn: tokenExpiration }
-		const token = jwt.sign(tokenContent, keyToken, option)
+		const token = jwt.sign(tokenContent, KEY_TOKEN, option)
 
 		const response = {
 			userName: user.userName,
