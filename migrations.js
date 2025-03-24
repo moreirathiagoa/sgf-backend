@@ -1,6 +1,7 @@
 require('./src/database').start()
 const db = require('./src/database')
-const model = require('./src/model')
+const transactionModel = require('./src/model/transactionModel')
+require('./src/model/bankModel')
 
 async function main() {
 	let params = {}
@@ -8,7 +9,7 @@ async function main() {
 	//params = { bankName: { $exists: false } }
 
 	const transactionFind = await db
-		.find(model.transaction, { ...params })
+		.find(transactionModel, { ...params })
 		.populate('bankId')
 		.sort({ effectedAt: 1 })
 
@@ -37,7 +38,7 @@ async function main() {
 		console.log('>>>> t: ', t)
 		const updateData = { ...t }
 		const unsetFields = {}
-		Object.keys(model.transaction.schema.paths).forEach((key) => {
+		Object.keys(transactionModel.schema.paths).forEach((key) => {
 			if (!(key in t)) {
 				unsetFields[key] = ''
 			}
@@ -47,7 +48,7 @@ async function main() {
 			...(Object.keys(unsetFields).length > 0 ? { $unset: unsetFields } : {}),
 		}
 		const params = { _id: t._id }
-		const res = await model.transaction.findOneAndUpdate(params, updateQuery, {
+		const res = await transactionModel.findOneAndUpdate(params, updateQuery, {
 			new: true,
 		})
 		console.log('>>>> r: ', res)

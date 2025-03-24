@@ -1,5 +1,6 @@
 const { URI_DATABASE } = require('../properties')
 const mongoose = require('mongoose')
+const logger = require('../../config/logger')
 mongoose.Promise = global.Promise
 
 exports.start = (URI = URI_DATABASE) => {
