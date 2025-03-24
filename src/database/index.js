@@ -1,9 +1,8 @@
-const properties = require('../properties')
+const { URI_DATABASE } = require('../properties')
 const mongoose = require('mongoose')
-const logger = require('../../config/logger')
 mongoose.Promise = global.Promise
 
-exports.start = (URI = properties.uriDataBase) => {
+exports.start = (URI = URI_DATABASE) => {
 	return mongoose
 		.connect(URI, {
 			useNewUrlParser: true,

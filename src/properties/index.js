@@ -1,47 +1,36 @@
 require('dotenv').config()
-const ENV = process.env.NODE_ENV || 'dev'
-const PORT = process.env.PORT || 4000
-const APPLICATION = 'SGF'
-
-console.log('ENV: ', ENV);
-const base = {
-	APPLICATION,
-	ENV,
-	PORT,
+const environment = process.env.NODE_ENV || 'dev'
+const applicationPort = process.env.PORT || 4000
+const applicationName = 'SGF'
+const keyToken = process.env.KEY_TOKEN
+const dbUserName = process.env.DB_USERNAME
+const dbPassword = process.env.DB_PASSWORD
+const dbUrl = 'sgfcluster-nrl0f.mongodb.net'
+const dbParams = 'retryWrites=true&w=majority'
+const dbDevName = 'test'
+const dbPrdName = 'sgf'
+const definitions = {
+	dev: {
+		APPLICATION: applicationName,
+		ENV: 'development',
+		PORT: applicationPort,
+		URI_DATABASE: `mongodb+srv://${dbUserName}:${dbPassword}@${dbUrl}/${dbDevName}?${dbParams}`,
+		KEY_TOKEN: keyToken,
+	},
+	hml: {
+		APPLICATION: applicationName,
+		ENV: 'homologation',
+		PORT: applicationPort,
+		URI_DATABASE: `mongodb+srv://${dbUserName}:${dbPassword}@${dbUrl}/${dbDevName}?${dbParams}`,
+		KEY_TOKEN: keyToken,
+	},
+	prd: {
+		APPLICATION: applicationName,
+		ENV: 'production',
+		PORT: applicationPort,
+		URI_DATABASE: `mongodb+srv://${dbUserName}:${dbPassword}@${dbUrl}/${dbPrdName}?${dbParams}`,
+		KEY_TOKEN: keyToken,
+	},
 }
 
-const properties = () => {
-	let KEY_TOKEN, DB_USERNAME, DB_PASSWORD, DB_URL, DB_PARAMS
-
-	switch (ENV) {
-		case 'dev':
-			KEY_TOKEN = process.env.KEY_TOKEN
-			DB_USERNAME = process.env.DB_USERNAME
-			DB_PASSWORD = process.env.DB_PASSWORD
-			DB_URL = 'sgfcluster-nrl0f.mongodb.net'
-			DB_PARAMS = 'retryWrites=true&w=majority'
-			DATA_BASE = 'test'
-
-			return {
-				...base,
-				uriDataBase: `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_URL}/${DATA_BASE}?${DB_PARAMS}`,
-				keyToken: KEY_TOKEN,
-			}
-
-		case 'prd':
-			KEY_TOKEN = process.env.KEY_TOKEN
-			DB_USERNAME = process.env.DB_USERNAME
-			DB_PASSWORD = process.env.DB_PASSWORD
-			DB_URL = 'sgfcluster-nrl0f.mongodb.net'
-			DB_PARAMS = 'retryWrites=true&w=majority'
-			DATA_BASE = 'sgf'
-
-			return {
-				...base,
-				uriDataBase: `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_URL}/${DATA_BASE}?${DB_PARAMS}`,
-				keyToken: KEY_TOKEN,
-			}
-	}
-}
-
-module.exports = properties()
+module.exports = definitions[environment]
