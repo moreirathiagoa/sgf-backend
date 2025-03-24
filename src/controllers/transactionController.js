@@ -102,7 +102,6 @@ exports.bankTransference = async (userId, data) => {
 				}
 			})
 			.catch((err) => {
-				console.log('err: ', err)
 				throw err
 			})
 		return utils.makeResponse(201, 'Transferência efetuada com sucesso', {})
@@ -337,7 +336,6 @@ exports.deleteTransaction = async (userId, transactionId) => {
 exports.getNotCompensatedTransactionCount = async (userId, bankId) => {
 	const params = { userId: userId, bankId: bankId, isCompensated: false }
 	const transactionsCount = await db.find(transactionModel, params).count()
-	console.log('transactionFind: ', transactionsCount)
 
 	return utils.makeResponse(
 		200,

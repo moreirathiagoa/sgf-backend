@@ -144,7 +144,7 @@ exports.updateBank = async (userId, bankId, bankToUpdate) => {
 		}
 
 		const exclusionStatus = await getExclusionStatus(bankFindById)
-		if (exclusionStatus && !bankToUpdate.isActive)
+		if (exclusionStatus && !bankFindById.isActive)
 			return utils.makeResponse(203, exclusionStatus)
 
 		Object.assign(bankFindById, bankToUpdate)
@@ -178,7 +178,6 @@ exports.deleteBank = async (userId, bankId) => {
 }
 
 async function getExclusionStatus(bankFind) {
-	console.log('bankFind: ', bankFind)
 	const notCompensatedTransactionStatus =
 		await transactionController.getNotCompensatedTransactionCount(
 			bankFind.userId,
