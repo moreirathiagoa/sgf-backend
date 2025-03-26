@@ -44,72 +44,70 @@ exports.getTransaction = async (userId, transactionId) => {
 }
 
 exports.bankTransference = async (userId, data) => {
-	const { originalBankId, finalBankId, value } = data
-
-	const { data: originBankFind } = await bankController.getBank(
-		userId,
-		originalBankId
-	)
-
-	if (isEmpty(originBankFind))
-		return utils.makeResponse(203, 'Banco de origem não encontrado')
-
-	const { data: finalBankFind } = await bankController.getBank(
-		userId,
-		finalBankId
-	)
-
-	if (isEmpty(finalBankFind))
-		return utils.makeResponse(203, 'Banco destino não encontrado')
-
-	const debitTransaction = {
-		effectedAt: new Date(),
-		bankId: originalBankId,
-		//TODO: Quando adicionar a ordenação de banco, remover o replace
-		bankName: originBankFind.name.replace(/^[\w\d]+\. /, ''),
-		isSimples: false,
-		value: -1 * value,
-		isCompensated: true,
-		transactionType: 'contaCorrente',
-		description: 'Transferência Interna',
-		detail: `Para: ${finalBankFind.name}`,
-	}
-
-	const creditTransaction = {
-		effectedAt: new Date(),
-		bankId: finalBankId,
-		//TODO: Quando adicionar a ordenação de banco, remover o replace
-		bankName: finalBankFind.name.replace(/^[\w\d]+\. /, ''),
-		isSimples: false,
-		value: value,
-		isCompensated: true,
-		transactionType: 'contaCorrente',
-		description: 'Transferência Interna',
-		detail: `De: ${originBankFind.name}`,
-	}
 	try {
-		await createTransaction(userId, debitTransaction)
-			.then((res) => {
-				if (res.code == 201) {
-					return createTransaction(userId, creditTransaction)
-				} else {
-					throw new Erro('Erro no cadastro da primeira transação.')
-				}
-			})
-			.then((res) => {
-				if (res.code != 201) {
-					throw new Erro('Erro no cadastro da segunda transação.')
-				}
-			})
-			.catch((err) => {
-				throw err
-			})
-		return utils.makeResponse(201, 'Transferência efetuada com sucesso', {})
+		const { originalBankId, finalBankId, value } = data
+
+		const { data: originBankFind } = await bankController.getBank(
+			userId,
+			originalBankId
+		)
+
+		if (isEmpty(originBankFind))
+			return utils.makeResponse(203, 'Banco de origem não encontrado')
+
+		const { data: finalBankFind } = await bankController.getBank(
+			userId,
+			finalBankId
+		)
+
+		if (isEmpty(finalBankFind))
+			return utils.makeResponse(203, 'Banco destino não encontrado')
+
+		const debitTransaction = {
+			effectedAt: new Date(),
+			bankId: originalBankId,
+			//TODO: Quando adicionar a ordenação de banco, remover o replace
+			bankName: utils.bankNameHigienize(originBankFind.name),
+			isSimples: false,
+			value: -1 * value,
+			isCompensated: true,
+			transactionType: 'contaCorrente',
+			description: 'Transferência Interna',
+			detail: `Para: ${utils.bankNameHigienize(finalBankFind.name)}`,
+		}
+
+		const creditTransaction = {
+			effectedAt: new Date(),
+			bankId: finalBankId,
+			//TODO: Quando adicionar a ordenação de banco, remover o replace
+			bankName: utils.bankNameHigienize(finalBankFind.name),
+			isSimples: false,
+			value: value,
+			isCompensated: true,
+			transactionType: 'contaCorrente',
+			description: 'Transferência Interna',
+			detail: `De: ${utils.bankNameHigienize(originBankFind.name)}`,
+		}
+
+		const debitRes = await this.createTransaction(userId, debitTransaction)
+		if (debitRes.code !== 201)
+			return utils.makeResponse(203, 'Erro no cadastro da primeira transação')
+
+		const creditRes = await this.createTransaction(userId, creditTransaction)
+		if (creditRes.code !== 201)
+			return utils.makeResponse(203, 'Erro no cadastro da segunda transação.')
+
+		return utils.makeResponse(
+			201,
+			'Transferência entre bancos efetuada com sucesso'
+		)
 	} catch (error) {
+		logger.error(
+			`Erro ao efetuar a transferência entre bancos: ${error.message}`
+		)
 		return utils.makeResponse(
 			203,
-			'A transferência não pode ser efetuada. Verifique no extrato se uma das transações foi efetuada.',
-			{}
+			'Erro ao processar a transferência. Verifique no extrato se uma das transações foi efetuada.'
 		)
 	}
 }
@@ -150,7 +148,7 @@ exports.createTransaction = async (userId, transactionToCreate) => {
 		)
 
 		//TODO: Quando adicionar a ordenação de banco, remover o replace
-		transactionToCreate.bankName = bankFind.name.replace(/^[\w\d]+\. /, '')
+		transactionToCreate.bankName = utils.bankNameHigienize(bankFind.name)
 
 		if (transactionToCreate.transactionType === 'planejamento') {
 			transactionToCreate.isCompensated = false
@@ -242,7 +240,7 @@ exports.updateTransaction = async (userId, transactionId, newTransaction) => {
 
 		if (bankFind.code === 200 && bankFind.data.isActive) {
 			//TODO: Quando adicionar a ordenação de banco, remover o replace
-			newTransaction.bankName = bankFind.data.name.replace(/^[\w\d]+\. /, '')
+			newTransaction.bankName = utils.bankNameHigienize(bankFind.data.name)
 		}
 
 		if (newTransaction.transactionType === 'planejamento') {
