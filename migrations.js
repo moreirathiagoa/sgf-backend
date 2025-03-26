@@ -1,6 +1,7 @@
 require('./src/database').start()
 const db = require('./src/database')
 const transactionModel = require('./src/model/transactionModel')
+const utils = require('./src/utils')
 require('./src/model/bankModel')
 
 async function main() {
@@ -17,10 +18,10 @@ async function main() {
 		const bankName =
 			new Date(t._doc.effectedAt).getTime() >
 			new Date('2025-01-01T03:00:00.000Z').getTime()
-				? t._doc.bankId.name.replace(/^[\w\d]+\. /, '')
+				? utils.bankNameHigienize(t._doc.bankId.name)
 				: new Date(t._doc.effectedAt).getTime() >
 				  new Date('2021-02-01T03:00:00.000Z').getTime()
-				? `${t._doc.bankId.name.replace(/^[\w\d]+\. /, '')} *`
+				? `${utils.bankNameHigienize(t._doc.bankId.name)} *`
 				: 'Desconhecido'
 
 		const res = {

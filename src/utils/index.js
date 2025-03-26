@@ -63,3 +63,7 @@ exports.makeResponse = (code, message, data) => {
 exports.isNumeric = (n) => {
 	return !isNaN(parseFloat(n)) && isFinite(n)
 }
+
+exports.bankNameHigienize = (bankName) => {
+	return bankName.replace(/^[\w\d]+\. /, '')
+}
