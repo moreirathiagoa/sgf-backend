@@ -677,8 +677,11 @@ async function updateSaldoContaCorrente(userId, bankId, valor) {
 		const finalBalance = round(bankFind.systemBalance + valor, 2)
 		bankFind.systemBalance = finalBalance
 
-		await bankController.updateBank(userId, bankId, bankFind)
+		const response = await bankController.updateBank(userId, bankId, bankFind)
+		if (response.code !== 202) {
+			logger.warn('ATENÇÃO!! Erro ao atualizar o saldo!')
+		}
 	} else {
-		logger.warn('ATENÇÃO!! Banco não encontrado ao atualizar o saldo!')
+		logger.warn('ATENÇÃO!! Erro ao atualizar o saldo! Banco não encontrado!!')
 	}
 }

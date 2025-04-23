@@ -7,8 +7,8 @@ const DB_PASSWORD = process.env.DB_PASSWORD
 const DB_PRD_HOST = `sgfcluster-shard-00-01.nrl0f.mongodb.net`
 const DB_PRD_PORT = `27017`
 const DB_PRD_AUTHENTICATION = `admin`
-//const DB_HML_HOST = `sgfcluster-shard-00-02.nrl0f.mongodb.net`
-const DB_HML_HOST = 'sgfcluster-shard-00-01-nrl0f.mongodb.net'
+const DB_HML_HOST = `sgfcluster-shard-00-02.nrl0f.mongodb.net`
+//const DB_HML_HOST = 'sgfcluster-shard-00-01-nrl0f.mongodb.net'
 const DB_HML_PORT = `27017`
 const DB_HML_AUTHENTICATION = `admin`
 

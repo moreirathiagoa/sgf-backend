@@ -52,7 +52,7 @@ router.put('/update/:bankId', auth, async (req, res, next) => {
 		if (isEmpty(req.body)) {
 			response = utils.makeResponse(204, 'Sem informação no corpo')
 		} else {
-			response = await bankController.updateBank(userId, bankId, req.body)
+			response = await bankController.updateBankOnCrud(userId, bankId, req.body)
 		}
 		res.status(response.code).json(response)
 	} catch (error) {
