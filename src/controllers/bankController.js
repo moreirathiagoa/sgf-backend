@@ -85,7 +85,11 @@ exports.getListBanksDashboard = async (userId) => {
 
 		return utils.makeResponse(200, 'Lista de Bancos', banksToReturn)
 	} catch (error) {
-		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
+		logger.error(
+			`Erro ao obter a lista de bancos para dashboard - ${
+				error.message || error
+			}`
+		)
 		throw error
 	}
 }
@@ -99,7 +103,7 @@ exports.getBank = async (userId, bankId) => {
 
 		return utils.makeResponse(200, 'Banco encontrado', bankFind)
 	} catch (error) {
-		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
+		logger.error(`Erro ao obter o banco - ${error.message || error}`)
 		throw error
 	}
 }
@@ -121,13 +125,13 @@ exports.createBank = async (userId, bankToCreate) => {
 		const response = await db.save(bankToSave)
 		return utils.makeResponse(201, 'Banco criado com sucesso', response)
 	} catch (error) {
-		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
+		logger.error(`Erro ao criar o banco - ${error.message || error}`)
 		throw error
 	}
 }
 
 //TODO ao atualizar o banco, renomear todos bankName das transações futuras (não compensadas na conta corrente ou planejamento)
-exports.updateBank = async (userId, bankId, bankToUpdate) => {
+exports.updateBankOnCrud = async (userId, bankId, bankToUpdate) => {
 	try {
 		const paramsName = { name: bankToUpdate.name, userId: userId }
 		const bankFindByName = await db.findOne(bankModel, paramsName)
@@ -136,6 +140,17 @@ exports.updateBank = async (userId, bankId, bankToUpdate) => {
 				return utils.makeResponse(203, 'Banco já cadastrado')
 		}
 
+		return await this.updateBank(userId, bankId, bankToUpdate)
+	} catch (error) {
+		logger.error(
+			`Erro ao atualizar o banco no cadastro - ${error.message || error}`
+		)
+		throw error
+	}
+}
+
+exports.updateBank = async (userId, bankId, bankToUpdate) => {
+	try {
 		const paramsId = { _id: bankId, userId: userId }
 		const bankFindById = await db.findOne(bankModel, paramsId)
 
@@ -143,17 +158,13 @@ exports.updateBank = async (userId, bankId, bankToUpdate) => {
 			return utils.makeResponse(203, 'Banco não encontrado')
 		}
 
-		const exclusionStatus = await getExclusionStatus(bankFindById)
-		if (exclusionStatus && !bankFindById.isActive)
-			return utils.makeResponse(203, exclusionStatus)
-
 		Object.assign(bankFindById, bankToUpdate)
-		bankFindById.save()
+		await bankFindById.save()
 
 		const bankToReturn = await db.findOne(bankModel, paramsId)
 		return utils.makeResponse(202, 'Banco atualizado com sucesso', bankToReturn)
 	} catch (error) {
-		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
+		logger.error(`Erro ao atualizar o banco - ${error.message || error}`)
 		throw error
 	}
 }
@@ -172,7 +183,7 @@ exports.deleteBank = async (userId, bankId) => {
 		const response = await db.remove(bankToDelete)
 		return utils.makeResponse(202, 'Banco removido com sucesso', response)
 	} catch (error) {
-		logger.error(`Erro ao obter a lista de bancos - ${error.message || error}`)
+		logger.error(`Erro ao deletar o banco - ${error.message || error}`)
 		throw error
 	}
 }
