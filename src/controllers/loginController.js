@@ -40,7 +40,7 @@ exports.login = async (user) => {
 		const token = jwt.sign(tokenContent, KEY_TOKEN, option)
 
 		const response = {
-			userName: user.userName,
+			userName: userFound.userName,
 			defaultDescription: userFound.defaultDescription,
 			token: token,
 		}
