@@ -8,6 +8,7 @@ const user = new Schema({
 	createdAt: { type: Date, required: true },
 	isActive: { type: Boolean, required: true, default: true },
 	loginList: [{ type: Date }],
+	defaultDescription: { type: String, required: false },
 })
 
 const userModel = mongoose.model('User', user)
