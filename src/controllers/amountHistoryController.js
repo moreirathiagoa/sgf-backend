@@ -100,3 +100,47 @@ exports.getAmountHistoryList = async (userId) => {
 		return utils.makeResponse(500, 'Erro interno do servidor.')
 	}
 }
+
+exports.updateAmountHistory = async (
+	userId,
+	dashboardData,
+	actualBalance,
+	netBalance
+) => {
+	try {
+		const latestAmountHistory = await this.getLatestAmountHistory(userId)
+
+		if (isOlderThanYesterday(latestAmountHistory.data)) {
+			await this.createAmountHistory({
+				userId,
+				createdAt: new Date(),
+				forecastIncoming: dashboardData.balanceNotCompensatedCredit,
+				forecastOutgoing: dashboardData.balanceNotCompensatedDebit,
+				actualBalance: actualBalance,
+				netBalance: netBalance,
+			})
+		}
+
+		return utils.makeResponse(
+			200,
+			'Histórico de valores atualizado com sucesso.'
+		)
+	} catch (error) {
+		console.error('Erro ao atualizar AmountHistory:', error)
+		return utils.makeResponse(500, 'Erro interno do servidor ao atualizar histórico.')
+	}
+}
+
+function isOlderThanYesterday(latestAmountHistory) {
+	const today = new Date()
+	today.setHours(12, 0, 0, 0)
+
+	if (!latestAmountHistory) {
+		return true
+	}
+
+	const lastRegister = new Date(latestAmountHistory.createdAt)
+	lastRegister.setHours(12, 0, 0, 0)
+
+	return lastRegister.getTime() < today.getTime()
+}
