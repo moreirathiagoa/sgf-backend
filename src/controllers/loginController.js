@@ -41,6 +41,7 @@ exports.login = async (user) => {
 
 		const response = {
 			userName: user.userName,
+			defaultDescription: userFound.defaultDescription,
 			token: token,
 		}
 
