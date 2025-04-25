@@ -1,7 +1,6 @@
 const controllerBank = require('./bankController')
 const transactionController = require('./transactionController')
 const utils = require('../utils')
-const AmountHistory = require('../model/amountHistory')
 const amountHistoryController = require('./amountHistoryController')
 
 exports.getDetalhesSaldos = async (userId) => {
@@ -22,12 +21,7 @@ exports.getDetalhesSaldos = async (userId) => {
 
 		netBalance = parseFloat(netBalance.toFixed(2))
 
-		await checkAndCreateAmountHistory(
-			userId,
-			dashboardData,
-			actualBalance,
-			netBalance
-		)
+		await updateAmountHistory(userId, dashboardData, actualBalance, netBalance)
 
 		return utils.makeResponse(200, 'Detalhes dos saldos obtidos com sucesso', {
 			banks,
@@ -52,25 +46,16 @@ function validateResponses(dashboardData) {
 	}
 }
 
-async function checkAndCreateAmountHistory(
+async function updateAmountHistory(
 	userId,
 	dashboardData,
 	actualBalance,
 	netBalance
 ) {
-	const latestAmountHistory = await AmountHistory.findOne({ userId }).sort({
-		createdAt: -1,
-	})
+	const latestAmountHistory =
+		await amountHistoryController.getLatestAmountHistory(userId)
 
-	if (
-		isOlderThanYesterday(latestAmountHistory) &&
-		hasDifferences(
-			latestAmountHistory,
-			dashboardData,
-			actualBalance,
-			netBalance
-		)
-	) {
+	if (isOlderThanYesterday(latestAmountHistory.data)) {
 		await amountHistoryController.createAmountHistory({
 			userId,
 			createdAt: new Date(),
@@ -84,30 +69,16 @@ async function checkAndCreateAmountHistory(
 
 function isOlderThanYesterday(latestAmountHistory) {
 	const today = new Date()
-	const yesterday = new Date(today)
-	yesterday.setDate(today.getDate() - 1)
+	today.setHours(12, 0, 0, 0)
 
-	return (
-		!latestAmountHistory ||
-		latestAmountHistory.createdAt.getTime() < yesterday.getTime()
-	)
-}
+	if (!latestAmountHistory) {
+		return true
+	}
 
-function hasDifferences(
-	latestAmountHistory,
-	dashboardData,
-	actualBalance,
-	netBalance
-) {
-	return (
-		!latestAmountHistory ||
-		latestAmountHistory.actualBalance !== actualBalance ||
-		latestAmountHistory.netBalance !== netBalance ||
-		latestAmountHistory.forecastIncoming !==
-			dashboardData.balanceNotCompensatedCredit ||
-		latestAmountHistory.forecastOutgoing !==
-			dashboardData.balanceNotCompensatedDebit
-	)
+	const lastRegister = new Date(latestAmountHistory.createdAt)
+	lastRegister.setHours(12, 0, 0, 0)
+
+	return lastRegister.getTime() < today.getTime()
 }
 
 async function getDashboardData(userId) {
