@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const auth = require('../middlewares/auth')
-const balancesDashboardController = require('../controllers/balancesDashboardController')
+const balancesDashboardController = require('../controllers/balancesController')
 
 router.get('/get-balances', auth, async (req, res, next) => {
 	try {

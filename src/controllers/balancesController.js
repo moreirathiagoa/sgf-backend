@@ -1,7 +1,7 @@
 const controllerBank = require('./bankController')
 const transactionController = require('./transactionController')
 const utils = require('../utils')
-const amountHistoryController = require('./amountHistoryController')
+const amountHistoryController = require('./dashboardController')
 
 exports.getDetalhesSaldos = async (userId) => {
 	try {
@@ -21,7 +21,7 @@ exports.getDetalhesSaldos = async (userId) => {
 
 		netBalance = parseFloat(netBalance.toFixed(2))
 
-		await amountHistoryController.updateAmountHistory(
+		await amountHistoryController.createAmountHistory(
 			userId,
 			dashboardData,
 			actualBalance,
