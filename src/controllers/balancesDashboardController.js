@@ -21,7 +21,12 @@ exports.getDetalhesSaldos = async (userId) => {
 
 		netBalance = parseFloat(netBalance.toFixed(2))
 
-		await updateAmountHistory(userId, dashboardData, actualBalance, netBalance)
+		await amountHistoryController.updateAmountHistory(
+			userId,
+			dashboardData,
+			actualBalance,
+			netBalance
+		)
 
 		return utils.makeResponse(200, 'Detalhes dos saldos obtidos com sucesso', {
 			banks,
@@ -44,41 +49,6 @@ function validateResponses(dashboardData) {
 	if (hasResponseWithError) {
 		throw new Error('Não foi possível obter os dados do dashboard')
 	}
-}
-
-async function updateAmountHistory(
-	userId,
-	dashboardData,
-	actualBalance,
-	netBalance
-) {
-	const latestAmountHistory =
-		await amountHistoryController.getLatestAmountHistory(userId)
-
-	if (isOlderThanYesterday(latestAmountHistory.data)) {
-		await amountHistoryController.createAmountHistory({
-			userId,
-			createdAt: new Date(),
-			forecastIncoming: dashboardData.balanceNotCompensatedCredit,
-			forecastOutgoing: dashboardData.balanceNotCompensatedDebit,
-			actualBalance: actualBalance,
-			netBalance: netBalance,
-		})
-	}
-}
-
-function isOlderThanYesterday(latestAmountHistory) {
-	const today = new Date()
-	today.setHours(12, 0, 0, 0)
-
-	if (!latestAmountHistory) {
-		return true
-	}
-
-	const lastRegister = new Date(latestAmountHistory.createdAt)
-	lastRegister.setHours(12, 0, 0, 0)
-
-	return lastRegister.getTime() < today.getTime()
 }
 
 async function getDashboardData(userId) {
