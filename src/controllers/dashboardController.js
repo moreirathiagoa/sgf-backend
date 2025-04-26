@@ -123,15 +123,72 @@ exports.getLatestAmountHistory = async (userId) => {
 	}
 }
 
-exports.getAmountHistoryList = async (userId) => {
+exports.getAmountHistoryList = async (userId, year, month) => {
 	try {
 		if (!userId) {
 			return utils.makeResponse(400, 'O campo userId é obrigatório.')
 		}
 
-		const records = await AmountHistory.find({ userId })
-			.sort({ createdAt: 1 })
-			.exec()
+		const query = { userId }
+
+		let records
+		if (year !== 'all') {
+			const firstMonth = '01'
+			const lastMonth = '12'
+			const startOfYear = new Date(`${year}-${firstMonth}-01T00:00:00.000Z`)
+			const endOfYear = new Date(`${year}-${lastMonth}-31T23:59:59.999Z`)
+
+			if (isNaN(startOfYear.getTime()) || isNaN(endOfYear.getTime())) {
+				return utils.makeResponse(400, 'Ano inválido fornecido.')
+			}
+
+			query.createdAt = { $gte: startOfYear, $lte: endOfYear }
+
+			if (month !== 'all') {
+				const startOfMonth = new Date(`${year}-${month.padStart(2, '0')}-01T00:00:00.000Z`)
+				const endOfMonth = new Date(
+					new Date(startOfMonth).setMonth(startOfMonth.getMonth() + 1) - 1
+				)
+
+				if (isNaN(startOfMonth.getTime()) || isNaN(endOfMonth.getTime())) {
+					return utils.makeResponse(400, 'Mês inválido fornecido.')
+				}
+
+				query.createdAt = {
+					...(query.createdAt || {}),
+					$gte: startOfMonth,
+					$lte: endOfMonth,
+				}
+
+				records = await AmountHistory.find(query).sort({ createdAt: 1 }).exec()
+			} else {
+				// Trazer o registro mais recente de cada mês
+				records = await AmountHistory.aggregate([
+					{ $match: query },
+					{
+						$group: {
+							_id: { month: { $month: '$createdAt' } },
+							latestRecord: { $last: '$$ROOT' },
+						},
+					},
+					{ $replaceRoot: { newRoot: '$latestRecord' } },
+					{ $sort: { createdAt: 1 } },
+				])
+			}
+		} else {
+			// Trazer o registro mais recente de cada ano
+			records = await AmountHistory.aggregate([
+				{ $match: query },
+				{
+					$group: {
+						_id: { year: { $year: '$createdAt' } },
+						latestRecord: { $last: '$$ROOT' },
+					},
+				},
+				{ $replaceRoot: { newRoot: '$latestRecord' } },
+				{ $sort: { createdAt: 1 } },
+			])
+		}
 
 		if (!records || records.length === 0) {
 			return utils.makeResponse(
