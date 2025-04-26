@@ -19,7 +19,11 @@ router.get('/list/:year/:month', auth, async (req, res) => {
 		const userId = res.locals.authData.userId
 		const { year, month } = req.params
 
-		const response = await dashboardController.getAmountHistoryList(userId, year, month)
+		const response = await dashboardController.getAmountHistoryList(
+			userId,
+			year,
+			month
+		)
 		res.status(response.code).json(response)
 	} catch (error) {
 		res.status(500).json({ message: 'Erro interno do servidor.', error })
@@ -31,6 +35,15 @@ router.put('/update', auth, async (req, res) => {
 		const userId = res.locals.authData.userId
 
 		const response = await dashboardController.updateAmountHistory(userId)
+		res.status(response.code).json(response)
+	} catch (error) {
+		res.status(500).json({ message: 'Erro interno do servidor.', error })
+	}
+})
+
+router.put('/update-all', async (req, res) => {
+	try {
+		const response = await dashboardController.updateAllHistories()
 		res.status(response.code).json(response)
 	} catch (error) {
 		res.status(500).json({ message: 'Erro interno do servidor.', error })

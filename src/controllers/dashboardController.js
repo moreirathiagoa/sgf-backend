@@ -1,6 +1,7 @@
 const AmountHistory = require('../model/amountHistory')
 const utils = require('../utils')
 const balancesController = require('./balancesController')
+const userController = require('./userController')
 
 exports.createAmountHistory = async (
 	userId,
@@ -37,9 +38,8 @@ exports.createAmountHistory = async (
 	}
 }
 
-exports.updateAmountHistory = async (userId, dashboardData) => {
+exports.updateAmountHistory = async (userId) => {
 	try {
-		// Obtém os detalhes dos saldos
 		const detalhesSaldosResponse = await balancesController.getDetalhesSaldos(
 			userId
 		)
@@ -66,7 +66,6 @@ exports.updateAmountHistory = async (userId, dashboardData) => {
 			const latestAmountHistory = latestAmountHistoryResponse.data
 
 			if (!isOlderThanYesterday(latestAmountHistory)) {
-				// Remove o registro atual do dia
 				await AmountHistory.deleteOne({ _id: latestAmountHistory._id })
 			}
 		}
@@ -102,7 +101,7 @@ exports.getLatestAmountHistory = async (userId) => {
 		}
 
 		const latestRecord = await AmountHistory.findOne({ userId })
-			.sort({ createdAt: -1 }) // Ordena por createdAt em ordem decrescente
+			.sort({ createdAt: -1 })
 			.exec()
 
 		if (!latestRecord) {
@@ -145,7 +144,9 @@ exports.getAmountHistoryList = async (userId, year, month) => {
 			query.createdAt = { $gte: startOfYear, $lte: endOfYear }
 
 			if (month !== 'all') {
-				const startOfMonth = new Date(`${year}-${month.padStart(2, '0')}-01T00:00:00.000Z`)
+				const startOfMonth = new Date(
+					`${year}-${month.padStart(2, '0')}-01T00:00:00.000Z`
+				)
 				const endOfMonth = new Date(
 					new Date(startOfMonth).setMonth(startOfMonth.getMonth() + 1) - 1
 				)
@@ -205,6 +206,32 @@ exports.getAmountHistoryList = async (userId, year, month) => {
 	} catch (error) {
 		console.error('Erro ao obter a lista de registros:', error)
 		return utils.makeResponse(500, 'Erro interno do servidor.')
+	}
+}
+
+exports.updateAllHistories = async () => {
+	try {
+		const usersResponse = await userController.getListUsers()
+		if (usersResponse.code !== 200) {
+			return utils.makeResponse(200, 'Done!')
+		}
+
+		const users = usersResponse.data
+		for (const user of users) {
+			const userId = user._id
+			await this.updateAmountHistory(userId)
+			console.log(
+				`Histórico de valores atualizado para o usuário ${user.userName} (${userId}).`
+			)
+		}
+
+		return utils.makeResponse(200, 'Done!')
+	} catch (error) {
+		console.log(
+			`Erro ao atualizar históricos para todos os usuários: ${error.message}')`
+		)
+		console.log(error)
+		return utils.makeResponse(200, 'Done!')
 	}
 }
 

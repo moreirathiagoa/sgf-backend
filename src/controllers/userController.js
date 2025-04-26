@@ -6,7 +6,7 @@ const userModel = require('../model/userModel')
 
 exports.getListUsers = async () => {
 	try {
-		const userFound = await db.find(userModel).select('userName isActive')
+		const userFound = await db.find(userModel, { isActive: true }).select('_id userName isActive')
 		if (isEmpty(userFound))
 			return utils.makeResponse(203, 'Usuários não encontrados', [])
 
