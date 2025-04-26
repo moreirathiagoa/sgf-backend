@@ -9,6 +9,7 @@ const balancesDashboardRouter = require('./routes/balancesDashboardRouter')
 const extractPageRouter = require('./routes/extractPageRouter')
 const newTransactionRouter = require('./routes/newTransactionRouter')
 const planningRouter = require('./routes/planningRouter')
+const amountHistoryRouter = require('./routes/amountHistoryRouter')
 
 require('./database').start()
 global.logger = require('../config/logger')
@@ -26,5 +27,6 @@ app.use('/balances-dashboard', balancesDashboardRouter)
 app.use('/extract-page', extractPageRouter)
 app.use('/new-transaction', newTransactionRouter)
 app.use('/planing', planningRouter)
+app.use('/dashboards', amountHistoryRouter)
 
 module.exports = app
