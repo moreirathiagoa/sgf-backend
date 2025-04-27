@@ -81,6 +81,9 @@ exports.updateAmountHistory = async (userId) => {
 
 		await newAmountHistory.save()
 
+		logger.info(
+			`Histórico de valores atualizado com sucesso para o usuário ${userId}.`
+		)
 		return utils.makeResponse(
 			200,
 			'Histórico de valores atualizado com sucesso.'
@@ -211,26 +214,26 @@ exports.getAmountHistoryList = async (userId, year, month) => {
 
 exports.updateAllHistories = async () => {
 	try {
+		logger.info(`Iniciando atualização de todos os históricos...`)
 		const usersResponse = await userController.getListUsers()
 		if (usersResponse.code !== 200) {
+			logger.error(
+				`Erro ao obter a lista de usuários: ${usersResponse.message}`
+			)
 			return utils.makeResponse(200, 'Done!')
 		}
 
 		const users = usersResponse.data
-		for (const user of users) {
-			const userId = user._id
-			await this.updateAmountHistory(userId)
-			console.log(
-				`Histórico de valores atualizado para o usuário ${user.userName} (${userId}).`
-			)
-		}
-
+		await Promise.all(
+			users.map(async (user) => {
+				const userId = user._id.toString()
+				return this.updateAmountHistory(userId)
+			})
+		)
+		logger.info(`Históricos atualizados com sucesso para todos os usuários.`)
 		return utils.makeResponse(200, 'Done!')
 	} catch (error) {
-		console.log(
-			`Erro ao atualizar históricos para todos os usuários: ${error.message}')`
-		)
-		console.log(error)
+		logger.error(`Erro ao atualizar todos os históricos: ${error.message}`)
 		return utils.makeResponse(200, 'Done!')
 	}
 }
