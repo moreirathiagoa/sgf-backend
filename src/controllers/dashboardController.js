@@ -70,9 +70,11 @@ exports.updateAmountHistory = async (userId) => {
 			}
 		}
 
+		const today = new Date()
+		today.setHours(12, 0, 0, 0)
 		const newAmountHistory = new AmountHistory({
 			userId,
-			createdAt: new Date(),
+			createdAt: today,
 			forecastIncoming: balanceNotCompensatedCredit,
 			forecastOutgoing: balanceNotCompensatedDebit,
 			actualBalance: actualBalance,
