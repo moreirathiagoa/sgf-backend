@@ -3,6 +3,12 @@ const utils = require('../utils')
 const balancesController = require('./balancesController')
 const userController = require('./userController')
 
+function newDateBr() {
+	const today = new Date()
+	today.setHours(today.getHours() - 3)
+	return today
+}
+
 exports.createAmountHistory = async (
 	userId,
 	dashboardData,
@@ -19,14 +25,14 @@ exports.createAmountHistory = async (
 		)
 		if (latestAmountHistoryResponse.code === 200) {
 			const latestAmountHistory = latestAmountHistoryResponse.data
-			if (!isOutdatedRecord(latestAmountHistory)) {
+			if (!wasRegisteredToday(latestAmountHistory)) {
 				return utils.makeResponse(200, 'Histórico já atualizado.')
 			}
 		}
 
 		const newAmountHistory = new AmountHistory({
 			userId,
-			createdAt: new Date(),
+			createdAt: newDateBr(),
 			forecastIncoming: dashboardData.balanceNotCompensatedCredit,
 			forecastOutgoing: dashboardData.balanceNotCompensatedDebit,
 			actualBalance,
@@ -67,17 +73,14 @@ exports.updateAmountHistory = async (userId) => {
 		)
 		if (latestAmountHistoryResponse.code === 200) {
 			const latestAmountHistory = latestAmountHistoryResponse.data
-			if (!isOutdatedRecord(latestAmountHistory)) {
+			if (wasRegisteredToday(latestAmountHistory)) {
 				await AmountHistory.deleteOne({ _id: latestAmountHistory._id })
 			}
 		}
 
-		const today = new Date()
-		today.setHours(0, 0, 0, 0)
-
 		const newAmountHistory = new AmountHistory({
 			userId,
-			createdAt: today,
+			createdAt: newDateBr(),
 			forecastIncoming: balanceNotCompensatedCredit,
 			forecastOutgoing: balanceNotCompensatedDebit,
 			actualBalance,
@@ -217,14 +220,14 @@ exports.updateAllHistories = async () => {
 	}
 }
 
-function isOutdatedRecord(latestAmountHistory) {
-	const today = new Date()
-	today.setHours(0, 0, 0, 0)
+function wasRegisteredToday(latestAmountHistory) {
+	if (!latestAmountHistory) return false
 
-	if (!latestAmountHistory) return true
+	const today = newDateBr()
+	const registerDate = new Date(latestAmountHistory.createdAt)
 
-	const lastRegister = new Date(latestAmountHistory.createdAt)
-	lastRegister.setHours(0, 0, 0, 0)
-
-	return lastRegister.getTime() < today.getTime()
+	return (
+		registerDate.toISOString().split('T')[0] ===
+		today.toISOString().split('T')[0]
+	)
 }
