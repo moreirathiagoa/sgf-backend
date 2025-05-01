@@ -4,6 +4,7 @@ const balancesController = require('./balancesController')
 const userController = require('./userController')
 
 function newDateBr() {
+//const today = new Date('2025-05-02T12:00:00.000Z')
 	const today = new Date()
 	today.setHours(today.getHours() - 3)
 	return today
@@ -131,7 +132,7 @@ exports.getAmountHistoryList = async (userId, year, month) => {
 		}
 
 		const query = { userId }
-		let records
+		let records = []
 
 		if (year !== 'all') {
 			const startOfYear = new Date(`${year}-01-01T00:00:00.000Z`)
@@ -144,19 +145,33 @@ exports.getAmountHistoryList = async (userId, year, month) => {
 			query.createdAt = { $gte: startOfYear, $lte: endOfYear }
 
 			if (month !== 'all') {
-				const startOfMonth = new Date(
-					`${year}-${String(month).padStart(2, '0')}-01T00:00:00.000Z`
-				)
-				const endOfMonth = new Date(
-					new Date(startOfMonth).setMonth(startOfMonth.getMonth() + 1) - 1
-				)
+				const startOfMonth = new Date(year, month - 1, 1, 0, 0, 0, 0)
+				const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999)
 
 				if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
 					return utils.makeResponse(400, 'Mês inválido.')
 				}
 
+				const endOfPreviousMonth = new Date(startOfMonth - 1)
+				const previousMonthRecord = await AmountHistory.findOne({
+					userId,
+					createdAt: { $lte: endOfPreviousMonth },
+				})
+					.sort({ createdAt: -1 })
+					.exec()
+
 				query.createdAt = { $gte: startOfMonth, $lte: endOfMonth }
-				records = await AmountHistory.find(query).sort({ createdAt: 1 }).exec()
+				const currentMonthRecords = await AmountHistory.find(query)
+					.sort({ createdAt: 1 })
+					.exec()
+
+				if (currentMonthRecords.length > 0) {
+					records = currentMonthRecords
+				}
+
+				if (previousMonthRecord) {
+					records.unshift(previousMonthRecord)
+				}
 			} else {
 				records = await AmountHistory.aggregate([
 					{ $match: query },
@@ -225,9 +240,8 @@ function wasRegisteredToday(latestAmountHistory) {
 
 	const today = newDateBr()
 	const registerDate = new Date(latestAmountHistory.createdAt)
+	const todayDate = new Date(today.toISOString().split('T')[0])
+	const registerDateDate = new Date(registerDate.toISOString().split('T')[0])
 
-	return (
-		registerDate.toISOString().split('T')[0] ===
-		today.toISOString().split('T')[0]
-	)
+	return registerDateDate.getTime() >= todayDate.getTime()
 }
