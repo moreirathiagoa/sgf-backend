@@ -4,7 +4,7 @@ const balancesController = require('./balancesController')
 const userController = require('./userController')
 
 function newDateBr() {
-	//const today = new Date('2025-05-02T12:00:00.000Z')
+//const today = new Date('2025-05-02T12:00:00.000Z')
 	const today = new Date()
 	today.setHours(today.getHours() - 3)
 	return today
@@ -145,37 +145,30 @@ exports.getAmountHistoryList = async (userId, year, month) => {
 			query.createdAt = { $gte: startOfYear, $lte: endOfYear }
 
 			if (month !== 'all') {
-				const startOfMonth = new Date(year, month - 1, 1, 0, 0, 0, 0) // Primeiro dia do mês às 00:00:00.000
-				console.log('startOfMonth: ', startOfMonth);
-				const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999) // Último dia do mês às 23:59:59.999
-				console.log('endOfMonth: ', endOfMonth);
+				const startOfMonth = new Date(year, month - 1, 1, 0, 0, 0, 0)
+				const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999)
 
 				if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
 					return utils.makeResponse(400, 'Mês inválido.')
 				}
 
-				// Busca o último registro do mês anterior
-				const endOfPreviousMonth = new Date(startOfMonth - 1) // Último dia do mês anterior
-
+				const endOfPreviousMonth = new Date(startOfMonth - 1)
 				const previousMonthRecord = await AmountHistory.findOne({
 					userId,
 					createdAt: { $lte: endOfPreviousMonth },
 				})
 					.sort({ createdAt: -1 })
-						.exec()
+					.exec()
 
-				// Busca os registros do mês filtrado
 				query.createdAt = { $gte: startOfMonth, $lte: endOfMonth }
 				const currentMonthRecords = await AmountHistory.find(query)
 					.sort({ createdAt: 1 })
-						.exec()
+					.exec()
 
-				// Garante que o registro do mês filtrado seja incluído
 				if (currentMonthRecords.length > 0) {
 					records = currentMonthRecords
 				}
 
-				// Adiciona o último registro do mês anterior, se existir
 				if (previousMonthRecord) {
 					records.unshift(previousMonthRecord)
 				}
@@ -208,7 +201,6 @@ exports.getAmountHistoryList = async (userId, year, month) => {
 			])
 		}
 
-		console.log('records: ', records)
 		if (!records || records.length === 0) {
 			return utils.makeResponse(404, 'Nenhum registro encontrado.')
 		}
