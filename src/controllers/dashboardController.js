@@ -4,6 +4,7 @@ const balancesController = require('./balancesController')
 const userController = require('./userController')
 
 function newDateBr() {
+	//const today = new Date('2025-05-02T12:00:00.000Z')
 	const today = new Date()
 	today.setHours(today.getHours() - 3)
 	return today
@@ -131,7 +132,7 @@ exports.getAmountHistoryList = async (userId, year, month) => {
 		}
 
 		const query = { userId }
-		let records
+		let records = []
 
 		if (year !== 'all') {
 			const startOfYear = new Date(`${year}-01-01T00:00:00.000Z`)
@@ -144,19 +145,40 @@ exports.getAmountHistoryList = async (userId, year, month) => {
 			query.createdAt = { $gte: startOfYear, $lte: endOfYear }
 
 			if (month !== 'all') {
-				const startOfMonth = new Date(
-					`${year}-${String(month).padStart(2, '0')}-01T00:00:00.000Z`
-				)
-				const endOfMonth = new Date(
-					new Date(startOfMonth).setMonth(startOfMonth.getMonth() + 1) - 1
-				)
+				const startOfMonth = new Date(year, month - 1, 1, 0, 0, 0, 0) // Primeiro dia do mês às 00:00:00.000
+				console.log('startOfMonth: ', startOfMonth);
+				const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999) // Último dia do mês às 23:59:59.999
+				console.log('endOfMonth: ', endOfMonth);
 
 				if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
 					return utils.makeResponse(400, 'Mês inválido.')
 				}
 
+				// Busca o último registro do mês anterior
+				const endOfPreviousMonth = new Date(startOfMonth - 1) // Último dia do mês anterior
+
+				const previousMonthRecord = await AmountHistory.findOne({
+					userId,
+					createdAt: { $lte: endOfPreviousMonth },
+				})
+					.sort({ createdAt: -1 })
+						.exec()
+
+				// Busca os registros do mês filtrado
 				query.createdAt = { $gte: startOfMonth, $lte: endOfMonth }
-				records = await AmountHistory.find(query).sort({ createdAt: 1 }).exec()
+				const currentMonthRecords = await AmountHistory.find(query)
+					.sort({ createdAt: 1 })
+						.exec()
+
+				// Garante que o registro do mês filtrado seja incluído
+				if (currentMonthRecords.length > 0) {
+					records = currentMonthRecords
+				}
+
+				// Adiciona o último registro do mês anterior, se existir
+				if (previousMonthRecord) {
+					records.unshift(previousMonthRecord)
+				}
 			} else {
 				records = await AmountHistory.aggregate([
 					{ $match: query },
@@ -186,6 +208,7 @@ exports.getAmountHistoryList = async (userId, year, month) => {
 			])
 		}
 
+		console.log('records: ', records)
 		if (!records || records.length === 0) {
 			return utils.makeResponse(404, 'Nenhum registro encontrado.')
 		}
@@ -225,9 +248,8 @@ function wasRegisteredToday(latestAmountHistory) {
 
 	const today = newDateBr()
 	const registerDate = new Date(latestAmountHistory.createdAt)
+	const todayDate = new Date(today.toISOString().split('T')[0])
+	const registerDateDate = new Date(registerDate.toISOString().split('T')[0])
 
-	return (
-		registerDate.toISOString().split('T')[0] ===
-		today.toISOString().split('T')[0]
-	)
+	return registerDateDate.getTime() >= todayDate.getTime()
 }
